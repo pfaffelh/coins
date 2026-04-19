@@ -482,22 +482,34 @@ $<n$ supplying exactly what is needed at level~$n$.
     \;=\; \bigl(A_n-\tfrac{27}{16}B_n\bigr)
         + (1-B_n)\bigl(c_{n-1}-\tfrac{27}{16}\bigr).
   \]
-  By IH(b), $c_{n-1}-\tfrac{27}{16}\ge 0$; one checks
-  $0<B_n<1$ for all $n\ge 7$.  For $n\in\{7,\dots,12\}$, the
+  By IH(b), $c_{n-1}-\tfrac{27}{16}\ge 0$.  Note also
+  $0<B_n<1$ for all $n\ge 7$: the numerator
+  $2+n+\binom{n}{2}+\binom{n}{3}$ in~\eqref{eq:AB} is strictly
+  less than $2^n=\sum_{j=0}^n\binom{n}{j}$, the difference being
+  $\sum_{j=4}^{n-1}\binom{n}{j}>0$.  For $n\in\{7,\dots,12\}$, the
   quadratic $n^2-15n+36$ is non-positive on $\{3,\dots,12\}$
   (its roots are $3$ and $12$), so $A_n-\tfrac{27}{16}B_n\ge 0$
   by~\eqref{eq:alg-id}, and~(b) follows.  For $n\ge 13$ we argue
-  cumulatively: define $\varepsilon_m:=c_m-\tfrac{27}{16}$,
-  so~(d) gives $\varepsilon_m=(1-B_m)\varepsilon_{m-1}+(A_m-\tfrac{27}{16}B_m)$.
+  cumulatively: define $\varepsilon_m:=c_m-\tfrac{27}{16}$ and
+  $\delta_k:=3(k^2-15k+36)/(32\cdot 2^k)$,
+  so~(d) gives $\varepsilon_m=(1-B_m)\varepsilon_{m-1}-\delta_m$.
   The starting value $\varepsilon_{12}>\tfrac{1}{60}$ is verified by
   exact rational computation; the cumulative negative contribution
-  is bounded by $\sum_{k\ge 13}\tfrac{3(k^2-15k+36)}{32\cdot 2^k}
+  is bounded by $\sum_{k\ge 13}\delta_k
   \le\tfrac{297}{65536}<\tfrac{1}{200}$ (using
   $\sum_{k\ge 13}k^2/2^k=\tfrac{99}{2048}$); meanwhile
   $\prod_{m\ge 13}(1-B_m)>\tfrac{7}{8}$ (using
   $\sum_{m\ge 13}B_m<\tfrac{1}{8}$).  So
   $\varepsilon_n>\tfrac{1}{60}\cdot\tfrac{7}{8}-\tfrac{1}{200}
   =\tfrac{23}{2400}>0$ for $n\ge 13$.
+
+  (\emph{Note for an inductive treatment:} the sequence
+  $(\delta_k)_{k\ge 13}$ is not monotone — one computes
+  $\delta_{14}/\delta_{13}=\tfrac{11}{10}$ — but its ratio
+  decreases through~$1$ at~$k=14$ and tends to~$\tfrac12$.  An
+  iterated proof of the bound on $\sum_{k\ge 13}\delta_k$ should
+  therefore split at~$k=14$; the closed-form route above sidesteps
+  this subtlety.)
 
   \emph{(c) Strict decrease.}  By~(d), $c_n-c_{n-1}=A_n-B_nc_{n-1}$.
   Using $c_{n-1}\ge\tfrac{27}{16}$ (IH(b)) and $B_n>0$, this is
