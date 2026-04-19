@@ -824,12 +824,96 @@ theorem c_limit_formula (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
             A_lin k * ∏' m : {m : ℕ // k < m}, (1 - B_lin m) := by
   sorry
 
+/-! ### Bridge from `Δ` to `c` (Proposition 4.4)
+
+  We need to show that `c n` is the first-order coefficient of
+  `Δ_{n, 1/2 − δ}` as `δ → 0⁺`. This bridges the standalone
+  `c`-recursion to the actual deficit.
+
+  The proof is by strong induction on `n`. For `n ≥ 2` it uses
+  `deficit_succ` together with a Taylor estimate for the constant
+  term and a perturbation bound for the suffix-min.
+
+  We currently prove the base case `n = 1` (an exact identity);
+  the general case is sketched with sub-sorries identifying the
+  remaining real-analysis lemmas. -/
+
+/-- Base case n = 1 of Proposition 4.4: `Δ_{1, 1/2 − δ} = c_1 · δ` (exactly,
+    not just to first order). Indeed `w(1/2 − δ, 1) = 1/2 − δ` and `c_1 = 1`. -/
+theorem deficit_first_order_one (δ : ℝ) : deficit (1/2 - δ) 1 = c 1 * δ := by
+  unfold deficit
+  rw [w_one, c_one]
+  ring
+
+/-! Sub-lemmas needed for the inductive step (left as `sorry`):
+
+  1. **Taylor bound for the constant term.** For each `n ≥ 1`, there exist
+     `M₁ δ₁ > 0` such that for `δ ∈ (0, δ₁)`:
+     `|((1/2 + δ)^n − (1/2 − δ)^n)/2 − n·δ/2^(n−1)| ≤ M₁ · δ²`.
+     The bound comes from binomial expansion: only odd-`k` terms survive,
+     and terms with `k ≥ 3` contribute `O(δ³)`.
+
+  2. **Binomial weight perturbation.** For `n ≥ 1`, `j ∈ [1, n−1]`, there
+     exist `M₂` such that for small `δ`:
+     `|C(n,j) (1/2 − δ)^(n−j) (1/2 + δ)^j − C(n,j)/2^n| ≤ M₂ · δ`.
+
+  3. **Suffix-min perturbation.** Under the IH, for each `j` with
+     `1 ≤ j < n`, `suffMinDelta (1/2 − δ) j n = (suffMin j n) · δ + O(δ²)`.
+     Uses the fact that `min` is `1`-Lipschitz: if each `|Δ_m − c_m·δ| ≤ M·δ²`,
+     then `|min Δ_m − (min c_m)·δ| ≤ M·δ²`. -/
+
+/-- Sub-lemma 1: Taylor bound for the constant term. -/
+private lemma constant_term_taylor (n : ℕ) (hn : 1 ≤ n) :
+    ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      |((1/2 + δ) ^ n - (1/2 - δ) ^ n) / 2 - (n : ℝ) * δ / (2 : ℝ) ^ (n - 1)|
+        ≤ M * δ ^ 2 := by
+  sorry
+
+/-- Sub-lemma 2: Binomial weight perturbation. -/
+private lemma binom_weight_perturb (n j : ℕ) (hj1 : 1 ≤ j) (hjn : j ≤ n - 1) :
+    ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      |(Nat.choose n j : ℝ) * (1/2 - δ) ^ (n - j) * (1/2 + δ) ^ j -
+        (Nat.choose n j : ℝ) / (2 : ℝ) ^ n| ≤ M * δ := by
+  sorry
+
+/-- Sub-lemma 3: Suffix-min perturbation under the IH. -/
+private lemma suffMinDelta_first_order (n j : ℕ) (hn : 2 ≤ n) (hj : 1 ≤ j) (hjn : j < n)
+    (h_ih : ∀ m, 1 ≤ m → m < n →
+      ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+        |deficit (1/2 - δ) m - c m * δ| ≤ M * δ ^ 2) :
+    ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      |suffMinDelta (1/2 - δ) j n - suffMin j n * δ| ≤ M * δ ^ 2 := by
+  sorry
+
 /-- Proposition 4.4 (first-order coefficient): `c n` is the first-order
-    coefficient of `Δ_{n, 1/2 - δ}` as `δ → 0⁺`. -/
+    coefficient of `Δ_{n, 1/2 - δ}` as `δ → 0⁺`.
+    Base case `n = 1` is `deficit_first_order_one`; the inductive step is
+    `sorry`-stubbed pending the three sub-lemmas above. -/
 theorem deficit_first_order (n : ℕ) (hn : 1 ≤ n) :
     ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
       |deficit (1/2 - δ) n - c n * δ| ≤ M * δ ^ 2 := by
-  sorry
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+    match n, hn with
+    | 1, _ =>
+      -- Base case: exact identity, M = 1, δ₀ = 1.
+      refine ⟨1, 1, by norm_num, ?_⟩
+      intro δ _ _
+      rw [deficit_first_order_one]
+      have heq : c 1 * δ - c 1 * δ = 0 := by ring
+      rw [heq, abs_zero]
+      positivity
+    | n + 2, _ =>
+      -- Inductive step: combine the three sub-lemmas.
+      -- The structure of the argument:
+      -- Δ_{n+2, p}  =  ((1/2+δ)^(n+2) - (1/2-δ)^(n+2))/2
+      --            +  ∑_{j=1}^{n+1} C(n+2,j) (1/2-δ)^(n+2-j) (1/2+δ)^j ·
+      --                 suffMinDelta (1/2-δ) j (n+2).
+      -- The first term contributes (n+2)·δ/2^(n+1) + O(δ²) (sub-lemma 1).
+      -- Each summand contributes (C(n+2,j)/2^(n+2)) · suffMin j (n+2) · δ + O(δ²)
+      -- (sub-lemmas 2 and 3 together).
+      -- Sum equals c_{n+2} · δ + O(δ²) by definition (c_succ).
+      sorry
 
 /-- Corollary 4.11 (i): the gap `w(p, n-1) - w(p, n)` has first-order
     coefficient `c_n - c_{n-1}` as `p = 1/2 - δ`, `δ → 0⁺`. -/
