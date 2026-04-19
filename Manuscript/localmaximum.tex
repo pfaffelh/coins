@@ -1,0 +1,489 @@
+\documentclass{article}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}[proposition]{Lemma}
+\newtheorem{corollary}[proposition]{Corollary}
+\newtheorem{conjecture}[proposition]{Conjecture}
+\theoremstyle{definition}
+\newtheorem*{definition*}{Definition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{A condition for a local maximum of $n\mapsto w_{n,p}$}
+\author{}
+\date{2026-04-17}
+
+\begin{document}
+\maketitle
+
+\section*{Setting}
+
+Consider the all-heads-wins game with parameter $p\in(0,1)$: in each round,
+all remaining coins are tossed, at least one coin must be set aside, and
+the game is won iff every set-aside coin shows heads. Let $w_{n,p}$ denote
+the optimal winning probability starting with $n$ coins, $w_{0,p}:=1$.
+By elementary conditioning on the number $j$ of tails in the first round,
+\begin{equation}\label{eq:bellman}
+  w_{n,p}\;=\;p^{n}+\sum_{j=1}^{n-1}\binom{n}{j}p^{\,n-j}(1-p)^{j}\,
+  \max_{j\le m\le n-1}w_{m,p},\qquad n\ge 1.
+\end{equation}
+Throughout, write
+\[
+  M_{n,j}\;:=\;\max_{j\le m\le n-1}w_{m,p}\qquad(1\le j\le n-1).
+\]
+
+\section*{Local maximum}
+
+\begin{definition*}
+We say that $n\mapsto w_{n,p}$ has a \emph{strict local maximum} at
+$n^{\star}\ge 2$ if
+\[
+  w_{n^{\star}-1,p}\;<\;w_{n^{\star},p}\;>\;w_{n^{\star}+1,p}.
+\]
+\end{definition*}
+
+\subsection*{Definitional inequalities}
+
+Directly from the definition, $n^{\star}$ is a strict local maximum iff
+\begin{equation}\label{eq:def}
+  w_{n^{\star},p}-w_{n^{\star}-1,p}>0
+  \quad\text{and}\quad
+  w_{n^{\star},p}-w_{n^{\star}+1,p}>0.
+\end{equation}
+
+\subsection*{Reduction to strategy (B)}
+
+Let $b_{n,p}$ denote the winning probability under strategy~(B) (set aside
+every head). It satisfies the same recursion \eqref{eq:bellman} with the
+$\max_{j\le m\le n-1}w_{m,p}$ replaced by $b_{j,p}$:
+\begin{equation}\label{eq:brec}
+  b_{n,p}\;=\;p^{n}+\sum_{j=1}^{n-1}\binom{n}{j}p^{\,n-j}(1-p)^{j}\,b_{j,p},
+  \qquad b_{0,p}:=1.
+\end{equation}
+
+\begin{lemma}[Reduction]\label{lem:reduction}
+If $(w_{m,p})_{m=1}^{N}$ is monotone non-increasing, then
+$w_{m,p}=b_{m,p}$ for every $m\in\{1,\dots,N\}$.
+\end{lemma}
+
+\begin{proof}
+Induction on $m$. For $m=1$ both sides equal $p$. For $2\le m\le N$, the
+monotonicity hypothesis gives
+$\max_{j\le m'\le m-1}w_{m',p}=w_{j,p}=b_{j,p}$ by the inductive
+hypothesis, so \eqref{eq:bellman} at index $m$ reduces exactly to
+\eqref{eq:brec} at index $m$. \qed
+\end{proof}
+
+\begin{corollary}[First non-monotonicity of $w$ via $b$]\label{cor:firstmax}
+Let $n^{\star}\ge 2$ be the smallest integer with
+$b_{n^{\star},p}>b_{n^{\star}-1,p}$. Then $w_{m,p}=b_{m,p}$ for every
+$m\le n^{\star}$, and
+\begin{equation}\label{eq:first-uptick}
+  w_{n^{\star},p}\;>\;w_{n^{\star}-1,p}.
+\end{equation}
+In particular $n\mapsto w_{n,p}$ is not monotone non-increasing.
+\end{corollary}
+
+\begin{proof}
+By the minimality of $n^{\star}$ in the statement (and by the
+equalities $w_{m,p}=b_{m,p}$ proved below for $m<n^{\star}$),
+$(b_{m,p})_{m=1}^{n^{\star}-1}$ is monotone non-increasing. If
+$(w_{m,p})_{m=1}^{n^{\star}-1}$ is also monotone non-increasing,
+Lemma~\ref{lem:reduction} gives $w_{m,p}=b_{m,p}$ for $m<n^{\star}$; we
+verify this by induction. For $m=1$ both equal $p$. Assume
+$w_{m',p}=b_{m',p}$ for $m'<m\le n^{\star}-1$; then
+$b_{1,p}\ge\dots\ge b_{m-1,p}$ translates to
+$w_{1,p}\ge\dots\ge w_{m-1,p}$, so
+$M_{m,j}=w_{j,p}=b_{j,p}$ in \eqref{eq:bellman}, and~\eqref{eq:bellman}
+reduces to~\eqref{eq:brec}, giving $w_{m,p}=b_{m,p}$. The same
+argument at $m=n^{\star}$ gives $w_{n^{\star},p}=b_{n^{\star},p}$. In
+particular $w_{n^{\star},p}=b_{n^{\star},p}>b_{n^{\star}-1,p}=w_{n^{\star}-1,p}$.
+\qed
+\end{proof}
+
+\begin{remark}
+Corollary~\ref{cor:firstmax} does \emph{not} claim that $n^{\star}$ is
+a strict local maximum of $n\mapsto w_{n,p}$. Indeed, at $p=0.45$ the
+first $b$-uptick occurs at $n^{\star}=7$ (with $b_{7}\approx 0.4111$),
+while the first strict local maximum of $w$ occurs only at $n=15$;
+between $n^{\star}$ and $15$ the sequence $w_{n,p}$ continues to
+increase (through further $b$-upticks). Pinning down the location of
+a local maximum requires running the Bellman recursion past
+$n^{\star}$.
+\end{remark}
+
+\section*{Uniform upper bounds on $w_{n,p}$ for $p<\tfrac12$}
+
+The Bellman value never exceeds $w_{1,p}=p$ for $n\ge 2$, and never
+exceeds $w_{2,p}$ for $n\ge 3$. Both bounds follow by direct
+induction on the Bellman.
+
+\begin{proposition}[$w_{n,p}<p$ for every $n\ge 2$, $p<\tfrac12$]\label{prop:wn-bounded-by-p}
+Let $p\in(0,\tfrac12)$ and $q:=1-p$. Then for every $n\ge 2$,
+\begin{equation}\label{eq:wn-bound}
+  w_{n,p}\;\le\;p-pq\bigl(q^{n-1}-p^{n-1}\bigr)\;<\;p\;=\;w_{1,p},
+\end{equation}
+with equality at $n=2$.
+\end{proposition}
+
+\begin{proof}
+By induction on $n$.
+
+\emph{Base $n=2$.} Strategies (A) and (B) coincide on $n=2$ and give
+$w_{2,p}=p^2(3-2p)$. Hence
+$p-w_{2,p}=p\bigl(1-3p+2p^{2}\bigr)=p(1-p)(1-2p)=pq(q-p)=pq(q^{1}-p^{1})$.
+This is positive for $p\in(0,\tfrac12)$ and matches~\eqref{eq:wn-bound}
+with equality.
+
+\emph{Induction step} ($n\ge 3$). Assume $w_{m,p}<p$ for every
+$m\in\{2,\dots,n-1\}$, so that
+$\max_{j\le m\le n-1}w_{m,p}=w_{1,p}=p$ when $j=1$ (the unique
+maximizer is $m=1$) and $\max_{j\le m\le n-1}w_{m,p}<p$ when $j\ge 2$
+(the range excludes $1$). Substituting in the Bellman~\eqref{eq:bellman}
+and using strictness for $j\ge 2$ (the sum is non-empty since
+$n\ge 3$):
+\begin{align*}
+  w_{n,p}
+  &\;<\;p^n+\binom{n}{1}p^{n-1}q\cdot p
+       +p\sum_{j=2}^{n-1}\binom{n}{j}p^{n-j}q^{j}\\
+  &\;=\;p^n+np^nq+p\bigl(1-p^n-np^{n-1}q-q^n\bigr)\\
+  &\;=\;p+p^nq-pq^n
+   \;=\;p-pq\bigl(q^{n-1}-p^{n-1}\bigr),
+\end{align*}
+where the second equality uses
+$\sum_{j=2}^{n-1}\binom{n}{j}p^{n-j}q^{j}=1-p^n-np^{n-1}q-q^n$ (from
+the binomial theorem). The right-hand side is $<p$ because $q>p$ for
+$p<\tfrac12$, hence $q^{n-1}>p^{n-1}$.\qed
+\end{proof}
+
+The same induction template, with $w_{2,p}$ in place of $w_{1,p}$,
+yields a strictly tighter bound.
+
+\begin{proposition}[$w_{n,p}<w_{2,p}$ for every $n\ge 3$, $p<\tfrac12$]\label{prop:wn-bounded-by-w2}
+Let $p\in(0,\tfrac12)$. For every $n\ge 3$,
+\begin{equation}\label{eq:wn-bound2}
+  w_{n,p}\;\le\;w_{2,p}-p^{2}q^{2}\,G_{n}(p)\;<\;w_{2,p},
+\end{equation}
+where
+\begin{equation}\label{eq:Gn-def}
+  G_{n}(p)\;:=\;q^{\,n-2}(3-2p)-p^{\,n-2}\bigl[(n+1)-2p(n-1)\bigr].
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+\emph{Step~1: setup.} By induction on $n$ assume $w_{m,p}\le w_{2,p}$
+for $3\le m\le n-1$. Combined with
+Proposition~\ref{prop:wn-bounded-by-p} ($w_{m,p}<p=w_{1,p}$ for
+$m\ge 2$) the Bellman maxes split:
+\begin{itemize}
+  \item $j=1$: $\max_{1\le m\le n-1}w_{m,p}=w_{1,p}=p$;
+  \item $j=2$: $\max_{2\le m\le n-1}w_{m,p}=w_{2,p}$ (by the induction
+        hypothesis, $w_{m,p}\le w_{2,p}$ for $m\ge 3$);
+  \item $j\ge 3$: $\max_{j\le m\le n-1}w_{m,p}\le w_{2,p}$ (induction
+        hypothesis, strict for $n\ge 4$).
+\end{itemize}
+Substituting in~\eqref{eq:bellman} and using
+$\sum_{j=2}^{n-1}\binom{n}{j}p^{n-j}q^{j}=1-p^n-np^{n-1}q-q^n$:
+\[
+  w_{n,p}\;\le\;\bar w_n\;:=\;p^n(1+nq)+w_{2,p}\bigl(1-p^n-np^{n-1}q-q^n\bigr).
+\]
+
+\emph{Step~2: reduction to $G_{n}(p)>0$.} Using
+$p-w_{2,p}=pq(1-2p)$ and grouping,
+$\bar w_n-w_{2,p}=-p^{2}q^{2}\,G_{n}(p)$, so $\bar w_n<w_{2,p}$
+iff $G_n(p)>0$.
+
+\emph{Step~3: $G_{n}(p)>0$ on $(0,\tfrac12)$ for $n\ge 3$.} By a
+second induction on $n$, with the algebraic identity
+\begin{equation}\label{eq:Gn-rec}
+  G_{n}(p)-q\,G_{n-1}(p)\;=\;p^{\,n-3}(1-2p)\bigl[3p+n(q-p)\bigr]
+  \qquad(n\ge 4),
+\end{equation}
+which is verified directly. For $p\in(0,\tfrac12)$, both factors
+$(1-2p)$ and $[3p+n(q-p)]$ are positive. Base case:
+$G_{3}(p)=q\bigl[(3-2p)-4p\bigr]=3q(1-2p)>0$. Inductive step:
+$G_{n}(p)=qG_{n-1}(p)+p^{n-3}(1-2p)[3p+n(q-p)]>qG_{n-1}(p)>0$.
+
+\emph{Step~4: conclude.} $w_{n,p}\le\bar w_{n}=w_{2,p}-p^{2}q^{2}G_{n}(p)<w_{2,p}$.\qed
+\end{proof}
+
+\begin{remark}
+The cancellation in Step~2 — which collapses the
+$\binom{n}{2}p^{n-2}q^{2}$ terms — is what allows the induction to
+bootstrap from $w_{2,p}$ rather than just from $w_{1,p}=p$. The
+recursion~\eqref{eq:Gn-rec} is the algebraic engine: it says
+$G_{n}-qG_{n-1}$ equals an explicitly positive quantity on
+$(0,\tfrac12)$, so the strict positivity of $G_{n}$ propagates upward
+in $n$.
+\end{remark}
+
+Empirically, for every tested $p\in(0.05,0.5)$ at finite horizon
+$n_{\max}\le 300$, the Bellman sequence has many strict local maxima,
+all with values $w_{N,p}<w_{2,p}$ — consistent with
+Propositions~\ref{prop:wn-bounded-by-p}--\ref{prop:wn-bounded-by-w2}.
+The set of running-maximum indices of $(w_{n,p})_{n\ge 1}$ is
+exactly $\{1\}$ for every tested $p\in(0,\tfrac12)$.
+
+\subsection*{Attempt to extend to $w_{n,p}<w_{3,p}$}
+
+The natural next step is the bound $w_{n,p}<w_{3,p}$ for $n\ge 4$,
+$p<\tfrac12$. Numerically the bound holds for every tested
+$(n,p)$. The same induction template — but now with a fourth bucket
+$j=3$ — gives, after grouping,
+\begin{equation}\label{eq:bar-w-w3}
+  \bar w_n - w_{3,p}\;=\;p^{3}q^{2}\,(2p-1)\,R_n(p),
+\end{equation}
+where $R_n$ is an explicit polynomial in $p$ of degree $n$ with
+$R_n(0)=13$ and $R_n(\tfrac12)\ge 0$. The bound $\bar w_n\le w_{3,p}$
+is therefore equivalent (since $(2p-1)<0$ on $(0,\tfrac12)$) to
+$R_n(p)>0$ on $(0,\tfrac12)$.
+
+\begin{proposition}[partial result on $w_n<w_3$]\label{prop:wn-bounded-by-w3-partial}
+For every $p\in(0,\tfrac12)$ and every $n\in\{4,\dots,12\}$,
+$w_{n,p}<w_{3,p}$.
+\end{proposition}
+
+\emph{Sketch.} Same as Proposition~\ref{prop:wn-bounded-by-w2}: the
+Bellman maxes split as $j=1\Rightarrow w_1$, $j=2\Rightarrow w_2$,
+$j=3\Rightarrow w_3$, $j\ge 4\Rightarrow$ value bounded by $w_3$ via
+the induction hypothesis. Substituting and identifying the
+sum~$\sum_{j=3}^{n-1}\binom{n}{j}p^{n-j}q^{j}=1-p^n-q^n-np^{n-1}q-\binom{n}{2}p^{n-2}q^{2}$
+yields~\eqref{eq:bar-w-w3}. The polynomial $R_n$ is then verified to
+be positive on the entire interval $(0,\tfrac12)$ by direct
+real-roots computation for each $n\in\{4,\dots,12\}$.\qed
+
+\begin{remark}[Breakdown for $n\ge 13$ near $p=\tfrac12$]
+Unlike $G_n$ in Proposition~\ref{prop:wn-bounded-by-w2}, the
+polynomial $R_n$ does \emph{not} satisfy a clean positivity-preserving
+recursion of the form $R_n - qR_{n-1}=(\text{positive})$. Numerically,
+for $n\ge 13$ the polynomial $R_n$ acquires a single real root
+$p_n\in(0,\tfrac12)$ that drifts towards $\tfrac12$ from below as $n$
+grows ($p_{13}\approx 0.4978$, $p_{20}\approx 0.4911$,
+$p_{24}\approx 0.4900$). Hence the bound $\bar w_n\le w_{3,p}$
+\emph{fails} on the subinterval $(p_n,\tfrac12)$ for $n\ge 13$,
+even though numerically the sharper claim $w_{n,p}<w_{3,p}$ continues
+to hold throughout. Closing the gap for $n\ge 13$ requires a tighter
+induction (e.g.\ chaining further bounds $w_{m,p}\le w_{4,p},w_{5,p},\dots$)
+to refine the $j\ge 4$ contributions.
+\end{remark}
+
+\section*{A tool for finding local maxima}
+
+Corollary~\ref{cor:firstmax} reduces the problem of locating a local
+maximum of the \emph{Bellman} value function $w$ to the (much simpler)
+problem of detecting non-monotonicity of the \emph{strategy-(B)} sequence
+$b$. Strategy (B) has no $\max$ in its recursion~\eqref{eq:brec}; it is
+linear in the previous values. We record a few identities and structural
+observations that make the tool tangible.
+
+Throughout, set $q:=1-p$.
+
+\subsection*{A probabilistic identity}
+
+\begin{proposition}[Binomial-mixture identity]\label{prop:binmix}
+For every $n\ge 1$ and $p\in(0,1)$,
+\begin{equation}\label{eq:binmix}
+  (1+q^{n})\,b_{n,p}\;=\;\mathbb E\bigl[b_{J,p}\bigr],
+  \qquad J\sim\mathrm{Binomial}(n,q).
+\end{equation}
+Equivalently, $\mathbb E\bigl[b_{J,p}-b_{n,p}\bigr]=q^{n}b_{n,p}$.
+\end{proposition}
+
+\begin{proof}
+Starting from the recursion \eqref{eq:brec} with $b_{0,p}=1$ and noting
+that the $j=n$ term in the binomial expansion equals $q^{n}b_{n,p}$,
+\begin{align*}
+  b_{n,p}
+  &=\sum_{j=0}^{n-1}\binom{n}{j}p^{\,n-j}q^{j}\,b_{j,p}
+  \;=\;\sum_{j=0}^{n}\binom{n}{j}p^{\,n-j}q^{j}\,b_{j,p}-q^{n}b_{n,p}\\
+  &=\mathbb E\bigl[b_{J,p}\bigr]-q^{n}b_{n,p}.\qed
+\end{align*}
+\renewcommand{\qed}{}
+\end{proof}
+
+\subsection*{Polynomial structure}
+
+Writing $b_{n,p}=p^{n}P_{n}(q)$, the recursion~\eqref{eq:brec} becomes
+\begin{equation}\label{eq:Prec}
+  P_{n}(q)\;=\;\sum_{j=0}^{n-1}\binom{n}{j}q^{j}\,P_{j}(q),\qquad P_{0}:=1.
+\end{equation}
+
+\begin{proposition}\label{prop:Pstruct}
+$P_{n}(q)$ is a polynomial in $q$ of degree $\binom{n}{2}$ with
+\emph{non-negative integer} coefficients. Moreover
+\[
+  P_{n}(0)=1,\qquad P_{n}(1)=F_{n},\qquad P_{n}(\tfrac12)=2^{\,n-1},
+\]
+where $F_{n}=1,1,3,13,75,541,\dots$ is the $n$-th Fubini number
+(ordered Bell number, \emph{OEIS~A000670}).
+\end{proposition}
+
+\begin{proof}
+The recursion~\eqref{eq:Prec} is linear with non-negative integer
+coefficients and $P_{0}=1$, so induction gives
+non-negative integer coefficients. The degree recursion
+$\deg P_{n}=(n-1)+\deg P_{n-1}$, with $\deg P_{1}=0$, gives
+$\deg P_{n}=\binom{n}{2}$.
+
+$P_{n}(0)$: only the $j=0$ term contributes at $q=0$, giving
+$\binom{n}{0}P_{0}(0)=1$.
+
+$P_{n}(1)$: at $q=1$, \eqref{eq:Prec} becomes
+$P_{n}(1)=\sum_{j=0}^{n-1}\binom{n}{j}P_{j}(1)$, which is the defining
+recursion of the Fubini numbers (with $F_{0}=1$).
+
+$P_{n}(1/2)$: $b_{n,1/2}=\tfrac12$ for all $n\ge 1$, so
+$P_{n}(1/2)=b_{n,1/2}/(1/2)^{n}=2^{\,n-1}$. \qed
+\end{proof}
+
+\subsection*{An exponential generating function}
+
+\begin{proposition}
+Let $G(x):=\sum_{n\ge 0}b_{n,p}\,x^{n}/n!$. Then
+\begin{equation}\label{eq:egf}
+  G(x)\;=\;1+(e^{px}-1)\,G(qx)
+  \;=\;\sum_{k\ge 0}\prod_{i=0}^{k-1}\bigl(e^{pq^{i}x}-1\bigr).
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Multiply the recursion~\eqref{eq:brec} by $x^{n}/n!$ and sum over
+$n\ge 1$; exchange orders of summation and identify
+$\sum_{n>j}(px)^{n-j}/(n-j)!=e^{px}-1$. Iterating $G(x)=1+(e^{px}-1)G(qx)$
+and noting that the remainder term
+$\prod_{i=0}^{k-1}(e^{pq^{i}x}-1)\,G(q^{k}x)\to 0$ as $k\to\infty$
+(since $e^{pq^{i}x}-1\sim pq^{i}x$ for large $i$), the product expansion
+follows. \qed
+\end{proof}
+
+\subsection*{Small-$p$ heuristic}
+
+At leading order in $p\to 0^{+}$, \eqref{eq:Prec} evaluated at $q\to 1$
+gives $P_{n}(1)=F_{n}$ and hence
+\[
+  b_{n,p}\;\sim\;F_{n}\,p^{n}\qquad(p\to 0^{+},\ n\text{ fixed}).
+\]
+Fubini numbers satisfy $F_{n}/F_{n-1}\to n/\log 2$, so
+\[
+  \frac{b_{n,p}}{b_{n-1,p}}\;\sim\;p\cdot\frac{F_{n}}{F_{n-1}}\;\sim\;\frac{np}{\log 2}
+  \qquad(p\to 0^{+},\ n\text{ fixed}).
+\]
+This formally predicts $b_{n,p}>b_{n-1,p}$ for $n>(\log 2)/p$. The
+prediction is \emph{qualitatively} right but quantitatively much too
+optimistic: the Taylor expansion in $p$ is pointwise (fixed $n$, $p\to 0$),
+whereas the first monotonicity failure $n_{\mathrm{fail}}(p)$ diverges
+with $n$ and the corrections of order $p^{n+1},p^{n+2},\dots$ cannot be
+ignored. Empirically $n_{\mathrm{fail}}(p)\asymp p^{-2.2}$, not $p^{-1}$.
+
+\section*{Toward a general proof}
+
+\subsection*{Reformulation}
+
+Combining the tool of Corollary~\ref{cor:firstmax} with
+Proposition~\ref{prop:Pstruct}, our open conjecture admits the following
+purely analytic reformulation.
+
+\begin{conjecture}\label{conj:main}
+For every $p\in(0,\tfrac12)$, the sequence $(b_{n,p})_{n\ge 1}$ is
+\emph{not} monotone non-increasing in $n$. Equivalently, for every
+$q\in(\tfrac12,1)$ there exists $n\ge 2$ such that
+\begin{equation}\label{eq:conj}
+  (1-q)\,P_{n}(q)\;>\;P_{n-1}(q),
+\end{equation}
+where $P_{n}$ is the polynomial of Proposition~\ref{prop:Pstruct}.
+\end{conjecture}
+
+By Corollary~\ref{cor:firstmax}, Conjecture~\ref{conj:main} implies that
+$n\mapsto w_{n,p}$ has a strict local maximum for every $p\in(0,\tfrac12)$.
+
+\subsection*{What is known}
+
+We collect what can be proved toward Conjecture~\ref{conj:main}.
+
+\emph{Boundary.} At $q=\tfrac12$ (i.e.\ $p=\tfrac12$),
+Proposition~\ref{prop:Pstruct} gives
+$(1-q)P_{n}(q)=\tfrac12\cdot 2^{n-1}=2^{n-2}=P_{n-1}(\tfrac12)$ for every
+$n\ge 2$, so~\eqref{eq:conj} is an equality — the symmetric case is the
+boundary at which (B) is marginally monotone ($b_{n,1/2}=\tfrac12$ for
+all $n$).
+
+\emph{At $q=1$.} $P_{n}(1)=F_{n}$, Fubini numbers, and $F_{n}/F_{n-1}\to\infty$,
+so $(1-q)P_{n}(q)/P_{n-1}(q)\to\infty$ as $q\uparrow 1$ for every
+$n\ge 2$; the inequality \eqref{eq:conj} is (trivially) satisfied in a
+suitable limit.
+
+\emph{Known specific $p$.} For $p=21/50$, the exact rational calculation
+of \cite{proof_p042} gives $w_{9}>w_{8}$; by Corollary~\ref{cor:firstmax}
+this is equivalent to $b_{9,21/50}>b_{8,21/50}$, i.e.~\eqref{eq:conj}
+holds at $q=29/50$, $n=9$.
+
+\emph{Asymptotic limit of $b$.} If $(b_{n,p})$ were monotone
+non-increasing for all $n\ge 1$, then $b_{n,p}\downarrow L$ for some
+$L\ge 0$, and Proposition~\ref{prop:binmix} together with bounded
+convergence gives $(1+q^{n})b_{n,p}=\mathbb E[b_{J,p}]\to L$; the limit
+relation is therefore self-consistent (no direct contradiction).
+
+\subsection*{A reduced identity for the forward difference}
+
+Let $\Delta b_{n}:=b_{n,p}-b_{n-1,p}$. From \eqref{eq:binmix} at indices
+$n$ and $n-1$,
+\begin{align*}
+  (1+q^{n})b_{n,p}-(1+q^{n-1})b_{n-1,p}
+  &=\mathbb E\bigl[b_{J_{n},p}\bigr]-\mathbb E\bigl[b_{J_{n-1},p}\bigr]\\
+  &=q\,\mathbb E\bigl[b_{J_{n-1}+1,p}-b_{J_{n-1},p}\bigr]\\
+  &=q\,\mathbb E\bigl[\Delta b_{J_{n-1}+1}\bigr],
+\end{align*}
+using the coupling $J_{n}\stackrel{d}{=}J_{n-1}+\mathrm{Bern}(q)$. The
+left-hand side expands as $\Delta b_{n}+q^{n-1}(qb_{n,p}-b_{n-1,p})$, so
+\begin{equation}\label{eq:forwarddiff}
+  \boxed{\;\Delta b_{n}
+  \;=\;q\,\mathbb E\bigl[\Delta b_{J_{n-1}+1}\bigr]
+  +q^{n-1}\bigl(b_{n-1,p}-q\,b_{n,p}\bigr).\;}
+\end{equation}
+Identity~\eqref{eq:forwarddiff} expresses the target quantity
+$\Delta b_{n}$ as a \emph{binomial-weighted average} of earlier
+$\Delta b_{\bullet}$'s plus an explicit positive correction of order
+$q^{n-1}$. If $(b_{n,p})$ were monotone non-increasing, then
+$\Delta b_{\bullet}\le 0$, the first term of~\eqref{eq:forwarddiff}
+would be $\le 0$, and the second would be
+$q^{n-1}(b_{n-1,p}-qb_{n,p})\ge q^{n-1}(1-q)b_{n-1,p}>0$.
+
+Thus Conjecture~\ref{conj:main} reduces to the following.
+
+\begin{conjecture}[equivalent to Conjecture~\ref{conj:main}]\label{conj:equiv}
+For every $p\in(0,\tfrac12)$ there exists $n$ such that
+\[
+  q\,\mathbb E\bigl[(-\Delta b_{J_{n-1}+1})\bigr]
+  \;<\;q^{n-1}\bigl(b_{n-1,p}-q\,b_{n,p}\bigr).
+\]
+\end{conjecture}
+
+Both sides of the inequality tend to $0$, but the right-hand side decays
+like $q^{n-1}\cdot p\cdot b_{n-1,p}$ (still assuming monotone
+non-increasing, so $b_{n-1,p}\ge L\ge 0$), whereas the left-hand side is
+a binomial average of past decrements; a precise rate comparison is the
+missing step.
+
+\subsection*{Status}
+
+Conjecture~\ref{conj:main} — and hence the analytic existence of a
+strict local maximum of $n\mapsto w_{n,p}$ for every $p\in(0,\tfrac12)$
+— remains open. The attack via \eqref{eq:forwarddiff} is the cleanest
+route so far: it requires only control on the \emph{sizes} of past
+decrements $|\Delta b_{j}|$ weighted by a binomial measure, compared
+against an explicit exponentially small positive term. A quantitative
+estimate of the form
+\[
+  \sum_{j=1}^{n-1}\binom{n-1}{j}p^{\,n-1-j}q^{j}\cdot|\Delta b_{j}|
+  \;=\;o\bigl(q^{n-1}\cdot p\cdot b_{n-1,p}\bigr)
+\]
+along some subsequence $n\to\infty$ would close the argument.
+
+\begin{thebibliography}{9}
+\bibitem{proof_p042}\emph{An explicit $(n,k)$ at which the optimal strategy is neither (A) nor (B)},
+  \texttt{Manuscript/proof\_intermediate\_p042.tex}, 2026.
+\end{thebibliography}
+
+\end{document}

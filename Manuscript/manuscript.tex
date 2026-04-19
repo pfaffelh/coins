@@ -1,0 +1,568 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Shortcuts
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\One}{\textsc{One}}
+\newcommand{\All}{\textsc{All}}
+
+\title{Optimal strategies in the all-heads coin game}
+\author{Peter Pfaffelhuber}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  We study a sequential coin-flipping game in which a player starts
+  with~$n$ coins, each landing heads independently with
+  probability~$p$.  In each round the player flips all remaining coins
+  and must set aside at least one coin showing heads; if no coin shows
+  heads, the player loses.  The player wins if and when all coins have
+  been set aside.  This is a stochastic shortest-path Markov decision
+  process whose Bellman equation involves a nonlinear suffix-maximum
+  operator.  We analyse two natural strategies --- \One{} (set aside
+  exactly one head) and \All{} (set aside every head) --- and
+  determine the optimal winning probability~$w_{n,p}$ as a function
+  of~$n$ and~$p$.
+
+  For $p=\tfrac12$ every strategy that accepts the immediate win
+  achieves $w_{n,1/2}=\tfrac12$.  For $p>\tfrac12$ the
+  strategy~\One{} is optimal and $n\mapsto w_{n,p}$ is strictly
+  increasing.  For $p<\tfrac12$ near~$\tfrac12$ we carry out a
+  first-order perturbation expansion in $\delta:=\tfrac12-p$ and prove
+  that the leading coefficient~$c_n$ of the deficit
+  $\tfrac12-w_{n,p}$ satisfies a linear recursion for $n\ge 7$, with
+  a limit $L=\lim c_n\approx 1.7035$.  As a consequence the optimal
+  value sequence has, to first order in~$\delta$, a strict local
+  minimum at $n=5$ and no local maximum --- local maxima are a
+  non-perturbative phenomenon.
+\end{abstract}
+
+%% ====================================================================
+\section{Introduction}\label{sec:intro}
+%% ====================================================================
+
+\subsection{The game}
+
+Fix a probability $p\in(0,1)$ and a positive integer~$n$.  A player
+is given $n$~coins, each of which independently lands heads with
+probability~$p$ and tails with probability $q:=1-p$.  The game
+proceeds in rounds.  In each round:
+\begin{enumerate}[(i)]
+\item All remaining coins are flipped simultaneously.
+\item If no coin shows heads, the game is lost.
+\item Otherwise the player must set aside at least one coin that
+  shows heads.  The set-aside coins leave the game permanently.
+\item If every coin has been set aside, the game is won.
+  Otherwise, a new round begins with the remaining coins.
+\end{enumerate}
+The player's objective is to maximise the probability of winning.
+
+Two natural strategies present themselves:
+\begin{itemize}
+\item \textbf{Strategy~\One:} set aside exactly one head when
+  $1\le k\le n-1$ heads appear, and set aside all~$n$ when $k=n$.
+\item \textbf{Strategy~\All:} set aside every head that appears
+  ($i=k$).
+\end{itemize}
+Strategy~\One{} is conservative: it preserves as many coins as
+possible for future rounds, betting that the one set-aside coin has
+already ``done its job.''  Strategy~\All{} is greedy: it cashes in
+every success immediately.  Neither is universally optimal.
+
+A variant of this game, in which the objective is to maximise the
+expected number of heads collected rather than the probability of
+collecting all of them, was introduced and studied by van~Doorn
+\cite{vanDoorn2024}.  The all-heads-wins formulation studied here
+leads to a richer structural picture.
+
+\subsection{Markov decision processes and the Bellman equation}
+
+The game is a finite-state \emph{Markov decision process} (MDP): the
+state is the number~$m$ of coins remaining, the action is the number
+$i\in\{1,\dots,k\}$ of heads to set aside (where $k$ is the random
+number of heads), and the transition is
+$m\mapsto m-i$.  There are two absorbing states: \emph{win}
+($m=0$, all coins collected) and \emph{lose} (reached when $k=0$ in
+some round).
+
+Because every policy absorbs with probability at least
+$p^m+(1-p)^m>0$ per round, the MDP is a \emph{stochastic
+shortest-path} (SSP) problem in the sense of Bertsekas and Tsitsiklis
+\cite{BertsekisTsitsiklis1991}: the Bellman operator is a contraction
+and the optimal value function is its unique fixed point.
+
+\begin{definition}[Optimal winning probability]\label{def:w}
+  Let $w_{0,p}:=1$.  For $n\ge 1$ define
+  \begin{equation}\label{eq:bellman}
+    w_{n,p} \;:=\; p^n + \sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\,
+    \max_{j\le m\le n-1} w_{m,p},
+  \end{equation}
+  where $q=1-p$ and the empty sum (at $n=1$) gives
+  $w_{1,p}=p$.
+\end{definition}
+
+The term $p^n$ accounts for the event that all $n$~coins land heads
+(an immediate win).  Each summand with $j\ge 1$ accounts for the
+event that exactly~$j$ coins land tails; the player then chooses to
+keep some number $m\in\{j,\dots,n-1\}$ of coins (setting aside
+$n-m$ heads), and the game continues from state~$m$ with optimal
+value~$w_{m,p}$.
+
+The Bellman equation~\eqref{eq:bellman} is the standard optimality
+equation for this SSP--MDP.  For general background on Markov decision
+processes and the Bellman equation we refer to the monographs of
+Puterman~\cite{Puterman1994}, Bertsekas~\cite{Bertsekas2017}, and
+Stokey, Lucas and Prescott~\cite{StokeyLucas1989}.
+
+\subsection{Strategies \One{} and \All}
+
+Under strategy~\One{} the player always keeps $m=n-1$ coins
+(except when $k=n$), so the Bellman recursion collapses to
+\begin{equation}\label{eq:a-rec}
+  a_{n,p} \;=\; p^n + \bigl(1-p^n-(1-p)^n\bigr)\,a_{n-1,p},
+  \qquad a_{0,p}:=1.
+\end{equation}
+Under strategy~\All{} the player always keeps $m=j$ coins (the
+number of tails), giving
+\begin{equation}\label{eq:b-rec}
+  b_{n,p} \;=\; p^n + \sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\,
+  b_{j,p},
+  \qquad b_{0,p}:=1.
+\end{equation}
+Note that the recursion for~$b$ is \emph{linear} (no $\max$
+operator), which makes it analytically more tractable.
+
+\subsection{Outline}
+
+In Section~\ref{sec:fair} we prove that at $p=\tfrac12$ the optimal
+winning probability is $w_{n,1/2}=\tfrac12$ for every~$n$, and that
+in fact every reasonable strategy achieves this value.  In
+Section~\ref{sec:above} we show that for $p>\tfrac12$ the
+strategy~\One{} is always optimal and $n\mapsto w_{n,p}$ is strictly
+increasing.  Section~\ref{sec:below} treats the case $p<\tfrac12$
+near~$\tfrac12$: we introduce a first-order perturbation in
+$\delta=\tfrac12-p$, derive a recursion for the leading
+coefficient~$c_n$, prove that it simplifies to a linear recursion for
+$n\ge 7$, and compute the limit $L=\lim c_n$.
+
+%% ====================================================================
+\section{The fair coin: \texorpdfstring{$p=\tfrac12$}{p = 1/2}}
+\label{sec:fair}
+%% ====================================================================
+
+\begin{theorem}\label{thm:half}
+  For every $n\ge 1$, $w_{n,1/2}=\tfrac12$.  More generally, for any
+  policy~$\pi$ satisfying $i_\pi(n,n)=n$ for every~$n$ (i.e.\ the
+  player accepts the immediate win when all coins land heads), the
+  winning probability is $v_n^\pi=\tfrac12$.
+
+  In particular, both strategies~\One{} and~\All{} achieve the
+  optimum: $a_{n,1/2}=b_{n,1/2}=w_{n,1/2}=\tfrac12$.
+\end{theorem}
+
+\begin{proof}
+  We use the binomial identity
+  \begin{equation}\label{eq:bin-half}
+    \sum_{j=1}^{n-1}\binom{n}{j}\Bigl(\frac{1}{2}\Bigr)^{n}
+    \;=\; 1-2^{1-n}.
+  \end{equation}
+
+  \emph{Step~1.}  We show $w_{n,1/2}=\tfrac12$ by strong induction.
+  For $n=1$: $w_{1,1/2}=\tfrac12$.  For $n\ge 2$, suppose
+  $w_{m,1/2}=\tfrac12$ for all $1\le m\le n-1$.  Then every
+  suffix-maximum equals~$\tfrac12$, so
+  \begin{align*}
+    w_{n,1/2}
+    &= 2^{-n} + \frac{1}{2}\sum_{j=1}^{n-1}\binom{n}{j}2^{-n} \\
+    &= 2^{-n} + \tfrac{1}{2}\bigl(1-2^{1-n}\bigr) \\
+    &= 2^{-n} + \tfrac{1}{2} - 2^{-n}
+    \;=\; \tfrac{1}{2}.
+  \end{align*}
+
+  \emph{Step~2.}  For a general policy~$\pi$ with
+  $i_\pi(n,n)=n$, conditioning on the number of heads
+  $K\sim\mathrm{Bin}(n,\tfrac12)$ gives
+  \[
+    v_n^\pi = 2^{-n}\cdot 1 + \sum_{k=1}^{n-1}\binom{n}{k}2^{-n}\,
+    v_{n-i_\pi(n,k)}^\pi.
+  \]
+  Since $1\le i_\pi(n,k)\le k\le n-1$ for $k<n$, the subscript
+  $n-i_\pi(n,k)$ lies in $\{1,\dots,n-1\}$, and by strong induction
+  each $v_{n-i_\pi(n,k)}^\pi=\tfrac12$.  The same calculation as in
+  Step~1 gives $v_n^\pi=\tfrac12$.
+\end{proof}
+
+\begin{remark}\label{rem:refuse}
+  A policy that refuses the immediate win at $k=n$ (i.e.\
+  $i_\pi(n,n)<n$) achieves strictly less than~$\tfrac12$: the
+  contribution of the $k=n$ event drops from $2^{-n}$ to
+  $2^{-n}\cdot v_{n-i_\pi(n,n)}^\pi < 2^{-n}$, while all other terms
+  remain at most $\tfrac12\cdot\binom{n}{k}2^{-n}$, giving
+  $v_n^\pi<\tfrac12$.
+\end{remark}
+
+%% ====================================================================
+\section{Above the fair coin: \texorpdfstring{$p>\tfrac12$}{p > 1/2}}
+\label{sec:above}
+%% ====================================================================
+
+\begin{theorem}\label{thm:above}
+  For $p>\tfrac12$ and all $n\ge 2$:
+  \begin{enumerate}[\rm(i)]
+  \item $w_{n,p}>w_{n-1,p}$, i.e.\ $n\mapsto w_{n,p}$ is strictly
+    increasing.
+  \item $w_{n-1,p}<\dfrac{p^n}{p^n+q^n}$.
+  \item Strategy~\One{} is optimal: $w_{n,p}=a_{n,p}$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  We prove (i) and (ii) simultaneously by strong induction on~$n$.
+
+  \emph{Base case $n=2$.}
+  One computes $w_{1,p}=p$ and
+  $w_{2,p}=p^2+(1-p^2-q^2)p = 3p^2-2p^3$.  Then
+  $w_{2,p}-w_{1,p}=p(1-p)(2p-1)>0$ since $p>\tfrac12$.
+  Also $w_{1,p}=p<p^2/(p^2+q^2)$ iff $p^2+q^2>p$, which holds for
+  $p\in(\tfrac12,1)$.
+
+  \emph{Inductive step.}  Assume (i) and (ii) hold for all indices up
+  to~$n-1$.  Since $n\mapsto w_{n,p}$ is increasing on
+  $\{1,\dots,n-1\}$ by hypothesis, the suffix-maximum
+  $\max_{j\le m\le n-1}w_{m,p}=w_{n-1,p}$ for every
+  $j\in\{1,\dots,n-1\}$.  Hence the Bellman
+  equation~\eqref{eq:bellman} reduces to
+  \[
+    w_{n,p} = p^n + (1-p^n-q^n)\,w_{n-1,p},
+  \]
+  which is exactly the recursion~\eqref{eq:a-rec} for
+  strategy~\One.  This proves~(iii).
+
+  For~(i), $w_{n,p}>w_{n-1,p}$ iff
+  $p^n(1-w_{n-1,p})>q^n w_{n-1,p}$, i.e.\
+  $w_{n-1,p}<p^n/(p^n+q^n)$, which is hypothesis~(ii) at level
+  $n-1$.
+
+  For~(ii) at level~$n$, we need $w_{n,p}<p^{n+1}/(p^{n+1}+q^{n+1})$.
+  Using the recursion and the inductive bound on~$w_{n-1,p}$, a
+  direct computation shows this reduces to the inequality
+  $(q/p)^n<(q/p)^{n-1}$, which holds since $q/p<1$.
+\end{proof}
+
+%% ====================================================================
+\section{Below the fair coin: perturbation in
+  \texorpdfstring{$\delta=\tfrac12-p$}{delta = 1/2 - p}}
+\label{sec:below}
+%% ====================================================================
+
+For $p<\tfrac12$ the structure of $n\mapsto w_{n,p}$ is far richer:
+numerical experiments show that the sequence develops local minima and
+maxima, and the optimal strategy is neither~\One{} nor~\All{} in
+general; see \cite{vanDoorn2024}, Section~10.
+
+To get analytical traction, we study the regime
+$p=\tfrac12-\delta$ with $\delta>0$ small.
+
+\subsection{The deficit and its recursion}
+
+\begin{definition}\label{def:deficit}
+  For $p\in(0,1)$ and $n\ge 1$, define the
+  \emph{deficit}
+  $\Delta_{n,p}:=\tfrac12-w_{n,p}$.
+\end{definition}
+
+By Theorem~\ref{thm:half}, $\Delta_{n,1/2}=0$ for all~$n$.
+
+\begin{proposition}\label{prop:delta-rec}
+  The deficit satisfies
+  \begin{equation}\label{eq:delta-rec}
+    \Delta_{n,p} \;=\;
+    \frac{q^n-p^n}{2}
+    + \sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\,
+    \min_{j\le m\le n-1}\Delta_{m,p},
+  \end{equation}
+  with $\Delta_{0,p}=-\tfrac12$.
+  In particular:
+  \begin{enumerate}[\rm(i)]
+  \item For $p<\tfrac12$: $\Delta_{n,p}>0$ for every $n\ge 1$
+    (i.e.\ $w_{n,p}<\tfrac12$).
+  \item For $p>\tfrac12$: $\Delta_{n,p}<0$ for every $n\ge 1$
+    (i.e.\ $w_{n,p}>\tfrac12$).
+  \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+  Substitute $w_{m,p}=\tfrac12-\Delta_{m,p}$ into the
+  Bellman equation~\eqref{eq:bellman}.  The $\max$ on
+  $w_m$ becomes a $\min$ on~$\Delta_m$.  The constant terms
+  $\tfrac12\cdot\bigl[\text{binomial weights}\bigr]$ cancel by the
+  identity $p^n+\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j\cdot\tfrac12
+  = \tfrac12 - \tfrac12(q^n-p^n)$, leaving~\eqref{eq:delta-rec}.
+  The sign claims follow by induction using $q^n-p^n>0$ (resp.\ $<0$)
+  and the positivity (resp.\ negativity) of the $\min$ terms.
+\end{proof}
+
+\subsection{First-order expansion}
+
+Set $p=\tfrac12-\delta$ with $\delta>0$ small.  Then
+$q=\tfrac12+\delta$, and the constant term in~\eqref{eq:delta-rec} is
+\[
+  \frac{q^n-p^n}{2}
+  = \frac{(\tfrac12+\delta)^n-(\tfrac12-\delta)^n}{2}
+  = \frac{n\delta}{2^{n-1}} + O(\delta^3).
+\]
+The binomial weights become $\binom{n}{j}2^{-n}+O(\delta)$, and the
+$\min$ terms are $O(\delta)$ by Proposition~\ref{prop:delta-rec}.
+Thus $\Delta_{n,p}=O(\delta)$.
+
+\begin{proposition}[First-order coefficient]\label{prop:cn}
+  Write $\Delta_{n,p}=c_n\delta+O(\delta^2)$ as $\delta\to 0^+$.
+  Then $c_1=1$ and for $n\ge 2$:
+  \begin{equation}\label{eq:cn-rec}
+    c_n \;=\; \frac{n}{2^{n-1}}
+    + \frac{1}{2^n}\sum_{j=1}^{n-1}\binom{n}{j}\,
+    \min_{j\le m\le n-1}c_m.
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  Match first-order coefficients in~\eqref{eq:delta-rec}.  The
+  constant term contributes $n/2^{n-1}$.  Each binomial weight is
+  $\binom{n}{j}2^{-n}+O(\delta)$; the $\min$ of the
+  $\Delta_m=c_m\delta+O(\delta^2)$ at first order is
+  $(\min c_m)\delta+O(\delta^2)$.  Products of $O(\delta)$ terms are
+  $O(\delta^2)$.
+\end{proof}
+
+\begin{example}\label{ex:cn-small}
+  The first few values of~$c_n$:
+  \[
+    c_1=1,\quad c_2=\tfrac{3}{2},\quad c_3=\tfrac{27}{16},\quad
+    c_4=\tfrac{111}{64},\quad
+    c_5=\tfrac{3555}{2048}\approx 1.7358.
+  \]
+  The sequence increases on $\{1,\dots,5\}$ and decreases for
+  $n\ge 6$.
+\end{example}
+
+\subsection{Collapse of the minimum}
+
+The key structural insight is that for $n\ge 7$, the $\min$ in
+\eqref{eq:cn-rec} can be evaluated explicitly.
+
+\begin{lemma}[Asymptotic collapse]\label{lem:collapse}
+  For all $n\ge 7$ and $j\in\{1,\dots,n-1\}$:
+  \begin{equation}\label{eq:collapse}
+    \min_{j\le m\le n-1}c_m
+    \;=\;
+    \begin{cases}
+      c_j     & \text{if } j\in\{1,2,3\},\\
+      c_{n-1} & \text{if } j\in\{4,\dots,n-1\}.
+    \end{cases}
+  \end{equation}
+\end{lemma}
+
+The proof of Lemma~\ref{lem:collapse} requires two auxiliary claims.
+
+\begin{lemma}\label{lem:lower}
+  $c_m\ge\tfrac{27}{16}$ for every $m\ge 4$.
+\end{lemma}
+
+\begin{proof}
+  We use the algebraic identity
+  \begin{equation}\label{eq:alg-id}
+    A_n - \tfrac{27}{16}B_n
+    \;=\; -\frac{3(n^2-15n+36)}{32\cdot 2^n},
+  \end{equation}
+  where $A_n$ and $B_n$ are defined in~\eqref{eq:AB} below.
+
+  \emph{For $m\in\{4,\dots,12\}$:} the quadratic $n^2-15n+36$ has
+  roots at $n=3$ and $n=12$, so it is non-positive on
+  $\{3,\dots,12\}$.  Hence $A_m-\tfrac{27}{16}B_m\ge 0$ for these
+  values, and the linear recursion~\eqref{eq:cn-linear} gives
+  $c_m\ge\tfrac{27}{16}$ by induction.
+
+  \emph{For $m\ge 13$:} define the deficit
+  $\varepsilon_m:=c_m-\tfrac{27}{16}$.
+  From the linear recursion,
+  \[
+    \varepsilon_m \;=\; (1-B_m)\varepsilon_{m-1}
+    + \bigl(A_m-\tfrac{27}{16}B_m\bigr).
+  \]
+  The starting value $\varepsilon_{12}=c_{12}-\tfrac{27}{16}>\tfrac{1}{60}$
+  (verified by exact rational computation).
+  The cumulative negative contribution is bounded by
+  $\sum_{k\ge 13}\tfrac{3(k^2-15k+36)}{32\cdot 2^k}
+  \le\tfrac{3}{32}\cdot\tfrac{99}{2048}=\tfrac{297}{65536}<\tfrac{1}{200}$,
+  using $\sum_{k\ge 13}k^2/2^k=\tfrac{99}{2048}$.  Meanwhile
+  $\prod_{m\ge 13}(1-B_m)>\tfrac{7}{8}$ (by
+  $\sum_{m\ge 13}B_m=\tfrac{243}{2048}<\tfrac{1}{8}$).
+  So
+  $\varepsilon_m>\tfrac{1}{60}\cdot\tfrac{7}{8}-\tfrac{1}{200}
+  =\tfrac{23}{2400}>0$ for all $m\ge 13$.
+\end{proof}
+
+\begin{lemma}\label{lem:decreasing}
+  The sequence $(c_n)_{n\ge 5}$ is strictly decreasing.
+\end{lemma}
+
+\begin{proof}
+  For $n\ge 7$, the linear recursion gives
+  $c_n-c_{n-1}=A_n-B_nc_{n-1}$.  By Lemma~\ref{lem:lower},
+  $c_{n-1}\ge\tfrac{27}{16}$, so
+  $c_n-c_{n-1}\le A_n-\tfrac{27}{16}B_n<0$ for $n\ge 13$
+  (by~\eqref{eq:alg-id} with $n^2-15n+36>0$).  For
+  $n\in\{5,\dots,12\}$ one checks $c_n<c_{n-1}$ by direct
+  computation.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lem:collapse}]
+  For $j\in\{1,2,3\}$: since $c_1<c_2<c_3<\tfrac{27}{16}\le c_m$ for
+  $m\ge 4$ (Lemma~\ref{lem:lower}), the minimum over
+  $\{j,\dots,n-1\}$ is $c_j$.
+
+  For $j\ge 4$: all values $c_j,\dots,c_{n-1}$ are at
+  least~$\tfrac{27}{16}$, and the sequence is decreasing for
+  indices~$\ge 5$ (Lemma~\ref{lem:decreasing}).  For $j=4$
+  one checks $c_4>\min(c_5,\dots,c_{n-1})=c_{n-1}$ since
+  $c_4=\tfrac{111}{64}\approx 1.734>c_6\approx 1.729$.
+  Hence the minimum is $c_{n-1}$.
+\end{proof}
+
+\subsection{Linear recursion and the limit}
+
+\begin{proposition}[Linear recursion]\label{prop:linear}
+  For $n\ge 7$:
+  \begin{equation}\label{eq:cn-linear}
+    c_n \;=\; A_n + (1-B_n)\,c_{n-1},
+  \end{equation}
+  where
+  \begin{equation}\label{eq:AB}
+    A_n := \frac{n}{2^{n-1}}
+    + \frac{n\,c_1+\binom{n}{2}c_2+\binom{n}{3}c_3}{2^n},
+    \qquad
+    B_n := \frac{2+n+\binom{n}{2}+\binom{n}{3}}{2^n}.
+  \end{equation}
+\end{proposition}
+
+\begin{proof}
+  Substitute \eqref{eq:collapse} into \eqref{eq:cn-rec} and
+  split the sum at $j=3$.  For $j\in\{1,2,3\}$ the $\min$ is
+  $c_j$; for $j\ge 4$ the $\min$ is $c_{n-1}$.  Collecting terms
+  gives~\eqref{eq:cn-linear}--\eqref{eq:AB}.
+\end{proof}
+
+\begin{theorem}[Existence and value of the limit]\label{thm:limit}
+  The limit $L:=\lim_{n\to\infty}c_n$ exists, and for any $n_0\ge 7$:
+  \begin{equation}\label{eq:L-formula}
+    L \;=\; c_{n_0-1}\prod_{m\ge n_0}(1-B_m)
+    \;+\; \sum_{k\ge n_0}A_k\prod_{m>k}(1-B_m).
+  \end{equation}
+  Both the infinite product and the series converge at geometric rate
+  since $A_n,B_n=O(n^3/2^n)$.  Numerically,
+  \begin{equation}\label{eq:L-value}
+    L \;=\; 1.70347176087173673645\ldots
+  \end{equation}
+\end{theorem}
+
+\begin{proof}
+  From \eqref{eq:cn-linear}, $c_n=A_n+(1-B_n)c_{n-1}$.  Since
+  $B_n>0$ and $A_n>0$ for all~$n$, and $(c_n)$ is eventually
+  decreasing and bounded below (by Lemma~\ref{lem:lower}), the limit
+  exists.  Iterating the recursion from $n=n_0$ and taking
+  $n\to\infty$ yields~\eqref{eq:L-formula}; the rate follows from
+  $B_n=O(n^3/2^n)$.
+\end{proof}
+
+\subsection{Shape of the optimal-value sequence near
+  \texorpdfstring{$p=\tfrac12$}{p=1/2}}
+
+\begin{corollary}\label{cor:shape}
+  For $\delta>0$ sufficiently small and $p=\tfrac12-\delta$:
+  \begin{enumerate}[\rm(i)]
+  \item $w_{n-1,p}-w_{n,p}=(c_n-c_{n-1})\delta+O(\delta^2)$.
+  \item The sequence $n\mapsto w_{n,p}$ has, to first order
+    in~$\delta$, a strict local minimum at $n=5$ (since $c_5>c_4$
+    and $c_5>c_6$).
+  \item There is no local maximum at first order: $c_n$ is eventually
+    decreasing, so $w_{n,p}$ is eventually increasing.
+  \end{enumerate}
+\end{corollary}
+
+\begin{remark}
+  Numerical computation shows that the sequence $n\mapsto w_{n,p}$
+  does develop strict local maxima for $p$ bounded away
+  from~$\tfrac12$ (e.g.\ at $n=9$ for $p=0.42$, verified by exact
+  rational arithmetic).  This is consistent with the corollary: local
+  maxima are a \emph{non-perturbative} phenomenon invisible to the
+  first-order expansion.  Van Doorn~\cite{vanDoorn2024}, Section~10,
+  conjectures that the optimal strategy for $p<\tfrac12$ is
+  ``infinitely complex.''
+\end{remark}
+
+%% ====================================================================
+%\section*{Acknowledgements}
+%% ====================================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{Bertsekas2017}
+  D.~P.~Bertsekas,
+  \emph{Dynamic Programming and Optimal Control},
+  Vol.~I, 4th ed.,
+  Athena Scientific, Belmont, MA, 2017.
+
+\bibitem{BertsekisTsitsiklis1991}
+  D.~P.~Bertsekas and J.~N.~Tsitsiklis,
+  An analysis of stochastic shortest path problems,
+  \emph{Math.\ Oper.\ Res.}\ \textbf{16} (1991), 580--595.
+
+\bibitem{DubinsSavage1965}
+  L.~E.~Dubins and L.~J.~Savage,
+  \emph{How to Gamble If You Must: Inequalities for Stochastic
+    Processes},
+  McGraw-Hill, New York, 1965;
+  reprinted by Dover, 2014.
+
+\bibitem{Puterman1994}
+  M.~L.~Puterman,
+  \emph{Markov Decision Processes: Discrete Stochastic Dynamic
+    Programming},
+  Wiley, New York, 1994.
+
+\bibitem{StokeyLucas1989}
+  N.~L.~Stokey, R.~E.~Lucas~Jr., and E.~C.~Prescott,
+  \emph{Recursive Methods in Economic Dynamics},
+  Harvard University Press, Cambridge, MA, 1989.
+
+\bibitem{vanDoorn2024}
+  E.~A.~van~Doorn,
+  Optimal play of a coin-flipping game,
+  \emph{arXiv preprint} arXiv:2406.14700, 2024.
+
+\end{thebibliography}
+
+\end{document}

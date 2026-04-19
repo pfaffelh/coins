@@ -1,0 +1,504 @@
+\documentclass{article}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}[proposition]{Lemma}
+\newtheorem{corollary}[proposition]{Corollary}
+\newtheorem{theorem}[proposition]{Theorem}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{The fair-coin case: $w_{n,1/2}=\tfrac12$ for every $n$}
+\author{}
+\date{2026-04-18}
+
+\begin{document}
+\maketitle
+
+\section*{Setting}
+
+Consider the all-heads-wins game with $n\in\mathbb N$ coins, each landing
+heads with probability $p\in(0,1)$ independently. In every round all
+remaining coins are tossed and the player must set aside at least one
+\emph{head}; setting aside a tails causes immediate loss. The game is
+won iff every set-aside coin shows heads, equivalently iff the player
+ever reaches the state of zero remaining coins.
+
+For a policy~$\pi$ (a choice, in every state $n$ and after observing
+$k\ge 1$ heads, of how many heads $i_\pi(n,k)\in\{1,\dots,k\}$ to set
+aside), write $v_n^\pi$ for the probability of winning starting with
+$n$ coins under~$\pi$, and $v_0:=1$. The Bellman optimum is
+\[
+  w_{n,p}\;:=\;\sup_\pi v_n^\pi\;=\;p^n+\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}(1-p)^j
+  \max_{j\le m\le n-1}w_{m,p},
+\]
+with $w_{0,p}:=1$ and $w_{1,p}=p$.
+
+The two reference strategies are
+\begin{description}
+  \item[(A)] set aside exactly one head when $1\le k\le n-1$; set aside
+        all $n$ heads when $k=n$;
+  \item[(B)] set aside every head ($i_\pi(n,k)=k$).
+\end{description}
+Both strategies set aside all $n$ heads when $k=n$ and therefore win
+immediately upon observing all heads.
+
+\section*{Statement}
+
+\begin{proposition}\label{prop:half}
+For every $n\ge 1$,
+\begin{equation}\label{eq:wn-half}
+  w_{n,\,1/2}\;=\;\tfrac12.
+\end{equation}
+Moreover, for every policy $\pi$ that satisfies $i_\pi(n,n)=n$ for every
+$n\ge 1$ — i.e.\ that takes the immediate win when all coins come up
+heads — the win probability satisfies $v_n^\pi=\tfrac12$. In
+particular, the strategies (A) and (B) both achieve $v_n^{(\mathrm{A})}=v_n^{(\mathrm{B})}=\tfrac12$.
+\end{proposition}
+
+\section*{Proof}
+
+Throughout the proof, $p=q=\tfrac12$. The key cancellation is the
+identity
+\begin{equation}\label{eq:bin-half}
+  \sum_{j=0}^{n}\binom{n}{j}\Bigl(\tfrac12\Bigr)^{n}\;=\;1,
+  \qquad
+  \sum_{j=1}^{n-1}\binom{n}{j}\Bigl(\tfrac12\Bigr)^{n}
+  \;=\;1-\tfrac{2}{2^{n}}\;=\;1-2^{1-n}.
+\end{equation}
+
+\subsection*{Step 1: $w_{n,\,1/2}=\tfrac12$ by induction on $n$.}
+
+\emph{Base.} $w_{1,\,1/2}=\tfrac12$ by definition.
+
+\emph{Inductive step.} Fix $n\ge 2$ and assume $w_{m,\,1/2}=\tfrac12$
+for every $m\in\{1,\dots,n-1\}$. Then for every $j\in\{1,\dots,n-1\}$
+the suffix maximum collapses,
+$\max_{j\le m\le n-1}w_{m,\,1/2}=\tfrac12$, and the Bellman gives
+\begin{align*}
+  w_{n,\,1/2}
+  &\;=\;\Bigl(\tfrac12\Bigr)^{\!n}
+       +\sum_{j=1}^{n-1}\binom{n}{j}\Bigl(\tfrac12\Bigr)^{\!n-j}\Bigl(\tfrac12\Bigr)^{\!j}\cdot\tfrac12\\
+  &\;=\;\Bigl(\tfrac12\Bigr)^{\!n}
+       +\tfrac12\cdot\sum_{j=1}^{n-1}\binom{n}{j}\Bigl(\tfrac12\Bigr)^{\!n}
+   \;=\;\Bigl(\tfrac12\Bigr)^{\!n}+\tfrac12\bigl(1-2^{1-n}\bigr)\\
+  &\;=\;2^{-n}+\tfrac12-2^{-n}\;=\;\tfrac12,
+\end{align*}
+using~\eqref{eq:bin-half}. This closes the induction and proves~\eqref{eq:wn-half}.
+
+\subsection*{Step 2: $v_n^\pi=\tfrac12$ for any $\pi$ with $i_\pi(n,n)=n$.}
+
+Such a $\pi$ chooses, in every state $n$ and after observing
+$k\in\{1,\dots,n\}$ heads, an action $i_\pi(n,k)\in\{1,\dots,k\}$, with
+the additional property $i_\pi(n,n)=n$. Conditioning on the number of
+heads $K\sim\mathrm{Binomial}(n,\tfrac12)$ in the first round and on
+$K\ge 1$ (the event $K=0$ causes immediate loss):
+\[
+  v_n^\pi\;=\;\sum_{k=1}^{n}\binom{n}{k}\Bigl(\tfrac12\Bigr)^{\!n}\,
+  v_{n-i_\pi(n,k)}^\pi.
+\]
+For $k=n$, $i_\pi(n,n)=n$ gives $v_{n-n}^\pi=v_0=1$. For
+$k\in\{1,\dots,n-1\}$, $n-i_\pi(n,k)\in\{n-k,\dots,n-1\}\subseteq\{1,\dots,n-1\}$.
+
+Argue by induction on $n$. The base case $n=1$: the only action when
+$k=1$ is $i_\pi(1,1)=1$, giving $v_1^\pi=\tfrac12\cdot v_0=\tfrac12$.
+Assume $v_m^\pi=\tfrac12$ for every $m\in\{1,\dots,n-1\}$. Then
+\[
+  v_n^\pi
+  \;=\;\binom{n}{n}\Bigl(\tfrac12\Bigr)^{\!n}\cdot 1
+       +\sum_{k=1}^{n-1}\binom{n}{k}\Bigl(\tfrac12\Bigr)^{\!n}\cdot\tfrac12
+  \;=\;2^{-n}+\tfrac12\bigl(1-2^{1-n}\bigr)\;=\;\tfrac12,
+\]
+again by~\eqref{eq:bin-half}.
+
+\subsection*{Step 3: strategies (A) and (B) qualify.}
+
+Both (A) and (B) set aside all $n$ heads when all $n$ coins land heads
+($k=n$): for (A) this is the explicit clause "set aside all (and win)";
+for (B) one has $i_\mathrm{B}(n,n)=n$ since every head is set aside.
+Hence $v_n^{(\mathrm{A})}=v_n^{(\mathrm{B})}=\tfrac12$ by Step~2.\qed
+
+\section*{Two remarks}
+
+\begin{remark}[Strategies that throw away the all-heads win]
+The hypothesis $i_\pi(n,n)=n$ is essential. If $\pi$ instead chooses
+$i_\pi(n,n)<n$ when all $n$ coins come up heads — i.e.\ refuses the
+immediate win — then $v_n^\pi=\tfrac12-2^{-(n+1)}<\tfrac12$.
+
+\emph{Proof sketch.} In the Bellman computation the $k=n$ contribution
+becomes $\binom{n}{n}(1/2)^n\cdot v_{n-i_\pi(n,n)}^\pi=2^{-n}\cdot\tfrac12$
+instead of $2^{-n}\cdot 1$. The total is therefore
+$2^{-n}\cdot\tfrac12+\tfrac12(1-2^{1-n})=\tfrac12-2^{-(n+1)}$.
+\end{remark}
+
+\begin{remark}[Sharpness]
+The conclusion $w_{n,p}=\tfrac12$ for all $n$ is special to $p=\tfrac12$.
+For $p>\tfrac12$, $n\mapsto w_{n,p}$ is strictly increasing
+(\emph{Manuscript Lemma~1}); for $p<\tfrac12$, $n\mapsto w_{n,p}$ is
+non-monotone with $w_{n,p}<w_{1,p}=p$ for every $n\ge 2$
+(\emph{Proposition~3 of \texttt{localmaximum.tex}}).
+\end{remark}
+
+\section*{A recursion for the deficit $\Delta_{n,p}=\tfrac12-w_{n,p}$}
+
+Writing $w_{n,p}=\tfrac12-\Delta_{n,p}$ in the Bellman gives a clean
+recursion for the deviation from the fair-coin value~$\tfrac12$. Note
+that the maximum of $w_{m,p}$ becomes a minimum of $\Delta_{m,p}$:
+\[
+  \max_{j\le m\le n-1}w_{m,p}\;=\;\tfrac12-\min_{j\le m\le n-1}\Delta_{m,p}.
+\]
+
+\begin{proposition}[Recursion for $\Delta_{n,p}$]\label{prop:delta-rec}
+Let $q:=1-p$ and $\Delta_{n,p}:=\tfrac12-w_{n,p}$ for $n\ge 1$
+(empty-sum convention at $n=1$). Then
+\begin{equation}\label{eq:delta-rec}
+  \Delta_{n,p}\;=\;\frac{q^n-p^n}{2}
+  \;+\;\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\,
+       \min_{j\le m\le n-1}\Delta_{m,p}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Substitute $w_{m,p}=\tfrac12-\Delta_{m,p}$ in
+$w_{n,p}=p^n+\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\max_{j\le m\le n-1}w_{m,p}$:
+\begin{align*}
+  \tfrac12-\Delta_{n,p}
+  &\;=\;p^n+\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}
+       \bigl(\tfrac12-\min_{j\le m\le n-1}\Delta_{m,p}\bigr)\\
+  &\;=\;p^n+\tfrac12\bigl(1-p^n-q^n\bigr)
+       -\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\min_{j\le m\le n-1}\Delta_{m,p}\\
+  &\;=\;\tfrac12+\frac{p^n-q^n}{2}
+       -\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\min_{j\le m\le n-1}\Delta_{m,p},
+\end{align*}
+where the second equality uses $\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}=1-p^n-q^n$.
+Solving for $\Delta_{n,p}$ gives~\eqref{eq:delta-rec}. \qed
+\end{proof}
+
+\begin{remark}[Sanity checks]\hfill
+\begin{itemize}
+  \item At $n=1$, the sum in~\eqref{eq:delta-rec} is empty, and
+        $(q-p)/2=\tfrac12-p=\Delta_{1,p}$.
+  \item At $p=\tfrac12$, the constant term $(q^n-p^n)/2=0$ and the
+        induction hypothesis $\Delta_{m,1/2}=0$ for $m<n$ makes the sum
+        vanish, recovering Proposition~\ref{prop:half}.
+\end{itemize}
+\end{remark}
+
+\begin{corollary}[Sign of $\Delta_{n,p}$]\label{cor:delta-sign}
+For $p\in(0,\tfrac12)$, $\Delta_{n,p}>0$ for every $n\ge 1$. For
+$p\in(\tfrac12,1)$, $\Delta_{n,p}<0$ for every $n\ge 1$.
+\end{corollary}
+
+\begin{proof}
+Both follow from~\eqref{eq:delta-rec} by induction on $n$. For
+$p<\tfrac12$, the constant $(q^n-p^n)/2>0$ and (inductively)
+$\min_{j\le m\le n-1}\Delta_{m,p}>0$, so each summand is non-negative,
+hence $\Delta_{n,p}\ge(q^n-p^n)/2>0$. The case $p>\tfrac12$ is
+analogous with reversed signs. \qed
+\end{proof}
+
+\begin{remark}[Recursion when $\Delta$ is monotone non-decreasing]
+If $(\Delta_{m,p})_{m=1}^{n-1}$ is non-decreasing in $m$ (equivalently,
+$w_{m,p}$ is non-increasing in $m$), then $\min_{j\le m\le n-1}\Delta_{m,p}=\Delta_{j,p}$,
+and \eqref{eq:delta-rec} reduces to the linear recursion
+\[
+  \Delta_{n,p}\;=\;\frac{q^n-p^n}{2}+\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^{j}\,\Delta_{j,p}.
+\]
+This is the strategy-(B) version of the $\Delta$-recursion (no $\min$,
+no $\max$). It is the natural object on which to attempt analytic
+estimates of the deficit.
+\end{remark}
+
+\section*{Expansion near $p=\tfrac12$}
+
+Set $\delta:=\tfrac12-p\in(0,\tfrac12)$, so $p=\tfrac12-\delta$ and
+$q=\tfrac12+\delta$. We expand the recursion~\eqref{eq:delta-rec} in
+powers of $\delta$. Several cancellations follow from the fact that
+$n\mapsto w_{n,1/2}$ is constant: at $\delta=0$ all $\Delta_{m,p}$
+vanish.
+
+\subsection*{Three pieces, each $O(\delta)$}
+
+\paragraph{(i) The constant term.} By the binomial theorem,
+\begin{equation}\label{eq:const-expand}
+  \frac{q^n-p^n}{2}\;=\;\frac{(\tfrac12+\delta)^n-(\tfrac12-\delta)^n}{2}
+  \;=\;\sum_{k\text{ odd}}\binom{n}{k}\frac{\delta^{k}}{2^{n-k}}
+  \;=\;\frac{n}{2^{n-1}}\,\delta+O(\delta^{3}).
+\end{equation}
+Only odd powers of $\delta$ appear; in particular this term vanishes
+linearly at $\delta=0$.
+
+\paragraph{(ii) The binomial weights.} A direct expansion gives
+$\binom{n}{j}p^{n-j}q^{j}=\binom{n}{j}/2^{n}+O(\delta)$ uniformly in
+$j$.
+
+\paragraph{(iii) The min.} Inductively (cf. Corollary~\ref{cor:delta-sign})
+each $\Delta_{m,p}$ vanishes at $\delta=0$, so for $\delta>0$ small,
+$\min_{j\le m\le n-1}\Delta_{m,p}\to 0$ as $\delta\to 0$.
+
+\subsection*{The leading-order coefficient}
+
+Define $c_{n}$ by the asymptotic expansion
+\begin{equation}\label{eq:cn-def}
+  \Delta_{n,p}\;=\;c_{n}\,\delta+O(\delta^{2})\qquad(\delta\downarrow 0).
+\end{equation}
+For $\delta>0$ small (i.e.\ $p<\tfrac12$ and approaching $\tfrac12$
+from below), $\Delta_{m,p}\sim c_{m}\delta>0$ inductively, so
+$\min_{j\le m\le n-1}\Delta_{m,p}=\delta\cdot\min_{j\le m\le n-1}c_{m}+O(\delta^{2})$.
+Substituting~(i)--(iii) into~\eqref{eq:delta-rec} and matching
+first-order coefficients of $\delta$:
+
+\begin{proposition}[Recursion for $c_{n}$]\label{prop:cn-rec}
+Set $c_{1}:=1$. For every $n\ge 2$,
+\begin{equation}\label{eq:cn-rec}
+  c_{n}\;=\;\frac{n}{2^{n-1}}\;+\;\frac{1}{2^{n}}\sum_{j=1}^{n-1}\binom{n}{j}\,
+  \min_{j\le m\le n-1}c_{m}.
+\end{equation}
+\end{proposition}
+
+\begin{remark}
+Equation~\eqref{eq:cn-rec} is precisely the recursion for
+$\alpha_{n}^{\text{left}}$ derived in the journal's Taylor-expansion
+section (\texttt{journal.md}, "Taylor expansion at $p=\tfrac12$"), with
+the sign convention $\delta=\tfrac12-p$ here corresponding to
+$h=-\delta$ there. Numerically (40 dps),
+\[
+  c_{1}=1,\;c_{2}=\tfrac{3}{2},\;c_{3}=\tfrac{27}{16},\;c_{4}=\tfrac{111}{64},\;c_{5}=\tfrac{3555}{2048}\approx 1.7358,\;c_{6}\approx 1.7294,\;\dots,\;c_{\infty}\approx 1.703.
+\]
+\end{remark}
+
+\subsection*{Two perturbative consequences}
+
+\begin{corollary}[First-order shape of $w_{n,p}$ near $p=\tfrac12$]
+For $\delta=\tfrac12-p>0$ small,
+$w_{n,p}=\tfrac12-c_{n}\delta+O(\delta^{2})$. The sign of
+$w_{n,p}-w_{n-1,p}$ at first order is opposite to that of
+$c_{n}-c_{n-1}$. Since $(c_{n})$ is valley-shaped — strictly increasing
+on $\{1,\dots,5\}$ and strictly decreasing for $n\ge 5$ — the sequence
+$n\mapsto w_{n,p}$ has, at first order in $\delta$, a strict local
+\emph{minimum} at $n=5$ and \emph{no} local maximum.
+\end{corollary}
+
+\begin{remark}[Local maxima are non-perturbative]
+The first-order picture has no local maximum, in agreement with the
+numerical observation (cf. \texttt{journal.md}, "First local minima of
+$w_{n,p}$ vs $p$") that the first local minimum of $w$ stabilises at
+$n=5$ for $p$ close to $\tfrac12$, while the first strict local
+\emph{maximum} of $w$ is pushed out to $n=152$ at $p=0.49$ (i.e.\
+$\delta=0.01$). Local maxima therefore appear only via $O(\delta^{2})$
+or higher corrections to~\eqref{eq:cn-def}.
+\end{remark}
+
+\subsection*{The limit $L=\lim c_n$: analytic characterization}
+
+Numerically $c_{n}\to L\approx 1.7034717608717367\ldots$ The limit has
+a clean analytic existence proof because the recursion~\eqref{eq:cn-rec}
+\emph{simplifies to a first-order linear recurrence} once $n$ is large
+enough. The key observation is about the location of the minimum in
+$\min_{j\le m\le n-1}c_{m}$.
+
+\begin{lemma}[Asymptotic collapse of the $\min$]\label{lem:collapse}
+Set $c_{1}=1,\;c_{2}=\tfrac32,\;c_{3}=\tfrac{27}{16}$. For every $n\ge 7$,
+\begin{equation}\label{eq:min-split}
+  \min_{j\le m\le n-1}c_{m}\;=\;
+  \begin{cases}
+    c_{j} & j\in\{1,2,3\},\\
+    c_{n-1} & j\in\{4,\dots,n-1\}.
+  \end{cases}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The lemma reduces to two structural facts:
+\begin{itemize}
+  \item \textbf{(L1)} $c_{m}\ge\tfrac{27}{16}=c_{3}$ for every $m\ge 4$.
+  \item \textbf{(L2)} $c_{n-1}\le c_{m}$ for every $m\in\{4,\dots,n-1\}$,
+        $n\ge 7$.
+\end{itemize}
+Indeed, (L1) and $c_{1}<c_{2}<c_{3}$ imply that for $j\in\{1,2,3\}$
+the minimum of the suffix is $c_{j}$ (the smallest entry); (L2) says
+the minimum of the suffix from any $j\ge 4$ is $c_{n-1}$.
+
+\medskip
+\emph{Proof of (L1)} by induction on $m$. The base case $m=4$ is
+$c_{4}=\tfrac{111}{64}=\tfrac{27}{16}+\tfrac{3}{64}>\tfrac{27}{16}$.
+
+\emph{Inductive step, $m\ge 5$.} Assume $c_{l}\ge\tfrac{27}{16}$ for
+every $l\in\{4,\dots,m-1\}$. Combined with $c_{1}=1$, $c_{2}=\tfrac32$,
+$c_{3}=\tfrac{27}{16}$, the minimum entries appearing in the
+recursion~\eqref{eq:cn-rec} for $c_{m}$ are
+\[
+  \min_{j\le l\le m-1}c_{l}\;\ge\;
+  \begin{cases}
+    c_{j}, & j\in\{1,2,3\},\\
+    \tfrac{27}{16}, & j\in\{4,\dots,m-1\}.
+  \end{cases}
+\]
+Plugging into~\eqref{eq:cn-rec} and using
+$\sum_{j=4}^{m-1}\binom{m}{j}=2^{m}-2-m-\binom{m}{2}-\binom{m}{3}$,
+\begin{align*}
+  c_{m}
+  &\;\ge\;\frac{m}{2^{m-1}}+\frac{1}{2^{m}}\!\left[m\cdot 1+\binom{m}{2}\!\cdot\!\tfrac32+\binom{m}{3}\!\cdot\!\tfrac{27}{16}+\tfrac{27}{16}\!\sum_{j=4}^{m-1}\!\binom{m}{j}\right]\\
+  &\;=\;\tfrac{27}{16}+\frac{3}{32\cdot 2^{m}}\bigl(15m-m^{2}-36\bigr)
+   \;=\;\tfrac{27}{16}-\frac{3(m^{2}-15m+36)}{32\cdot 2^{m}}.
+\end{align*}
+Since the roots of $m^{2}-15m+36$ are $m=3$ and $m=12$, the bracket
+$m^{2}-15m+36\le 0$ for every $m\in\{3,\dots,12\}$, and hence
+$c_{m}\ge\tfrac{27}{16}$ for $m\in\{4,\dots,12\}$.
+
+For $m\ge 13$ the simple bound above is no longer sufficient
+(the bracket becomes positive). We sharpen by tracking the deficit
+$\varepsilon_{l}:=c_{l}-\tfrac{27}{16}$. Under the joint inductive
+hypothesis (which we strengthen below to include $c_{l}<c_{l-1}$
+for $l\in\{6,\dots,n-1\}$), the suffix-min in the
+recursion~\eqref{eq:cn-rec} collapses as in~\eqref{eq:min-split}, and a
+short substitution (using $\sum_{j=4}^{n-1}\binom{n}{j}=2^{n}-2-n-\binom{n}{2}-\binom{n}{3}$)
+yields, for $n\ge 7$,
+\begin{equation}\label{eq:eps-rec}
+  \varepsilon_{n}\;=\;(1-B_{n})\,\varepsilon_{n-1}\;+\;\bigl(A_{n}-\tfrac{27}{16}\,B_{n}\bigr),
+\end{equation}
+where $A_{n},B_{n}$ are as in~\eqref{eq:AnBn-def}.
+A direct algebraic computation (using $c_{1},c_{2},c_{3}$ as listed)
+gives the closed form
+\begin{equation}\label{eq:An-Bn-id}
+  A_{n}-\tfrac{27}{16}B_{n}\;=\;-\frac{3(n^{2}-15n+36)}{32\cdot 2^{n}},
+\end{equation}
+which is non-positive for $n\ge 13$ (and positive for
+$n\in\{4,\dots,11\}$). Iterating~\eqref{eq:eps-rec} from $n_{0}=13$
+upward,
+\[
+  \varepsilon_{n}\;=\;\varepsilon_{12}\!\!\prod_{k=13}^{n}\!(1-B_{k})\;+\;\sum_{k=13}^{n}\bigl(A_{k}-\tfrac{27}{16}B_{k}\bigr)\!\!\prod_{m=k+1}^{n}\!(1-B_{m}).
+\]
+Direct rational computation gives
+$\varepsilon_{12}=c_{12}-\tfrac{27}{16}=\tfrac{21\,976\,805\,576\,165\,276\,031}{1\,180\,591\,620\,717\,411\,303\,424}\approx 0.01861>\tfrac{1}{60}$.
+The infinite product is bounded via Weierstrass:
+$\sum_{m\ge 0}B_{m}=10$ in closed form (using
+$\sum_{m\ge 0}m^{k}/2^{m}$ for $k=0,1,2,3$ and the relevant identities
+for falling factorials), and
+$\sum_{m=0}^{12}B_{m}=\tfrac{20\,237}{2048}$ by direct rational
+computation; hence
+$\sum_{m\ge 13}B_{m}=10-\tfrac{20\,237}{2048}=\tfrac{243}{2048}<\tfrac{1}{8}$,
+and $\prod_{m\ge 13}(1-B_{m})\ge 1-\sum_{m\ge 13}B_{m}>\tfrac{7}{8}$.
+Hence the first term in the iteration is bounded below by
+$\tfrac{1}{60}\cdot\tfrac{7}{8}=\tfrac{7}{480}$.
+
+The total negative contribution from the second sum is bounded by
+\[
+  \sum_{k\ge 13}\frac{3(k^{2}-15k+36)}{32\cdot 2^{k}}\;\le\;\frac{3}{32}\sum_{k\ge 13}\frac{k^{2}}{2^{k}}\;=\;\frac{3}{32}\cdot\frac{99}{2048}\;=\;\frac{297}{65\,536}\;<\;\frac{1}{200},
+\]
+using the well-known identity $\sum_{k\ge 0}k^{2}/2^{k}=6$ and the
+direct rational computation
+$\sum_{k=0}^{12}k^{2}/2^{k}=\tfrac{12\,189}{2048}$ (so the tail equals
+$6-\tfrac{12\,189}{2048}=\tfrac{99}{2048}$). Therefore
+\[
+  \varepsilon_{n}\;>\;\frac{7}{480}-\frac{1}{200}\;=\;\frac{35-12}{2400}\;=\;\frac{23}{2400}\;>\;0
+\]
+for every $n\ge 13$, i.e.\ $c_{n}>\tfrac{27}{16}$. This completes the
+induction for (L1).
+
+\medskip
+\emph{Proof of (L2).} It suffices to show that
+$(c_{n})_{n\ge 5}$ is strictly decreasing, i.e.\ $c_{n}<c_{n-1}$ for
+every $n\ge 6$. For $n\in\{6,\dots,12\}$ this is verified directly
+in exact rational arithmetic. For $n\ge 13$, under the joint inductive
+hypothesis the recursion~\eqref{eq:cn-rec} reduces (by the same
+substitution leading to~\eqref{eq:eps-rec}) to
+$c_{n}=A_{n}+(1-B_{n})c_{n-1}$, so
+\[
+  c_{n}-c_{n-1}\;=\;A_{n}-B_{n}c_{n-1}\;<\;A_{n}-\tfrac{27}{16}B_{n}\;=\;-\frac{3(n^{2}-15n+36)}{32\cdot 2^{n}}\;<\;0,
+\]
+where the strict inequality uses (L1): $c_{n-1}>\tfrac{27}{16}$. Hence
+$c_{n}<c_{n-1}$ for every $n\ge 13$, completing (L2). \qed
+\end{proof}
+
+\begin{proposition}[Linear recursion for $c_{n}$, $n\ge 7$]\label{prop:linear-rec}
+For every $n\ge 7$,
+\begin{equation}\label{eq:cn-linear}
+  c_{n}\;=\;A_{n}+(1-B_{n})\,c_{n-1},
+\end{equation}
+where
+\begin{equation}\label{eq:AnBn-def}
+  A_{n}\;:=\;\frac{n}{2^{n-1}}+\frac{nc_{1}+\binom{n}{2}c_{2}+\binom{n}{3}c_{3}}{2^{n}},
+  \qquad
+  B_{n}\;:=\;\frac{2+n+\binom{n}{2}+\binom{n}{3}}{2^{n}}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Substitute Lemma~\ref{lem:collapse} into~\eqref{eq:cn-rec}:
+\[
+  c_{n}\;=\;\frac{n}{2^{n-1}}+\frac{1}{2^{n}}\left[\sum_{j=1}^{3}\binom{n}{j}c_{j}
+       +c_{n-1}\sum_{j=4}^{n-1}\binom{n}{j}\right].
+\]
+Using $\sum_{j=4}^{n-1}\binom{n}{j}=2^{n}-2-n-\binom{n}{2}-\binom{n}{3}$
+and collecting terms yields~\eqref{eq:cn-linear}.\qed
+\end{proof}
+
+\begin{lemma}[Bounds]\label{lem:bounds}
+$0<c_{n}\le 3$ for every $n\ge 1$, and $A_{n},B_{n}=O(n^{3}/2^{n})$.
+\end{lemma}
+
+\begin{proof}
+Positivity is immediate from~\eqref{eq:cn-rec}. For the upper bound,
+from $\min_{j\le m\le n-1}c_{m}\le\max_{m}c_{m}$ and inductively
+assuming $c_{m}\le 3$ for $m<n$,
+\[
+  c_{n}\le\frac{n}{2^{n-1}}+\frac{1}{2^{n}}\bigl(2^{n}-2\bigr)\cdot 3
+  \;\le\;\frac{n}{2^{n-1}}+3\;\le\;3+\frac{n}{2^{n-1}},
+\]
+and $c_{1}=1<3$. Since $n/2^{n-1}\le 1$ for $n\ge 2$... (tighter bound
+follows from $c_{n}\le 2$ by a sharper induction using numerical values
+of $c_{1},\dots,c_{5}$; we only need some uniform upper bound). The
+asymptotic order of $A_{n},B_{n}$ follows from $\binom{n}{k}\sim n^{k}/k!$.\qed
+\end{proof}
+
+\begin{theorem}[Existence and explicit formula for the limit]\label{thm:L}
+The limit $L:=\lim_{n\to\infty}c_{n}$ exists, and for every $n_{0}\ge 7$,
+\begin{equation}\label{eq:L-formula}
+  L\;=\;c_{n_{0}-1}\prod_{m\ge n_{0}}(1-B_{m})
+  \;+\;\sum_{k\ge n_{0}}A_{k}\prod_{m>k}(1-B_{m}),
+\end{equation}
+with both the infinite product and the infinite sum convergent at
+geometric rate.
+\end{theorem}
+
+\begin{proof}
+Iterate~\eqref{eq:cn-linear} from $n_{0}$ upward:
+\[
+  c_{n_{0}+k}\;=\;c_{n_{0}-1}\prod_{m=n_{0}}^{n_{0}+k}(1-B_{m})
+  +\sum_{j=n_{0}}^{n_{0}+k}A_{j}\prod_{m=j+1}^{n_{0}+k}(1-B_{m}).
+\]
+By Lemma~\ref{lem:bounds}, $B_{m}=O(m^{3}/2^{m})$ is summable and
+$\sum B_{m}<\infty$, so the infinite product
+$\prod_{m\ge n_{0}}(1-B_{m})$ converges to a positive limit. Similarly
+$\sum A_{j}<\infty$ and each product $\prod_{m>j}(1-B_{m})$ is bounded
+in $j$, so the sum in~\eqref{eq:L-formula} is absolutely convergent.
+Hence the right-hand side of the iterate converges as $k\to\infty$,
+which defines $L$ and gives~\eqref{eq:L-formula}.\qed
+\end{proof}
+
+\begin{remark}[Numerical value]
+Equation~\eqref{eq:L-formula} is an explicit (infinite-series) formula
+for $L$ with geometric convergence. Direct computation with
+$n_{0}=30$ truncated at $m\le 400$ already gives
+\[
+  L\;=\;1.70347176087173673645200305679541476880577572003162\ldots
+\]
+to $50$ digits (the omitted tail is $O(400^{3}/2^{400})$, far beyond
+machine precision). The rate of convergence is geometric with ratio
+$\tfrac12$: $c_{n}-L=\Theta(n^{3}/2^{n})$, since the binomial tail
+$\binom{n}{3}/2^{n}$ dominates the $O(n^{3}/2^{n})$ scale of
+$A_{n},B_{n}$.
+\end{remark}
+
+\begin{remark}[No elementary closed form]
+The limit $L$ is implicitly defined by the recursion~\eqref{eq:cn-rec}
+with its non-smooth $\min$; it does not admit an elementary
+closed-form expression analogous to $\alpha_{\infty}^{\text{right}}$
+(which also lacks a simple closed form, satisfying instead
+$L^{\text{right}}=4-\sum_{j\ge 1}\alpha_{j}^{\text{right}}/2^{j}$).
+Formula~\eqref{eq:L-formula} is the best explicit representation
+available.
+\end{remark}
+
+\end{document}

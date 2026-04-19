@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{An explicit $(n,k)$ at which the optimal strategy is neither (A) nor (B)}
+\author{}
+\date{2026-04-16}
+
+\begin{document}
+\maketitle
+
+\section*{Setting}
+
+We consider the all-heads-wins game with $n\in\mathbb N$ coins, each landing
+heads with probability $p\in(0,1)$ independently. In every round, all
+remaining coins are tossed, and at least one coin must be set aside;
+set-aside coins are never re-tossed. The game is won iff every set-aside
+coin shows heads.
+
+Write $w_{n,p}$ for the probability of winning with $n$ coins under
+optimal play, and set $w_{0,p}:=1$. Denote the two standard strategies:
+\begin{description}
+  \item[(A)] set aside exactly one head, unless all coins are heads;
+  \item[(B)] set aside every head (set aside one tails iff $k=0$).
+\end{description}
+If, in the current round, $n$ coins are tossed and $k\in\{1,\dots,n\}$ land
+heads, a player may set aside any $i\in\{1,\dots,k\}$ heads (setting aside
+a tails causes an immediate loss). After this round, $n-i$ coins remain and
+the continuation value is $w_{n-i,p}$. Hence, by elementary conditioning,
+\begin{equation}\label{eq:bellman}
+  w_{n,p} \;=\; p^n + \sum_{j=1}^{n-1} \binom{n}{j} p^{\,n-j} (1-p)^j
+  \max_{j\le m\le n-1} w_{m,p},
+\end{equation}
+where $j$ is the number of tails in the round.
+
+The optimal number of heads to set aside at $(n,k)$ is therefore
+\begin{equation}\label{eq:policy}
+  i^{*}(n,k)\;\in\;\arg\max_{1\le i\le k} w_{n-i,p},
+\end{equation}
+and $i^{*}(n,k)=1$ iff strategy (A) is optimal at $(n,k)$, while
+$i^{*}(n,k)=k$ iff strategy (B) is optimal at $(n,k)$.
+
+\section*{Statement and proof}
+
+\begin{proposition}
+  Let $p=\tfrac{21}{50}$. At $(n,k)=(11,3)$ neither strategy {\rm (A)} nor
+  strategy {\rm (B)} is optimal; the unique optimum is $i^{*}(11,3)=2$.
+\end{proposition}
+
+\begin{proof}
+At $(n,k)=(11,3)$ the three available actions are $i\in\{1,2,3\}$ with
+continuation values $w_{10,p}$, $w_{9,p}$, $w_{8,p}$. By \eqref{eq:policy}
+it suffices to show
+\begin{equation}\label{eq:need}
+  w_{9,p} \;>\; w_{8,p} \qquad\text{and}\qquad w_{9,p} \;>\; w_{10,p}.
+\end{equation}
+
+Since $p=\tfrac{21}{50}\in\mathbb Q$, iterating \eqref{eq:bellman} in exact
+rational arithmetic yields $w_{m,p}\in\mathbb Q_{\ge 0}$ for every
+$m\in\mathbb N_0$. Starting from $w_{0,p}=1$, $w_{1,p}=\tfrac{21}{50}$, we
+obtain the reduced representations (each step uses only the previously
+computed values in \eqref{eq:bellman}; the suffix-max in each term is
+determined by comparing the already-computed fractions):
+\begin{align*}
+  w_{1,p}  &= \tfrac{21}{50}, \qquad
+  w_{2,p}   = \tfrac{11907}{31250}, \qquad
+  w_{3,p}   = \tfrac{711920853}{1953125000}, \qquad
+  w_{4,p}   = \tfrac{1093903231235157}{3051757812500000},\\[2pt]
+  w_{5,p}  &= \tfrac{68010577069286354015457}{190734863281250000000000},\\[2pt]
+  w_{6,p}  &= \tfrac{530643781539235033209174164045859}
+                     {1490116119384765625000000000000000},\\[2pt]
+  w_{7,p}  &= \tfrac{414482703926927350301614898070367347374127633}
+                     {1164153218269348144531250000000000000000000000}.
+\end{align*}
+The three values relevant for \eqref{eq:need} are
+\[
+\resizebox{\linewidth}{!}{$\displaystyle
+  w_{8,p}  = \frac{2023853327938433890470824968643571135424092441889732878537}
+                   {5684341886080801486968994140625000000000000000000000000000},
+$}
+\]
+\[
+\resizebox{\linewidth}{!}{$\displaystyle
+  w_{9,p}  = \frac{3952857618215383133100247584897156447999263365727606978962326704682729081}
+                   {11102230246251565404236316680908203125000000000000000000000000000000000000},
+$}
+\]
+\[
+\resizebox{\linewidth}{!}{$\displaystyle
+  w_{10,p} = \frac{77203229003644966332027370229551549794100203632172810638275046062922260090714793610061923}
+                   {216840434497100886801490560173988342285156250000000000000000000000000000000000000000000000}.
+$}
+\]
+Subtracting and reducing to lowest terms gives
+\begin{equation}\label{eq:d98}
+\resizebox{\linewidth}{!}{$\displaystyle
+  w_{9,p}-w_{8,p}
+    = \frac{19087085629440774417568015181574124082815161722450569748579682729081}
+             {11102230246251565404236316680908203125000000000000000000000000000000000000}
+$}
+\end{equation}
+and
+\begin{equation}\label{eq:d910}
+\resizebox{\linewidth}{!}{$\displaystyle
+  w_{9,p}-w_{10,p}
+    = \frac{1021352124235486336840412971037080885408979694513169582897387912292272566456389938077}
+             {216840434497100886801490560173988342285156250000000000000000000000000000000000000000000000}.
+$}
+\end{equation}
+Both fractions in \eqref{eq:d98} and \eqref{eq:d910} have a positive
+integer numerator and a positive integer denominator, hence are strictly
+positive rationals. This establishes \eqref{eq:need}, so
+$i^{*}(11,3)=2$.
+\end{proof}
+
+\begin{remark}
+  The value $w_{9,p}$ at $p=\tfrac{21}{50}$ is a strict local maximum of
+  $m\mapsto w_{m,p}$: by \eqref{eq:d98}, $w_{9,p}>w_{8,p}$, and by
+  \eqref{eq:d910}, $w_{9,p}>w_{10,p}$. The optimal action at $(11,3)$
+  aims precisely at this peak---set aside $i=2$ heads so that $9$ coins
+  remain in play, neither $n-1=10$ (strategy~A) nor $n-k=8$
+  (strategy~B).
+\end{remark}
+
+\end{document}

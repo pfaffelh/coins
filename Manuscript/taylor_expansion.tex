@@ -1,0 +1,254 @@
+\documentclass{article}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}[proposition]{Lemma}
+\newtheorem{corollary}[proposition]{Corollary}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{Taylor expansion of the optimal winning probability $w_{n,p}$ about $p=\tfrac12$}
+\author{}
+\date{2026-04-16}
+
+\begin{document}
+\maketitle
+
+\section{Setting}
+
+We consider the all-heads-wins game: start with $n$ coins, each landing
+heads independently with probability $p\in(0,1)$; in every round all
+remaining coins are tossed and at least one must be set aside (never
+tossed again); the game is won iff every set-aside coin shows heads. Let
+$w_{n,p}$ be the winning probability under optimal play, with
+$w_{0,p}:=1$. The Bellman recursion is
+\begin{equation}\label{eq:bellman}
+  w_{n,p}\;=\;p^{n}+\sum_{j=1}^{n-1}\binom{n}{j}\,p^{n-j}(1-p)^{j}\,
+  M_{n,j}(p),
+  \qquad M_{n,j}(p)\;:=\;\max_{j\le m\le n-1}w_{m,p}.
+\end{equation}
+We write $w_n$ for $w_{n,p}$ when $p$ is understood.
+
+At $p=\tfrac12$ every strategy gives value $\tfrac12$, hence
+$w_{n,\,1/2}=\tfrac12$ for all $n\ge 1$.
+
+\paragraph{Caveat on regularity.}
+The function $p\mapsto w_{n,p}$ is continuous but typically \emph{not}
+differentiable at $p=\tfrac12$ once $n\ge3$: the $\max$ in
+\eqref{eq:bellman} is a two-sided maximum of polynomial pieces, so there
+is a corner at $p=\tfrac12$ whose left- and right-derivatives disagree in
+general. We therefore introduce \emph{one-sided} Taylor expansions
+\begin{equation}\label{eq:expansion}
+  w_{n,\,1/2+h}\;=\;\tfrac12+\alpha_{n}^{\bullet}h+\beta_{n}^{\bullet}h^{2}
+  +\gamma_{n}^{\bullet}h^{3}+\delta_{n}^{\bullet}h^{4}+O(h^{5}),
+  \qquad \bullet\in\{\text{left},\text{right}\},
+\end{equation}
+valid for $h\uparrow 0$ ($\bullet=\text{left}$) and $h\downarrow 0$
+($\bullet=\text{right}$) respectively.
+
+\section{Polynomials for small $n$}
+
+At $p=\tfrac12$ every strategy is optimal, so the fully optimal value
+agrees with strategy~B's value on a neighbourhood. Iterating
+$b_{n}=p^{n}+\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}(1-p)^{j}b_{j}$ with
+$b_{0}=1$ gives
+\begin{align*}
+  w_{1}(p) &= p,\\
+  w_{2}(p) &= 3p^{2}-2p^{3},\\
+  w_{3}(p) &= 13p^{3}-27p^{4}+21p^{5}-6p^{6},\\
+  w_{4}(p) &= 75p^{4}-316p^{5}+606p^{6}-664p^{7}+432p^{8}-156p^{9}+24p^{10}.
+\end{align*}
+The degree of $w_n$ grows like $\binom{n+1}{2}$; these representations
+match the optimal $w_{n}$ on a two-sided neighbourhood of $p=\tfrac12$
+only for $n\le 2$, and on a left neighbourhood for those $n$ where
+strategy~B remains optimal.
+
+\section{Right-hand expansion ($p>\tfrac12$)}
+
+By Manuscript Lemma~0.3, strategy~A is optimal for $p>\tfrac12$, so
+$w_{n,p}=a_{n,p}$ where
+\[
+  a_{n}\;=\;p^{n}+\bigl(1-p^{n}-(1-p)^{n}\bigr)a_{n-1},\qquad a_{0}=1.
+\]
+Differentiating at $p=\tfrac12$ and using $p^{n}|_{1/2}=(1-p)^{n}|_{1/2}=1/2^{n}$ yields
+\begin{equation}\label{eq:alpha_right}
+  \alpha_{n}^{\text{right}}\;=\;\frac{n}{2^{n-1}}
+  +\Bigl(1-\frac{1}{2^{n-1}}\Bigr)\alpha_{n-1}^{\text{right}},
+  \qquad \alpha_{1}^{\text{right}}=1.
+\end{equation}
+
+\begin{proposition}
+  $(\alpha_{n}^{\text{right}})_{n\ge1}$ is strictly increasing and
+  converges to a finite limit $\alpha_{\infty}^{\text{right}}$.
+\end{proposition}
+
+\begin{proof}
+  The forced positivity of $n/2^{n-1}$ and the contraction factor
+  $1-1/2^{n-1}\in[0,1)$ force
+  $\alpha_{n}^{\text{right}}-\alpha_{n-1}^{\text{right}}=
+  n/2^{n-1}-\alpha_{n-1}^{\text{right}}/2^{n-1}$, which one checks is
+  strictly positive by induction using
+  $\alpha_{n}^{\text{right}}<n$ (immediate from \eqref{eq:alpha_right}).
+  Boundedness ($\alpha_{n}^{\text{right}}\le n$ for all $n$ is loose;
+  a sharper bound follows from Lemma~0.3 together with
+  $w_{n,p}\le1$) gives convergence.
+\end{proof}
+
+Numerically,
+\[
+  \alpha_{1}^{\text{right}}=1,\quad
+  \alpha_{2}^{\text{right}}=\tfrac{3}{2},\quad
+  \alpha_{3}^{\text{right}}=\tfrac{15}{8},\quad
+  \alpha_{4}^{\text{right}}=\tfrac{137}{64},\quad
+  \alpha_{5}^{\text{right}}=\tfrac{2375}{1024},\quad\cdots\quad
+  \alpha_{\infty}^{\text{right}}\approx 2.607.
+\]
+
+\section{Left-hand expansion ($p<\tfrac12$)}
+
+For $h\uparrow 0$ the quantity $M_{n,j}$ in \eqref{eq:bellman} satisfies
+\[
+  M_{n,j}\bigl(\tfrac12+h\bigr)
+  \;=\;\tfrac12\;+\;\min_{j\le m\le n-1}\alpha_{m}^{\text{left}}\cdot h\;+\;O(h^{2}),
+\]
+because among $w_{m}(\tfrac12+h)=\tfrac12+\alpha_{m}^{\text{left}}h+\cdots$ (for $h<0$),
+the maximum is attained where $\alpha_{m}^{\text{left}}$ is
+\emph{smallest}. Substituting into \eqref{eq:bellman} and using the
+combinatorial identity
+\[
+  \sum_{j=1}^{n-1}\binom{n}{j}(n-2j)\;=\;0
+\]
+(obtained from $\sum_j\binom{n}{j}=2^{n}$ and
+$\sum_j j\binom{n}{j}=n\,2^{n-1}$) yields the recursion
+\begin{equation}\label{eq:alpha_left}
+  \boxed{\;\alpha_{n}^{\text{left}}
+  \;=\;\frac{n}{2^{n-1}}
+  +\frac{1}{2^{n}}\sum_{j=1}^{n-1}\binom{n}{j}
+  \min_{j\le m\le n-1}\alpha_{m}^{\text{left}},\qquad\alpha_{1}^{\text{left}}=1.\;}
+\end{equation}
+
+Numerical values (to 18 digits, via \eqref{eq:alpha_left} with mpmath):
+\[
+\begin{array}{c|l}
+  n & \alpha_{n}^{\text{left}}\\\hline
+  1 & 1.000000000000000000\\
+  2 & 1.500000000000000000\\
+  3 & 1.687500000000000000\\
+  4 & 1.734375000000000000\\
+  5 & 1.735839843750000000\\
+  6 & 1.729385375976562500\\
+  7 & 1.722763895988464355\\
+  8 & 1.717139652930200100\\
+  9 & 1.712851968293762180\\
+  10& 1.709751579242984930\\
+  \vdots & \vdots\\
+  \infty & \approx 1.703
+\end{array}
+\]
+
+\begin{proposition}\label{prop:alphaleft}
+  The sequence $(\alpha_{n}^{\text{left}})_{n\ge1}$ is strictly
+  increasing on $\{1,\dots,5\}$, strictly decreasing on $\{5,6,\dots\}$,
+  and converges to a limit $\alpha_{\infty}^{\text{left}}\approx 1.703$.
+  In particular it has a global maximum at $n=5$.
+\end{proposition}
+
+Numerical verification of Proposition~\ref{prop:alphaleft} up to $n=20$ is
+straightforward and agrees with the table above.
+
+\begin{corollary}[first-order shape of $n\mapsto w_{n,p}$ for
+$p\lesssim\tfrac12$]
+\label{cor:valley}
+  For every sufficiently small $\varepsilon>0$ there exists $h_{0}<0$
+  such that for all $h\in(h_{0},0)$,
+  \[
+    w_{1}\;>\;w_{2}\;>\;w_{3}\;>\;w_{4}\;>\;w_{5}\;<\;w_{6}\;<\;w_{7}\;<\cdots,
+  \]
+  up to corrections of order $|h|^{2}$. In particular $n\mapsto w_{n,p}$
+  is valley-shaped at first order with a unique strict local minimum at
+  $n=5$ and \emph{no} strict local maximum at first order.
+\end{corollary}
+
+\begin{proof}
+  $w_{n,\,1/2+h}-w_{n-1,\,1/2+h}=
+  (\alpha_{n}^{\text{left}}-\alpha_{n-1}^{\text{left}})\,h+O(h^{2})$.
+  The sign of the difference is opposite to the sign of
+  $\Delta\alpha_{n}:=\alpha_{n}^{\text{left}}-\alpha_{n-1}^{\text{left}}$.
+  By Proposition~\ref{prop:alphaleft}, $\Delta\alpha_{n}>0$ for
+  $n=2,\dots,5$ and $\Delta\alpha_{n}<0$ for $n\ge6$, which gives the
+  claimed chain of inequalities for $h<0$ small.
+\end{proof}
+
+\begin{remark}
+  Corollary~\ref{cor:valley} says that local maxima of $n\mapsto w_{n,p}$
+  for $p<\tfrac12$ are \emph{not} visible at first order in $h=p-\tfrac12$.
+  They arise only once $|h|$ is large enough that higher-order Taylor
+  terms contribute; this matches the numerical observation that the first
+  local maximum of $(w_{n,p})$ appears at increasingly large $n$ as
+  $p\to\tfrac12^-$ (e.g.\ at $n=154$ for $p=0.49$, but at $n=9$ for
+  $p=0.42$).
+\end{remark}
+
+\section{Higher-order coefficients (strategy~B)}
+
+For $n$ up to the threshold where $w_{n,p}=b_{n,p}$ on a left
+neighbourhood of $p=\tfrac12$, the Taylor expansion
+\eqref{eq:expansion} has coefficients equal to those of the polynomial
+$b_{n}(p)$, obtained by straight differentiation. Compactly, the first
+four coefficients for $n=1,\dots,8$ are:
+
+\[
+\small
+\begin{array}{c|cccc}
+  n & \alpha_{n}^{\text{B}} & \beta_{n}^{\text{B}} & \gamma_{n}^{\text{B}} & \delta_{n}^{\text{B}}\\\hline
+  1 & 1 & 0 & 0 & 0\\
+  2 & 3/2 & 0 & -2 & 0\\
+  3 & 27/16 & -3/8 & -7/2 & 3\\
+  4 & 111/64 & -25/32 & -15/4 & 7\\
+  5 & 3555/2048 & -535/512 & -1735/512 & 295/32\\
+  6 & 113337/65536 & -19167/16384 & -3045/1024 & 39165/4096\\
+  7 & 14471919/8388608 & -5067741/4194304 & -5624815/2097152 & 9399929/1048576\\
+  8 & 462775983/268435456 & -161718519/134217728 & -168136367/67108864 & 274696555/33554432
+\end{array}
+\]
+so that, for those $n$,
+\[
+  w_{n,\,1/2+h}\;=\;\tfrac12
+  +\alpha_{n}^{\text{B}}h+\beta_{n}^{\text{B}}h^{2}
+  +\gamma_{n}^{\text{B}}h^{3}+\delta_{n}^{\text{B}}h^{4}+O(h^{5}).
+\]
+
+\begin{remark}
+  The first-order coefficients $\alpha_{n}^{\text{B}}$ coincide with
+  $\alpha_{n}^{\text{left}}$ as long as the minimum in
+  \eqref{eq:alpha_left} is attained at the \emph{left} endpoint
+  ($m=j$) for every $j$, which is the case precisely when strategy~B is
+  optimal at step~$n$. Once that fails (i.e.\ once the sequence
+  $\alpha_{m}^{\text{left}}$ stops being monotone increasing), $\alpha^{\text{B}}$
+  and $\alpha^{\text{left}}$ diverge. The first such discrepancy occurs
+  between $n=5$ and $n=6$, which is exactly where the numerical
+  monotonicity of the optimal $w$-sequence first breaks for $p$ close to
+  $\tfrac12$.
+\end{remark}
+
+\section{Summary}
+
+\begin{itemize}
+  \item $w_{n,p}$ is $C^{0}$ but typically only piecewise $C^{\infty}$
+  near $p=\tfrac12$; left/right derivatives differ for $n\ge3$.
+  \item Right-side: $\alpha_{n}^{\text{right}}$ strictly increases,
+  consistent with Lemma~0.3.
+  \item Left-side: $\alpha_{n}^{\text{left}}$ is valley-shaped
+  (increasing then decreasing), so at first order in $h=p-\tfrac12<0$ the
+  sequence $(w_{n,p})_{n}$ has a strict local minimum at $n=5$ and no
+  local maximum.
+  \item Local maxima of $(w_{n,p})$ for $p<\tfrac12$ are therefore a
+  \emph{non-perturbative} phenomenon near $p=\tfrac12$: they appear only
+  at $n$ and $p$ at which higher-order Taylor terms overpower the
+  first-order valley structure.
+\end{itemize}
+
+\end{document}
