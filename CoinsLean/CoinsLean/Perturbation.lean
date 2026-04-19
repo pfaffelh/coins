@@ -926,8 +926,26 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
       -- (b) Lower bound at level n
       ----------------------------------------------------------------
       have hB_lt : B_lin n < 1 := by
-        -- B_n = (2 + n + C(n,2) + C(n,3)) / 2^n. For n ≥ 7, B_n < 1.
-        sorry
+        -- B_n = (2 + n + C(n,2) + C(n,3)) / 2^n. For n ≥ 7 (in fact n ≥ 5)
+        -- the numerator is strictly less than 2^n, since the missing terms
+        -- C(n, 4), …, C(n, n-1) are all strictly positive.
+        unfold B_lin
+        rw [div_lt_one (by positivity : (0 : ℝ) < (2 : ℝ) ^ n)]
+        -- Goal: 2 + n + C(n,2) + C(n,3) < 2^n.
+        have h_3 := choose_sum_3_to_pred n (by omega)
+        have h_split : Ico 3 n = insert 3 (Ico 4 n) := by
+          ext; simp only [mem_Ico, mem_insert]; omega
+        have h_no3 : 3 ∉ Ico 4 n := by simp [mem_Ico]
+        rw [h_split, sum_insert h_no3] at h_3
+        -- h_3 : ↑(C n 3) + ∑ Ico 4 n, ↑(C n j) = 2^n - 2 - n - ↑(C n 2)
+        have h_sum_pos : (0 : ℝ) < ∑ j ∈ Ico 4 n, ((Nat.choose n j : ℕ) : ℝ) := by
+          apply Finset.sum_pos
+          · intro j hj
+            have hj' := mem_Ico.mp hj
+            have : 0 < Nat.choose n j := Nat.choose_pos (by omega)
+            exact_mod_cast this
+          · exact ⟨4, by simp [mem_Ico]; omega⟩
+        linarith [h_sum_pos]
       have hB_pos : 0 < B_lin n := by
         unfold B_lin
         have : (0 : ℝ) < (2 + (n : ℝ) + (Nat.choose n 2 : ℝ) + (Nat.choose n 3 : ℝ)) := by
@@ -960,8 +978,28 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
       ----------------------------------------------------------------
       have h_c : c n < c (n - 1) := by
         rcases (show n ≤ 12 ∨ 13 ≤ n by omega) with h_le | h_ge
-        · -- n ∈ [7, 12]: per-n numerical (requires explicit c_7..c_12).
-          sorry
+        · -- n ∈ [7, 12]: per-n numerical.
+          -- Approach: substitute c_n via h_d, chain back to c_6 using
+          -- IH(d) at smaller levels, plug in c_6 = 113337/65536, and
+          -- close numerically.
+          rw [h_d]
+          rcases (show n = 7 ∨ 8 ≤ n ∧ n ≤ 12 by omega) with hn7 | ⟨hn8, hnle⟩
+          · -- n = 7: only need c_6 explicitly.
+            subst hn7
+            rw [show (7 - 1 : ℕ) = 6 from rfl, c_six]
+            unfold A_lin B_lin
+            rw [c_one, c_two, c_three]
+            have h72 : ((Nat.choose 7 2 : ℕ) : ℝ) = 21 := by
+              exact_mod_cast (by decide : Nat.choose 7 2 = 21)
+            have h73 : ((Nat.choose 7 3 : ℕ) : ℝ) = 35 := by
+              exact_mod_cast (by decide : Nat.choose 7 3 = 35)
+            rw [h72, h73]
+            norm_num
+          · -- n ∈ [8, 12]: chained derivation of c_{n-1} from c_6 via IH(d).
+            -- Full proof would unfold IH(d) at levels 7, 8, …, n-1 and
+            -- substitute. Skipped here as 5 separate cases of bounded
+            -- algebraic computation.
+            sorry
         · -- n ≥ 13: A_n - (27/16) B_n < 0 by alg_id, so c_n < c_{n-1}.
           rw [h_d]
           have h_alg := alg_id n (by omega)
