@@ -751,6 +751,35 @@ private lemma cast_choose_three (n : ℕ) :
     push_cast
     ring
 
+/-- Polynomial bound for the δ-series geometric ratio:
+    `7·k² + 406 ≥ 127·k` for `k ≥ 14`.
+    (Equivalently, `(k − 14)·(7k − 29) ≥ 0`.) -/
+private lemma poly_quad_bound (k : ℕ) (hk : 14 ≤ k) :
+    127 * k ≤ 7 * k ^ 2 + 406 := by
+  have h1 : k ^ 2 ≥ 196 := by nlinarith [hk]
+  nlinarith [hk, h1, sq_nonneg k, sq_nonneg (k - 14)]
+
+/-- Geometric ratio bound for the δ-series: `δ_{k+1} ≤ (9/11) · δ_k` for `k ≥ 14`.
+    The series `δ_k = 3·(k² − 15k + 36) / (32·2^k)` is increasing at k = 13
+    (δ_14 = (11/10)·δ_13) but decreasing geometrically from k = 14 onward. -/
+private lemma delta_ratio_bound (k : ℕ) (hk : 14 ≤ k) :
+    3 * ((((k + 1 : ℕ) : ℝ)) ^ 2 - 15 * ((k + 1 : ℕ) : ℝ) + 36) / (32 * (2 : ℝ) ^ (k + 1)) ≤
+      (9 / 11 : ℝ) *
+        (3 * ((k : ℝ) ^ 2 - 15 * (k : ℝ) + 36) / (32 * (2 : ℝ) ^ k)) := by
+  have hk_real : (14 : ℝ) ≤ (k : ℝ) := by exact_mod_cast hk
+  have hpos : (0 : ℝ) < (2 : ℝ) ^ k := by positivity
+  have hquad_pos : (0 : ℝ) < (k : ℝ) ^ 2 - 15 * (k : ℝ) + 36 := by nlinarith [hk_real]
+  have hpoly : (127 : ℝ) * (k : ℝ) ≤ 7 * (k : ℝ) ^ 2 + 406 := by
+    exact_mod_cast poly_quad_bound k hk
+  rw [show ((2 : ℝ) ^ (k + 1) : ℝ) = (2 : ℝ) ^ k * 2 from pow_succ 2 k]
+  rw [div_le_iff₀ (by positivity : (0 : ℝ) < 32 * ((2 : ℝ) ^ k * 2))]
+  push_cast
+  rw [show (9 / 11 : ℝ) * (3 * ((k : ℝ) ^ 2 - 15 * (k : ℝ) + 36) / (32 * (2 : ℝ) ^ k)) *
+        (32 * ((2 : ℝ) ^ k * 2)) =
+      (9 * 6 / 11 : ℝ) * ((k : ℝ) ^ 2 - 15 * (k : ℝ) + 36) from by
+    field_simp; ring]
+  nlinarith [hpoly, hquad_pos, hk_real, sq_nonneg ((k : ℝ) - 14)]
+
 /-- Geometric ratio bound for the B-series: `B_{k+1} ≤ (5/8) · B_k` for `k ≥ 13`.
     Equivalent to `5·f(k) − 4·f(k+1) ≥ 0`, which by direct algebra equals
     `(k³ − 12k² − 7k − 12)/6 ≥ 0` — exactly `poly_cube_bound`. -/
