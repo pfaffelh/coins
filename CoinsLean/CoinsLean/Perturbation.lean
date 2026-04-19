@@ -124,3 +124,37 @@ theorem c_two : c 2 = 3/2 := by
   rw [hIco, sum_singleton]
   rw [show (0 + 2 : ℕ) = 1 + 1 from rfl, suffMin_singleton, c_one]
   norm_num
+
+/-- Two-element suffix-min: `suffMin n (n+2) = min (c n) (c (n+1))`. -/
+theorem suffMin_pair (n : ℕ) : suffMin n (n + 2) = min (c n) (c (n + 1)) := by
+  unfold suffMin
+  rw [dif_pos (by omega : n < n + 2)]
+  apply le_antisymm
+  · apply le_min
+    · exact Finset.inf'_le _
+        (mem_attach _ ⟨n, mem_Ico.mpr ⟨le_refl _, by omega⟩⟩)
+    · exact Finset.inf'_le _
+        (mem_attach _ ⟨n + 1, mem_Ico.mpr ⟨by omega, by omega⟩⟩)
+  · apply Finset.le_inf'
+    intro m _
+    have hm := mem_Ico.mp m.prop
+    rcases (show m.val = n ∨ m.val = n + 1 by omega) with h | h
+    · rw [h]; exact min_le_left _ _
+    · rw [h]; exact min_le_right _ _
+
+/-- Example 4.5, second value: c_3 = 27/16. -/
+theorem c_three : c 3 = 27/16 := by
+  change c (1 + 2) = 27/16
+  rw [c_succ]
+  have hIco : Ico 1 (1 + 2) = ({1, 2} : Finset ℕ) := by
+    ext x; simp only [mem_Ico, mem_insert, mem_singleton]; omega
+  rw [hIco, sum_insert (by simp), sum_singleton]
+  -- suffMin 1 3 = min (c 1) (c 2) = min 1 (3/2) = 1
+  have hs1 : suffMin 1 (1 + 2) = 1 := by
+    rw [show (1 + 2 : ℕ) = 1 + 2 from rfl, suffMin_pair, c_one, c_two]
+    norm_num
+  -- suffMin 2 3 = suffMin 2 (2+1) = c 2 = 3/2
+  have hs2 : suffMin 2 (1 + 2) = 3/2 := by
+    rw [show (1 + 2 : ℕ) = 2 + 1 from rfl, suffMin_singleton, c_two]
+  rw [hs1, hs2]
+  norm_num
