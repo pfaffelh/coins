@@ -730,6 +730,19 @@ noncomputable def A_lin (n : ℕ) : ℝ :=
 noncomputable def B_lin (n : ℕ) : ℝ :=
   (2 + (n : ℝ) + (Nat.choose n 2 : ℝ) + (Nat.choose n 3 : ℝ)) / (2 : ℝ) ^ n
 
+/-- Polynomial bound used for the geometric tail of the B-series:
+    For `k ≥ 13`, `k^3 ≥ 12·k^2 + 7·k + 12`. Equivalently,
+    `k^2·(k-12) ≥ 7k + 12`. -/
+private lemma poly_cube_bound (k : ℕ) (hk : 13 ≤ k) :
+    12 * k ^ 2 + 7 * k + 12 ≤ k ^ 3 := by
+  have h1 : k ^ 2 ≥ 169 := by nlinarith [hk]
+  have h2 : k ^ 3 = k * k ^ 2 := by ring
+  have h3 : k * k ^ 2 ≥ 13 * k ^ 2 := by nlinarith [hk, sq_nonneg k]
+  -- 13 k^2 = 12 k^2 + k^2 ≥ 12 k^2 + 169 ≥ 12 k^2 + 7k + 12 (since 7k + 12 ≤ 169 for k ≤ 22…)
+  -- Actually we need to bound 7k + 12 by k^2. For k ≥ 13: k^2 ≥ 169 ≥ 7k + 12 iff k ≤ 22.
+  -- For k > 22: k^2 ≥ 23·k > 7k + 12 (since 16k > 12 for k ≥ 1).
+  nlinarith [hk, h1, h2, h3, sq_nonneg (k - 13)]
+
 /-- The algebraic identity from Proposition 4.9 (eq:alg-id):
     `A_n − (27/16) · B_n = −3·(n²−15n+36) / (32·2^n)`.
 
