@@ -738,10 +738,40 @@ private lemma poly_cube_bound (k : ℕ) (hk : 13 ≤ k) :
   have h1 : k ^ 2 ≥ 169 := by nlinarith [hk]
   have h2 : k ^ 3 = k * k ^ 2 := by ring
   have h3 : k * k ^ 2 ≥ 13 * k ^ 2 := by nlinarith [hk, sq_nonneg k]
-  -- 13 k^2 = 12 k^2 + k^2 ≥ 12 k^2 + 169 ≥ 12 k^2 + 7k + 12 (since 7k + 12 ≤ 169 for k ≤ 22…)
-  -- Actually we need to bound 7k + 12 by k^2. For k ≥ 13: k^2 ≥ 169 ≥ 7k + 12 iff k ≤ 22.
-  -- For k > 22: k^2 ≥ 23·k > 7k + 12 (since 16k > 12 for k ≥ 1).
   nlinarith [hk, h1, h2, h3, sq_nonneg (k - 13)]
+
+/-- Real cast of `Nat.choose n 3 = n * (n-1) * (n-2) / 6`. Holds for all `n` because
+    both sides are `0` for `n ∈ {0, 1, 2}`. -/
+private lemma cast_choose_three (n : ℕ) :
+    ((Nat.choose n 3 : ℕ) : ℝ) = (n : ℝ) * ((n : ℝ) - 1) * ((n : ℝ) - 2) / 6 := by
+  induction n with
+  | zero => simp [Nat.choose]
+  | succ m ih =>
+    rw [Nat.choose_succ_succ, Nat.cast_add, Nat.cast_choose_two ℝ m, ih]
+    push_cast
+    ring
+
+/-- Geometric ratio bound for the B-series: `B_{k+1} ≤ (5/8) · B_k` for `k ≥ 13`.
+    Equivalent to `5·f(k) − 4·f(k+1) ≥ 0`, which by direct algebra equals
+    `(k³ − 12k² − 7k − 12)/6 ≥ 0` — exactly `poly_cube_bound`. -/
+private lemma B_ratio_bound (k : ℕ) (hk : 13 ≤ k) :
+    B_lin (k + 1) ≤ (5 / 8 : ℝ) * B_lin k := by
+  unfold B_lin
+  rw [Nat.cast_choose_two ℝ k, cast_choose_three k,
+      Nat.cast_choose_two ℝ (k + 1), cast_choose_three (k + 1)]
+  rw [pow_succ]
+  have hpos : (0 : ℝ) < (2 : ℝ) ^ k := by positivity
+  have hpoly_r : (12 : ℝ) * (k : ℝ) ^ 2 + 7 * (k : ℝ) + 12 ≤ (k : ℝ) ^ 3 := by
+    exact_mod_cast poly_cube_bound k hk
+  push_cast
+  rw [div_le_iff₀ (by positivity : (0 : ℝ) < 2 ^ k * 2)]
+  rw [show (5 / 8 : ℝ) * ((2 + (k : ℝ) + (k : ℝ) * ((k : ℝ) - 1) / 2 +
+        (k : ℝ) * ((k : ℝ) - 1) * ((k : ℝ) - 2) / 6) / (2 : ℝ) ^ k) *
+        ((2 : ℝ) ^ k * 2) =
+      (5 / 4) * (2 + (k : ℝ) + (k : ℝ) * ((k : ℝ) - 1) / 2 +
+        (k : ℝ) * ((k : ℝ) - 1) * ((k : ℝ) - 2) / 6) from by
+    field_simp; ring]
+  nlinarith [hpoly_r, hpos, sq_nonneg ((k : ℝ) - 13)]
 
 /-- The algebraic identity from Proposition 4.9 (eq:alg-id):
     `A_n − (27/16) · B_n = −3·(n²−15n+36) / (32·2^n)`.
