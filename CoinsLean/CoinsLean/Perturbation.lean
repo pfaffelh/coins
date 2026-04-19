@@ -251,6 +251,35 @@ theorem c_five : c 5 = 3555/2048 := by
   Example 4.5; the inductive bound for m ∈ {6,…,12} and the asymptotic case
   m ≥ 13 are left for future work. -/
 
+/-! ### Proposition 4.2: deficit recursion
+
+  Restating the Bellman equation in terms of the deficit `Δ_{n,p} := 1/2 − w_{n,p}`:
+      Δ_{n+1,p} = ((1−p)^(n+1) − p^(n+1)) / 2
+                 + ∑_{j=1}^{n} C(n+1,j) p^{n+1−j} (1−p)^j · (1/2 − suffMax p j (n+1)).
+  Since `min Δ_m = 1/2 − max w_m`, the bracketed factor is exactly `min_{j ≤ m ≤ n} Δ_m`. -/
+
+theorem deficit_succ (p : ℝ) (n : ℕ) :
+    deficit p (n + 1) = ((1 - p) ^ (n + 1) - p ^ (n + 1)) / 2 +
+      ∑ j ∈ Ico 1 (n + 1),
+        (Nat.choose (n + 1) j : ℝ) * p ^ (n + 1 - j) * (1 - p) ^ j *
+          (1/2 - suffMax p j (n + 1)) := by
+  unfold deficit
+  rw [w_succ]
+  have hbinom := binom_sum_middle p (n + 1) (by omega)
+  -- Split the RHS sum: ∑ C * (1/2 - suffMax) = (1/2) * ∑ C - ∑ C * suffMax.
+  have hRHS_sum :
+      ∑ j ∈ Ico 1 (n + 1), (Nat.choose (n + 1) j : ℝ) * p ^ (n + 1 - j) * (1 - p) ^ j *
+          (1/2 - suffMax p j (n + 1))
+      =
+      (1/2) * (1 - p ^ (n + 1) - (1 - p) ^ (n + 1)) -
+      ∑ j ∈ Ico 1 (n + 1), (Nat.choose (n + 1) j : ℝ) * p ^ (n + 1 - j) * (1 - p) ^ j *
+          suffMax p j (n + 1) := by
+    rw [← hbinom, Finset.mul_sum, ← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intros j _; ring
+  rw [hRHS_sum]
+  ring
+
 theorem c_four_ge : c 4 ≥ 27/16 := by rw [c_four]; norm_num
 
 theorem c_five_ge : c 5 ≥ 27/16 := by rw [c_five]; norm_num

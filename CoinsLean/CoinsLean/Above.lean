@@ -11,7 +11,7 @@ import CoinsLean.Optimal
 open Finset BigOperators Nat
 
 /-- ∑_{j=1}^{n-1} C(n,j) p^{n-j} (1-p)^j = 1 - p^n - (1-p)^n  (for n ≥ 1). -/
-private lemma binom_sum_middle (p : ℝ) (n : ℕ) (hn : 1 ≤ n) :
+theorem binom_sum_middle (p : ℝ) (n : ℕ) (hn : 1 ≤ n) :
     (∑ j ∈ Ico 1 n, (Nat.choose n j : ℝ) * p ^ (n - j) * (1 - p) ^ j) =
     1 - p ^ n - (1 - p) ^ n := by
   have htotal : (∑ j ∈ range (n + 1),
