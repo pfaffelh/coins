@@ -125,6 +125,29 @@ theorem c_two : c 2 = 3/2 := by
   rw [show (0 + 2 : ℕ) = 1 + 1 from rfl, suffMin_singleton, c_one]
   norm_num
 
+/-- Splitting suffix-min: `suffMin n m = min (c n) (suffMin (n+1) m)` when `n+1 < m`. -/
+theorem suffMin_split (n m : ℕ) (h : n + 1 < m) :
+    suffMin n m = min (c n) (suffMin (n + 1) m) := by
+  unfold suffMin
+  rw [dif_pos (by omega : n < m), dif_pos (by omega : n + 1 < m)]
+  apply le_antisymm
+  · apply le_min
+    · exact Finset.inf'_le _
+        (mem_attach _ ⟨n, mem_Ico.mpr ⟨le_refl _, by omega⟩⟩)
+    · apply Finset.le_inf'
+      intro k _
+      have hk := mem_Ico.mp k.prop
+      exact Finset.inf'_le _
+        (mem_attach _ ⟨k.val, mem_Ico.mpr ⟨by omega, hk.2⟩⟩)
+  · apply Finset.le_inf'
+    intro m' _
+    have hm' := mem_Ico.mp m'.prop
+    rcases (show m'.val = n ∨ n + 1 ≤ m'.val by omega) with heq | hge
+    · rw [heq]; exact min_le_left _ _
+    · refine min_le_right _ _ |>.trans ?_
+      exact Finset.inf'_le _
+        (mem_attach _ ⟨m'.val, mem_Ico.mpr ⟨hge, hm'.2⟩⟩)
+
 /-- Two-element suffix-min: `suffMin n (n+2) = min (c n) (c (n+1))`. -/
 theorem suffMin_pair (n : ℕ) : suffMin n (n + 2) = min (c n) (c (n + 1)) := by
   unfold suffMin
@@ -157,4 +180,29 @@ theorem c_three : c 3 = 27/16 := by
   have hs2 : suffMin 2 (1 + 2) = 3/2 := by
     rw [show (1 + 2 : ℕ) = 2 + 1 from rfl, suffMin_singleton, c_two]
   rw [hs1, hs2]
+  norm_num
+
+/-- Example 4.5, third value: c_4 = 111/64. -/
+theorem c_four : c 4 = 111/64 := by
+  change c (2 + 2) = 111/64
+  rw [c_succ]
+  have hIco : Ico 1 (2 + 2) = ({1, 2, 3} : Finset ℕ) := by
+    ext x; simp only [mem_Ico, mem_insert, mem_singleton]; omega
+  rw [hIco, sum_insert (by simp), sum_insert (by simp), sum_singleton]
+  -- suffMin 1 4 = min (c 1) (min (c 2) (c 3)) = min 1 (min (3/2) (27/16)) = 1
+  have hs1 : suffMin 1 (2 + 2) = 1 := by
+    have h1 : suffMin 1 (2 + 2) = min (c 1) (suffMin 2 (2 + 2)) :=
+      suffMin_split 1 (2 + 2) (by omega)
+    have h2 : suffMin 2 (2 + 2) = min (c 2) (c 3) := suffMin_pair 2
+    rw [h1, h2, c_one, c_two, c_three]; norm_num
+  have hs2 : suffMin 2 (2 + 2) = 3/2 := by
+    rw [suffMin_pair, c_two, c_three]; norm_num
+  have hs3 : suffMin 3 (2 + 2) = 27/16 := by
+    change suffMin 3 (3 + 1) = 27/16
+    rw [suffMin_singleton, c_three]
+  rw [hs1, hs2, hs3]
+  have hc2 : (Nat.choose 4 2 : ℝ) = 6 := by
+    have : Nat.choose 4 2 = 6 := by decide
+    exact_mod_cast this
+  rw [hc2]
   norm_num
