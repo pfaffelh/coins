@@ -759,6 +759,10 @@ private lemma poly_quad_bound (k : ℕ) (hk : 14 ≤ k) :
   have h1 : k ^ 2 ≥ 196 := by nlinarith [hk]
   nlinarith [hk, h1, sq_nonneg k, sq_nonneg (k - 14)]
 
+/-- The δ sequence in real form: `δ_k = 3·(k² − 15k + 36) / (32·2^k)`. -/
+private noncomputable def delta_seq (k : ℕ) : ℝ :=
+  3 * ((k : ℝ) ^ 2 - 15 * (k : ℝ) + 36) / (32 * (2 : ℝ) ^ k)
+
 /-- Geometric ratio bound for the δ-series: `δ_{k+1} ≤ (9/11) · δ_k` for `k ≥ 14`.
     The series `δ_k = 3·(k² − 15k + 36) / (32·2^k)` is increasing at k = 13
     (δ_14 = (11/10)·δ_13) but decreasing geometrically from k = 14 onward. -/
@@ -779,6 +783,60 @@ private lemma delta_ratio_bound (k : ℕ) (hk : 14 ≤ k) :
       (9 * 6 / 11 : ℝ) * ((k : ℝ) ^ 2 - 15 * (k : ℝ) + 36) from by
     field_simp; ring]
   nlinarith [hpoly, hquad_pos, hk_real, sq_nonneg ((k : ℝ) - 14)]
+
+/-- Generic geometric tail-sum bound: if `x_{k+1} ≤ r · x_k` for all `k ≥ a`
+    with `0 ≤ r < 1` and `0 ≤ x_a`, then for any `N`,
+    `∑_{k=a}^{N-1} x_k ≤ x_a / (1 - r)`. -/
+private lemma geometric_sum_bound (x : ℕ → ℝ) (a : ℕ) (r : ℝ)
+    (hr_nn : 0 ≤ r) (hr_lt : r < 1) (hx_nn : 0 ≤ x a)
+    (hx_geo : ∀ k, a ≤ k → x (k + 1) ≤ r * x k) :
+    ∀ N, ∑ k ∈ Finset.Ico a N, x k ≤ x a / (1 - r) := by
+  -- Step 1: x_k ≤ x_a · r^{k-a} for k ≥ a, by induction.
+  have h_term : ∀ k, a ≤ k → x k ≤ x a * r ^ (k - a) := by
+    intro k hk
+    induction k, hk using Nat.le_induction with
+    | base => simp
+    | succ m hm ih =>
+      have h1 := hx_geo m hm
+      have h2 : r * x m ≤ r * (x a * r ^ (m - a)) := mul_le_mul_of_nonneg_left ih hr_nn
+      have h3 : r * (x a * r ^ (m - a)) = x a * r ^ ((m + 1) - a) := by
+        rw [show ((m + 1) - a : ℕ) = (m - a) + 1 from by omega, pow_succ]
+        ring
+      linarith
+  intro N
+  rcases (Nat.lt_or_ge N a) with hNa | hNa
+  · have : Finset.Ico a N = ∅ := Finset.Ico_eq_empty (by omega)
+    rw [this, Finset.sum_empty]
+    apply div_nonneg hx_nn (by linarith)
+  · have h1 : ∀ k ∈ Finset.Ico a N, x k ≤ x a * r ^ (k - a) := by
+      intro k hk
+      have hka := (Finset.mem_Ico.mp hk).1
+      exact h_term k hka
+    have h_sum_le : ∑ k ∈ Finset.Ico a N, x k ≤
+        ∑ k ∈ Finset.Ico a N, x a * r ^ (k - a) := Finset.sum_le_sum h1
+    have h_factor : ∑ k ∈ Finset.Ico a N, x a * r ^ (k - a) =
+        x a * ∑ k ∈ Finset.Ico a N, r ^ (k - a) := by rw [← Finset.mul_sum]
+    have h_reindex : ∑ k ∈ Finset.Ico a N, r ^ (k - a) =
+        ∑ j ∈ Finset.range (N - a), r ^ j := by
+      rw [Finset.sum_Ico_eq_sum_range]
+      apply Finset.sum_congr rfl
+      intro k _
+      congr 1
+      omega
+    have h_geom_summable : Summable (fun n : ℕ => r ^ n) :=
+      summable_geometric_of_lt_one hr_nn hr_lt
+    have h_partial_le_tsum : ∑ j ∈ Finset.range (N - a), r ^ j ≤ ∑' n : ℕ, r ^ n :=
+      h_geom_summable.sum_le_tsum (Finset.range (N - a))
+        (fun i _ => pow_nonneg hr_nn i)
+    have h_tsum : ∑' n : ℕ, r ^ n = (1 - r)⁻¹ := tsum_geometric_of_lt_one hr_nn hr_lt
+    rw [h_tsum] at h_partial_le_tsum
+    have h_inv : (1 - r)⁻¹ = 1 / (1 - r) := inv_eq_one_div _
+    rw [h_inv] at h_partial_le_tsum
+    calc ∑ k ∈ Finset.Ico a N, x k
+        ≤ x a * ∑ k ∈ Finset.Ico a N, r ^ (k - a) := by rw [← h_factor]; exact h_sum_le
+      _ = x a * ∑ j ∈ Finset.range (N - a), r ^ j := by rw [h_reindex]
+      _ ≤ x a * (1 / (1 - r)) := mul_le_mul_of_nonneg_left h_partial_le_tsum hx_nn
+      _ = x a / (1 - r) := by ring
 
 /-- Geometric ratio bound for the B-series: `B_{k+1} ≤ (5/8) · B_k` for `k ≥ 13`.
     Equivalent to `5·f(k) − 4·f(k+1) ≥ 0`, which by direct algebra equals
@@ -801,6 +859,68 @@ private lemma B_ratio_bound (k : ℕ) (hk : 13 ≤ k) :
         (k : ℝ) * ((k : ℝ) - 1) * ((k : ℝ) - 2) / 6) from by
     field_simp; ring]
   nlinarith [hpoly_r, hpos, sq_nonneg ((k : ℝ) - 13)]
+
+/-- B-tail bound: `∑_{k=13}^N B_k ≤ 1/8` for all `N`. -/
+private lemma B_tail_bound (N : ℕ) :
+    ∑ k ∈ Finset.Ico 13 N, B_lin k ≤ (1 / 8 : ℝ) := by
+  have h_nn : (0 : ℝ) ≤ B_lin 13 := by unfold B_lin; positivity
+  have h_geo := geometric_sum_bound B_lin 13 (5 / 8 : ℝ)
+    (by norm_num) (by norm_num) h_nn B_ratio_bound N
+  -- h_geo : ∑ ≤ B_lin 13 / (1 - 5/8) = B_lin 13 · 8/3
+  -- Need: B_lin 13 · 8/3 ≤ 1/8, i.e., B_lin 13 ≤ 3/64.
+  have h_value : B_lin 13 = 379 / 8192 := by
+    unfold B_lin
+    rw [Nat.cast_choose_two ℝ 13, cast_choose_three 13]
+    push_cast
+    norm_num
+  have h_compute : B_lin 13 / (1 - 5 / 8 : ℝ) ≤ 1 / 8 := by
+    rw [h_value]; norm_num
+  linarith
+
+/-- δ-series ratio in `delta_seq` form (matches `geometric_sum_bound`'s shape). -/
+private lemma delta_seq_ratio (k : ℕ) (hk : 14 ≤ k) :
+    delta_seq (k + 1) ≤ (9 / 11 : ℝ) * delta_seq k := by
+  unfold delta_seq
+  have h := delta_ratio_bound k hk
+  push_cast at h ⊢
+  exact h
+
+/-- δ-tail bound: `∑_{k=13}^N delta_seq k ≤ 1/200` for all `N`. -/
+private lemma delta_tail_bound (N : ℕ) :
+    ∑ k ∈ Finset.Ico 13 N, delta_seq k ≤ (1 / 200 : ℝ) := by
+  -- δ_k = 3·(k²-15k+36)/(32·2^k). δ_13 = 30/262144. Increasing at k=14, decreasing thereafter.
+  -- Split: ∑_{k=13}^N = δ_13 + ∑_{k=14}^N (if N ≥ 14).
+  have h_nn14 : (0 : ℝ) ≤ delta_seq 14 := by
+    unfold delta_seq
+    have : (0 : ℝ) ≤ 3 * (((14 : ℕ) : ℝ) ^ 2 - 15 * ((14 : ℕ) : ℝ) + 36) := by push_cast; norm_num
+    positivity
+  rcases (Nat.lt_or_ge N 14) with hN | hN
+  · -- N ≤ 13: sum is empty (or has only k = 13 if N = 14, but here N < 14 so N ≤ 13).
+    rcases (Nat.lt_or_ge N 13) with hN13 | hN13
+    · have : Finset.Ico 13 N = ∅ := Finset.Ico_eq_empty (by omega)
+      rw [this, Finset.sum_empty]; norm_num
+    · -- 13 ≤ N < 14, so N = 13. Sum = ∅.
+      have hN_eq : N = 13 := by omega
+      subst hN_eq
+      simp [Finset.Ico_self]
+  · -- N ≥ 14: split.
+    have h_split : Finset.Ico 13 N = insert 13 (Finset.Ico 14 N) := by
+      ext x
+      simp only [Finset.mem_Ico, Finset.mem_insert]
+      omega
+    have h_no_13 : 13 ∉ Finset.Ico 14 N := by simp [Finset.mem_Ico]
+    rw [h_split, Finset.sum_insert h_no_13]
+    -- ∑ = δ_13 + ∑_{k ∈ Ico 14 N} δ_k
+    have h_geo := geometric_sum_bound delta_seq 14 (9 / 11 : ℝ)
+      (by norm_num) (by norm_num) h_nn14 delta_seq_ratio N
+    -- h_geo : ∑_{Ico 14 N} ≤ δ_14 / (1 - 9/11) = δ_14 · 11/2
+    have h_value13 : delta_seq 13 = 30 / 262144 := by
+      unfold delta_seq; push_cast; norm_num
+    have h_value14 : delta_seq 14 = 66 / 524288 := by
+      unfold delta_seq; push_cast; norm_num
+    have h_compute : delta_seq 13 + delta_seq 14 / (1 - 9 / 11 : ℝ) ≤ 1 / 200 := by
+      rw [h_value13, h_value14]; norm_num
+    linarith
 
 /-- The algebraic identity from Proposition 4.9 (eq:alg-id):
     `A_n − (27/16) · B_n = −3·(n²−15n+36) / (32·2^n)`.
