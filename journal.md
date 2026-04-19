@@ -1537,3 +1537,121 @@ real-analysis exercises with Mathlib's `Asymptotics.IsBigO`
 machinery; the inductive step is then a direct combination.
 
 Pushed as commit `493e1d5`.
+
+## 2026-04-19 — Closing joint_step: Lemmas 4.6, 4.7, 4.8 + Prop 4.9 fully formalized
+
+The `joint_step` proof had three internal sub-sorries left after
+the initial structuring (commit `f87d0c5`):
+
+1. `hB_lt`: `B_n < 1` for `n ≥ 7`.
+2. (c) for `n ∈ [7, 12]`: per-n numerical decrease.
+3. (b) for `n ≥ 13`: cumulative argument.
+
+Each was closed in turn:
+
+### `hB_lt` (commit `82b2ef6`)
+
+`B_n = (2 + n + C(n,2) + C(n,3)) / 2^n`. Using
+`choose_sum_3_to_pred` (already proved) we have
+`2^n = 2 + n + C(n,2) + C(n,3) + ∑_{j=4}^{n−1} C(n,j)`, and the
+last sum is strictly positive for `n ≥ 7` (nonempty index set,
+each `C(n, j) > 0`). So the numerator is strictly less than `2^n`.
+
+### (c) for `n ∈ [7, 12]` (commits `82b2ef6`, `3b4b859`, `83481dc`)
+
+Per-n numerical inequality `c_n < c_{n−1}`, using `h_d` to express
+`c_n = A_n + (1−B_n)·c_{n−1}` and substituting `c_{n−1}`'s
+explicit value back through `c_six`. Two strategies:
+
+- **n = 7, 8, 9, 10**: derive a numerical `hc_{n−1}` by chaining
+  IH(d) at smaller levels, plug into the goal, close with
+  `norm_num`. Numerators stay tractable (≤ 14-digit denominator
+  `2^49`).
+- **n = 11, 12**: switch to symbolic chain (don't pin numerical
+  values for `c_10` and `c_11`); the resulting `norm_num` call
+  handles a deeply nested but still-rational expression.
+
+Six cases done; (c) sub-sorry fully closed.
+
+### (b) for `n ≥ 13` (commits `a4fd139` … `d1d30a1`)
+
+This is the manuscript's "cumulative argument": starting from
+`c_12 − 27/16 ≥ 1/60`, the per-step recursive loss `δ_k` and the
+"shrinkage factor" `1 − B_k` are both small enough that
+`c_n − 27/16` stays positive forever.
+
+The full chain of formalization:
+
+1. **Buffer**: `h_buffer : c 12 ≥ 27/16 + 1/60`.
+   Built inside (b) ≥ 13 via the IH(d) chain
+   `hc7 → hc8 → … → hc12`. The final `norm_num` closes a deeply
+   nested rational expression (commit `a4fd139`).
+
+2. **Polynomial bounds**:
+   - `poly_cube_bound`: `12·k² + 7k + 12 ≤ k³` for `k ≥ 13`
+     (commit `2ce697b`). This is the algebraic core for
+     `B_{k+1} ≤ (5/8)·B_k`.
+   - `poly_quad_bound`: `127·k ≤ 7·k² + 406` for `k ≥ 14`
+     (commit `5a67add`). Algebraic core for
+     `δ_{k+1} ≤ (9/11)·δ_k`. (The δ-series increases at k = 13,
+     so the geometric ratio starts at k = 14.)
+
+3. **Cast lemma**: `cast_choose_three`:
+   `(Nat.choose n 3 : ℝ) = n·(n−1)·(n−2)/6` for all `n` (proved by
+   induction using Pascal's rule and `Nat.cast_choose_two`).
+   Commit `04fb3fa`.
+
+4. **Geometric ratio bounds**:
+   - `B_ratio_bound`: `B_{k+1} ≤ (5/8)·B_k` for `k ≥ 13`
+     (commit `04fb3fa`).
+   - `delta_ratio_bound`: `δ_{k+1} ≤ (9/11)·δ_k` for `k ≥ 14`
+     (commit `5a67add`).
+
+5. **Generic geometric tail-sum lemma**: `geometric_sum_bound`:
+   given `0 ≤ r < 1`, `0 ≤ x_a`, and
+   `∀ k ≥ a, x (k+1) ≤ r · x k`, conclude
+   `∀ N, ∑_{k=a}^{N−1} x_k ≤ x_a / (1−r)`. Uses Mathlib's
+   `summable_geometric_of_lt_one` and `tsum_geometric_of_lt_one`.
+   Commit `897fab6`.
+
+6. **Specific tail bounds**:
+   - `B_tail_bound`: `∑_{k=13}^{N−1} B_k ≤ 1/8` (numerical:
+     `B_13 · 8/3 = 379/3072 < 1/8 = 384/3072`).
+   - `delta_tail_bound`: `∑_{k=13}^{N−1} delta_seq k ≤ 1/200`.
+     Splits at k = 14: `δ_13 + δ_14 · 11/2 < 1/200`.
+
+7. **Cumulative ε invariant**: `cum_eps_bound`:
+   `c m − 27/16 ≥ (1/60)·(1 − ∑ B_k) − ∑ delta_seq k` for `m ≥ 12`,
+   given the buffer at m = 12 and the linear recursion at all
+   `k ∈ [13, m]`. Inductive: at each step,
+   `LHS − RHS = B_{k+1}·((1/60)·∑ B + ∑ δ) ≥ 0`.
+
+8. **Combine**: inside (b) ≥ 13, build the `h_lin_rec` function
+   (combining IH(d) at `k < n` with local h_d at `k = n`), apply
+   `cum_eps_bound n h_buffer h_lin_rec`, and combine with
+   `B_tail_bound (n + 1)` and `delta_tail_bound (n + 1)`:
+   `c n − 27/16 ≥ (1/60)·(7/8) − 1/200 = 23/2400 > 0`.
+
+🎉 **Sorry count: 10 → 9**. `joint_step` is now fully proved.
+The four manuscript-facing lemmas (Lemma 4.6, 4.7, 4.8, Prop 4.9)
+are formally established without sorry-conditionality.
+
+The remaining 9 sorries are all in §4.4 (Δ → c bridge
+sub-lemmas, Theorem 4.10 limit, Corollary 4.11 shape claims),
+which are independent of §4.3.
+
+### Status snapshot
+
+| Manuscript Result | Status |
+|---|---|
+| §1, §2 (Theorem 2.1) | ✅ |
+| §3 (Theorem 3.1) | ✅ |
+| §4.1-4.2 (Definitions, Prop 4.2) | ✅ |
+| Example 4.5 (`c_2`...`c_6`) | ✅ |
+| Lemma 4.6 (collapse) | ✅ |
+| Lemma 4.7 (lower bound, all m ≥ 4) | ✅ |
+| Lemma 4.8 (decreasing for n ≥ 5) | ✅ |
+| Prop 4.9 (linear recursion) | ✅ |
+| Prop 4.4 (Δ → c bridge) | ⏸ n=1 base only |
+| Theorem 4.10 (limit L) | ⏸ |
+| Cor 4.11 (shape) | ⏸ |

@@ -1140,3 +1140,141 @@ being one giant stub. Pushed as commit `f87d0c5`.
 > Please update claude.md and journal.md
 
 Extended both files with Prompts 85-89 (this update).
+
+### Prompt 90
+> Yes, I want you to chip away at the three remaining sub-sorries inside joint_step?
+
+Closed two of three sub-sorries:
+- **`hB_lt`** (`B_n < 1` for n ≥ 7): proved via `choose_sum_3_to_pred`
+  + `Finset.sum_pos` on the `j ≥ 4` part.
+- **(c) for n = 7**: c_7 < c_6 reduces to a concrete rational
+  inequality after substituting c_6 = 113337/65536 and the cast
+  lemmas Nat.choose 7 2 = 21, Nat.choose 7 3 = 35; closed by `norm_num`.
+
+Pushed as commits `82b2ef6`.
+
+### Prompts 91-92
+> continue / yes
+
+Extended (c) ≤ 12 case:
+- **n = 8**: pre-derived `hc8 = 1843764663 / 1073741824` from h_d at 7
+  + c_six.
+- **n = 9**: derived `hc9 = 941650327899 / 549755813888` from h_d at 8
+  + hc8.
+- **n = 10**: pattern continues with `hc10`.
+- **n = 11, 12**: switched to symbolic chain (no need to specify
+  numerical c_10 and c_11 values; norm_num handles the deeply nested
+  rational).
+
+After all six cases: (c) ≤ 12 sub-sorry is fully closed. Only
+remaining sub-sorry inside joint_step: (b) for n ≥ 13.
+
+Pushed as commits `3b4b859`, `83481dc`.
+
+### Prompt 93
+> /usage
+
+Clarified that `/usage` is a Claude Code slash command, not something
+I can execute — user should type it in the prompt directly. Offered
+informal session summary.
+
+### Prompt 94
+> Continue
+
+Started attacking (b) ≥ 13:
+- Derived `c_12` explicitly inside (b) ≥ 13 via the IH(d) chain
+  hc7 → hc8 → … → hc12 (six derivations using cast lemmas).
+- Verified `h_buffer : c_12 ≥ 27/16 + 1/60` by `norm_num` on the
+  fully-substituted symbolic expression.
+- Pushed as commit `a4fd139`.
+
+Then proved the polynomial fact `poly_cube_bound : 12·k² + 7·k + 12 ≤ k³`
+for k ≥ 13 (the algebraic core for the geometric ratio
+`B_{k+1} ≤ (5/8)·B_k`). Pushed as `2ce697b`.
+
+### Prompt 95
+> Can you try 2. for a limited amount of time?
+
+Attempted four different inductive lower-bound invariants for
+`c_n ≥ 27/16 + γ` (constant `γ`, polynomial `α/n^k`, threshold
+`L₀`, substitution `(c_n − 27/16)·2^n`). All four fail at the
+inductive step or the base case because the naive recursive bound
+on `c_12 − 27/16 ≥ 2847/8388608 ≈ 3.4·10⁻⁴` is too small to
+bootstrap any clean invariant — the manuscript's actual buffer
+`> 1/60` is genuinely needed and requires explicit computation.
+
+Reported back that "option 2" doesn't escape the underlying need
+for some explicit computation.
+
+### Prompt 96
+> Yes, please do option 1 compactly.
+
+Did Compactly: derived hc12 explicitly via the IH(d) chain
+inside (b) ≥ 13, verified `h_buffer : c_12 ≥ 27/16 + 1/60`. Already
+done in Prompt 94 — this prompt confirmed direction.
+
+### Prompt 97
+> Please attempt the series-tail bound.
+
+Built the algebraic foundation for the geometric tail:
+- **`cast_choose_three`**: `(Nat.choose n 3 : ℝ) = n·(n−1)·(n−2)/6`
+  for all `n`. Proved by induction using `Nat.choose_succ_succ`
+  (Pascal) and `Nat.cast_choose_two`.
+- **`B_ratio_bound`**: `B_{k+1} ≤ (5/8)·B_k` for `k ≥ 13`.
+  After unfolding B_lin and substituting cast lemmas, `nlinarith`
+  closes using `poly_cube_bound`.
+- **`poly_quad_bound`**: `7·k² + 406 ≥ 127·k` for `k ≥ 14`.
+- **`delta_ratio_bound`**: `δ_{k+1} ≤ (9/11)·δ_k` for `k ≥ 14`
+  (the δ-series is increasing at k = 13, so the geometric ratio
+  starts at k = 14). Translates `poly_quad_bound` to ℝ and uses
+  `nlinarith`.
+
+Pushed as commits `04fb3fa`, `5a67add`.
+
+### Prompt 98
+> yes, let's do it!!!
+
+Pushed all the way through to closing the (b) ≥ 13 sub-sorry,
+fully proving Lemmas 4.6, 4.7, 4.8 and Prop 4.9.
+
+New lemmas added:
+- **`geometric_sum_bound`**: generic
+  `(0 ≤ r < 1) → (0 ≤ x_a) → (∀ k ≥ a, x (k+1) ≤ r · x k) → ∀ N, ∑_{k=a}^{N-1} x_k ≤ x_a / (1-r)`.
+  Proves first `x_k ≤ x_a · r^(k-a)` by `Nat.le_induction`, then bounds
+  `∑_{j=0}^{N-a-1} r^j ≤ ∑'_n r^n = (1-r)⁻¹` using Mathlib's
+  `summable_geometric_of_lt_one` and `tsum_geometric_of_lt_one`.
+- **`B_tail_bound`**: `∑_{k=13}^{N-1} B_k ≤ 1/8` (numerical:
+  `B_13 = 379/8192`, `B_13 · 8/3 = 379/3072 < 384/3072 = 1/8`).
+- **`delta_seq`** + **`delta_seq_ratio`**: rephrasing of
+  delta_ratio_bound using a clean `delta_seq` definition for use
+  with `geometric_sum_bound`.
+- **`delta_tail_bound`**: `∑_{k=13}^{N-1} delta_seq k ≤ 1/200`.
+  Splits at k = 14: `δ_13 + δ_14 · 11/2 < 1/200`.
+- **`cum_eps_bound`**: cumulative invariant
+  `c m − 27/16 ≥ (1/60)·(1 − ∑ B_k) − ∑ delta_seq k`
+  for m ≥ 12, given the buffer at m = 12 and the linear recursion at
+  all k ∈ [13, m]. Inductive: at each step,
+    LHS − RHS = B_{k+1} · ((1/60)·∑ B + ∑ δ) ≥ 0
+  closes via nlinarith with h_alg, nonnegativities, and B_lin (k+1) < 1.
+
+Application inside (b) ≥ 13:
+- Build `h_lin_rec : ∀ k ∈ [13, n], c k = A_lin k + (1−B_lin k)·c (k−1)`
+  by combining IH(d) at k < n with the local h_d at k = n.
+- Apply `cum_eps_bound n h_buffer h_lin_rec`.
+- Combine with `B_tail_bound (n+1)` and `delta_tail_bound (n+1)`:
+    c n − 27/16 ≥ (1/60)·(7/8) − 1/200 = 23/2400 > 0.
+- linarith closes.
+
+🎉 **Sorry count: 10 → 9.** joint_step is fully proved end-to-end.
+The four manuscript-facing lemmas (Lemma 4.6, 4.7, 4.8, Prop 4.9)
+are now formally established, no longer sorry-conditional.
+
+The remaining 9 sorries are all in §4.4 (Δ→c bridge sub-lemmas,
+Theorem 4.10 limit, Cor 4.11 shape claims) — independent of §4.3.
+
+Pushed as commits `897fab6`, `d1d30a1`.
+
+### Prompt 99
+> please update claude.md and journal.md
+
+Extended both files with Prompts 90-99 (this update).
