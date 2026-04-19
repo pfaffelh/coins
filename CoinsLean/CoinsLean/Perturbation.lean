@@ -996,10 +996,80 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
             rw [h72, h73]
             norm_num
           · -- n ∈ [8, 12]: chained derivation of c_{n-1} from c_6 via IH(d).
-            -- Full proof would unfold IH(d) at levels 7, 8, …, n-1 and
-            -- substitute. Skipped here as 5 separate cases of bounded
-            -- algebraic computation.
-            sorry
+            -- Pre-derive c_7 from IH(d) at 7 + c_six.
+            have hc7 : c 7 = 14451591 / 8388608 := by
+              have h_d7 := (ih 7 (by omega) (by omega)).2.2.1 (by omega)
+              rw [show (7 - 1 : ℕ) = 6 from rfl, c_six] at h_d7
+              unfold A_lin B_lin at h_d7
+              rw [c_one, c_two, c_three] at h_d7
+              have h72 : ((Nat.choose 7 2 : ℕ) : ℝ) = 21 := by
+                exact_mod_cast (by decide : Nat.choose 7 2 = 21)
+              have h73 : ((Nat.choose 7 3 : ℕ) : ℝ) = 35 := by
+                exact_mod_cast (by decide : Nat.choose 7 3 = 35)
+              rw [h72, h73] at h_d7
+              rw [h_d7]; norm_num
+            rcases (show n = 8 ∨ 9 ≤ n ∧ n ≤ 12 by omega) with hn8' | ⟨hn9, hnle9⟩
+            · -- n = 8: only need c_7.
+              subst hn8'
+              rw [show (8 - 1 : ℕ) = 7 from rfl, hc7]
+              unfold A_lin B_lin
+              rw [c_one, c_two, c_three]
+              have h82 : ((Nat.choose 8 2 : ℕ) : ℝ) = 28 := by
+                exact_mod_cast (by decide : Nat.choose 8 2 = 28)
+              have h83 : ((Nat.choose 8 3 : ℕ) : ℝ) = 56 := by
+                exact_mod_cast (by decide : Nat.choose 8 3 = 56)
+              rw [h82, h83]
+              norm_num
+            · -- n ∈ [9, 12]: derive c_8 first.
+              have hc8 : c 8 = 1843764663 / 1073741824 := by
+                have h_d8 := (ih 8 (by omega) (by omega)).2.2.1 (by omega)
+                rw [show (8 - 1 : ℕ) = 7 from rfl, hc7] at h_d8
+                unfold A_lin B_lin at h_d8
+                rw [c_one, c_two, c_three] at h_d8
+                have h82 : ((Nat.choose 8 2 : ℕ) : ℝ) = 28 := by
+                  exact_mod_cast (by decide : Nat.choose 8 2 = 28)
+                have h83 : ((Nat.choose 8 3 : ℕ) : ℝ) = 56 := by
+                  exact_mod_cast (by decide : Nat.choose 8 3 = 56)
+                rw [h82, h83] at h_d8
+                rw [h_d8]; norm_num
+              rcases (show n = 9 ∨ 10 ≤ n ∧ n ≤ 12 by omega) with hn9' | ⟨hn10, hnle10⟩
+              · -- n = 9: only need c_8.
+                subst hn9'
+                rw [show (9 - 1 : ℕ) = 8 from rfl, hc8]
+                unfold A_lin B_lin
+                rw [c_one, c_two, c_three]
+                have h92 : ((Nat.choose 9 2 : ℕ) : ℝ) = 36 := by
+                  exact_mod_cast (by decide : Nat.choose 9 2 = 36)
+                have h93 : ((Nat.choose 9 3 : ℕ) : ℝ) = 84 := by
+                  exact_mod_cast (by decide : Nat.choose 9 3 = 84)
+                rw [h92, h93]
+                norm_num
+              · -- n ∈ [10, 12]: extend the chain by deriving hc9.
+                have hc9 : c 9 = 941650327899 / 549755813888 := by
+                  have h_d9 := (ih 9 (by omega) (by omega)).2.2.1 (by omega)
+                  rw [show (9 - 1 : ℕ) = 8 from rfl, hc8] at h_d9
+                  unfold A_lin B_lin at h_d9
+                  rw [c_one, c_two, c_three] at h_d9
+                  have h92 : ((Nat.choose 9 2 : ℕ) : ℝ) = 36 := by
+                    exact_mod_cast (by decide : Nat.choose 9 2 = 36)
+                  have h93 : ((Nat.choose 9 3 : ℕ) : ℝ) = 84 := by
+                    exact_mod_cast (by decide : Nat.choose 9 3 = 84)
+                  rw [h92, h93] at h_d9
+                  rw [h_d9]; norm_num
+                rcases (show n = 10 ∨ 11 ≤ n ∧ n ≤ 12 by omega) with hn10' | ⟨hn11, hnle11⟩
+                · -- n = 10: only need c_9.
+                  subst hn10'
+                  rw [show (10 - 1 : ℕ) = 9 from rfl, hc9]
+                  unfold A_lin B_lin
+                  rw [c_one, c_two, c_three]
+                  have hA2 : ((Nat.choose 10 2 : ℕ) : ℝ) = 45 := by
+                    exact_mod_cast (by decide : Nat.choose 10 2 = 45)
+                  have hA3 : ((Nat.choose 10 3 : ℕ) : ℝ) = 120 := by
+                    exact_mod_cast (by decide : Nat.choose 10 3 = 120)
+                  rw [hA2, hA3]
+                  norm_num
+                · -- n ∈ [11, 12]: extend chain again.
+                  sorry
         · -- n ≥ 13: A_n - (27/16) B_n < 0 by alg_id, so c_n < c_{n-1}.
           rw [h_d]
           have h_alg := alg_id n (by omega)
