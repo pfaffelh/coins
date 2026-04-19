@@ -971,7 +971,73 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
             · linarith
             · linarith
           nlinarith [h_alg_nn, hcn1, hB_lt, hB_pos]
-        · -- n ≥ 13: cumulative argument (manuscript: ε_12 > 1/60, etc.)
+        · -- n ≥ 13: cumulative argument.
+          -- Step 1: Derive c_12 explicitly via IH(d) chain back to c_six.
+          -- Cast lemmas for choose values used in the chain.
+          have h7c2 : ((Nat.choose 7 2 : ℕ) : ℝ) = 21 := by
+            exact_mod_cast (by decide : Nat.choose 7 2 = 21)
+          have h7c3 : ((Nat.choose 7 3 : ℕ) : ℝ) = 35 := by
+            exact_mod_cast (by decide : Nat.choose 7 3 = 35)
+          have h8c2 : ((Nat.choose 8 2 : ℕ) : ℝ) = 28 := by
+            exact_mod_cast (by decide : Nat.choose 8 2 = 28)
+          have h8c3 : ((Nat.choose 8 3 : ℕ) : ℝ) = 56 := by
+            exact_mod_cast (by decide : Nat.choose 8 3 = 56)
+          have h9c2 : ((Nat.choose 9 2 : ℕ) : ℝ) = 36 := by
+            exact_mod_cast (by decide : Nat.choose 9 2 = 36)
+          have h9c3 : ((Nat.choose 9 3 : ℕ) : ℝ) = 84 := by
+            exact_mod_cast (by decide : Nat.choose 9 3 = 84)
+          have hAc2 : ((Nat.choose 10 2 : ℕ) : ℝ) = 45 := by
+            exact_mod_cast (by decide : Nat.choose 10 2 = 45)
+          have hAc3 : ((Nat.choose 10 3 : ℕ) : ℝ) = 120 := by
+            exact_mod_cast (by decide : Nat.choose 10 3 = 120)
+          have hBc2 : ((Nat.choose 11 2 : ℕ) : ℝ) = 55 := by
+            exact_mod_cast (by decide : Nat.choose 11 2 = 55)
+          have hBc3 : ((Nat.choose 11 3 : ℕ) : ℝ) = 165 := by
+            exact_mod_cast (by decide : Nat.choose 11 3 = 165)
+          have hCc2 : ((Nat.choose 12 2 : ℕ) : ℝ) = 66 := by
+            exact_mod_cast (by decide : Nat.choose 12 2 = 66)
+          have hCc3 : ((Nat.choose 12 3 : ℕ) : ℝ) = 220 := by
+            exact_mod_cast (by decide : Nat.choose 12 3 = 220)
+          -- Build the chain h_d7 → h_d12.
+          have h_d7 := (ih 7 (by omega) (by omega)).2.2.1 (by omega)
+          rw [show (7 - 1 : ℕ) = 6 from rfl, c_six] at h_d7
+          unfold A_lin B_lin at h_d7
+          rw [c_one, c_two, c_three] at h_d7
+          rw [h7c2, h7c3] at h_d7
+          have h_d8 := (ih 8 (by omega) (by omega)).2.2.1 (by omega)
+          rw [show (8 - 1 : ℕ) = 7 from rfl, h_d7] at h_d8
+          unfold A_lin B_lin at h_d8
+          rw [c_one, c_two, c_three] at h_d8
+          rw [h8c2, h8c3] at h_d8
+          have h_d9 := (ih 9 (by omega) (by omega)).2.2.1 (by omega)
+          rw [show (9 - 1 : ℕ) = 8 from rfl, h_d8] at h_d9
+          unfold A_lin B_lin at h_d9
+          rw [c_one, c_two, c_three] at h_d9
+          rw [h9c2, h9c3] at h_d9
+          have h_d10 := (ih 10 (by omega) (by omega)).2.2.1 (by omega)
+          rw [show (10 - 1 : ℕ) = 9 from rfl, h_d9] at h_d10
+          unfold A_lin B_lin at h_d10
+          rw [c_one, c_two, c_three] at h_d10
+          rw [hAc2, hAc3] at h_d10
+          have h_d11 := (ih 11 (by omega) (by omega)).2.2.1 (by omega)
+          rw [show (11 - 1 : ℕ) = 10 from rfl, h_d10] at h_d11
+          unfold A_lin B_lin at h_d11
+          rw [c_one, c_two, c_three] at h_d11
+          rw [hBc2, hBc3] at h_d11
+          have h_d12 := (ih 12 (by omega) (by omega)).2.2.1 (by omega)
+          rw [show (12 - 1 : ℕ) = 11 from rfl, h_d11] at h_d12
+          unfold A_lin B_lin at h_d12
+          rw [c_one, c_two, c_three] at h_d12
+          rw [hCc2, hCc3] at h_d12
+          -- Step 2: Verify the buffer c_12 ≥ 27/16 + 1/60.
+          have h_buffer : c 12 ≥ 27 / 16 + 1 / 60 := by
+            rw [h_d12]; norm_num
+          -- Step 3: Cumulative argument (sub-sorry).
+          -- Given h_buffer, show c n ≥ 27/16 by maintaining the invariant
+          --   c n − 27/16 ≥ (c_12 − 27/16) · ∏_{k=13}^n (1 − B_k)
+          --                 − ∑_{k=13}^n (3(k²−15k+36) / (32·2^k))
+          -- and bounding the product ≥ 7/8 and the cumulative sum ≤ 1/200.
+          -- The result is c n − 27/16 ≥ (1/60)·(7/8) − 1/200 = 23/2400 > 0.
           sorry
       ----------------------------------------------------------------
       -- (c) Strict decrease at level n
