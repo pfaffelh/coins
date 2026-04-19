@@ -1655,3 +1655,61 @@ which are independent of §4.3.
 | Prop 4.4 (Δ → c bridge) | ⏸ n=1 base only |
 | Theorem 4.10 (limit L) | ⏸ |
 | Cor 4.11 (shape) | ⏸ |
+
+## 2026-04-19 — Manuscript remarks from formalization, end-of-day summary
+
+The formalization surfaced two minor expository gaps in §4.3 that
+were patched into the manuscript (commit `2a5d013`):
+
+1. **`B_n < 1` justification.** Previously the manuscript said
+   "one checks $0 < B_n < 1$ for all $n \ge 7$"; we now spell out
+   the (elementary) argument: the numerator
+   $2 + n + \binom{n}{2} + \binom{n}{3}$ is strictly less than
+   $2^n = \sum_{j=0}^n \binom{n}{j}$ because the missing terms
+   $\sum_{j=4}^{n-1}\binom{n}{j} > 0$.
+
+2. **δ-series is not monotone at the start of the tail.** The
+   manuscript's bound on $\sum_{k\ge 13} \delta_k$ uses the closed
+   form $\sum k^2/2^k = 99/2048$, which sidesteps the fact that
+   $\delta_{14}/\delta_{13} = 11/10 > 1$. An inductive treatment
+   must split at $k = 14$ for the geometric ratio to converge —
+   added as a parenthetical note for the iterative reader. (The
+   Lean formalization uses exactly this split.)
+
+No mathematical errors or contradictions surfaced; the
+formalization is consistent with the manuscript throughout.
+
+### End-of-day session summary
+
+**Today's commits** (16 total, from `db6613c` to `2a5d013`):
+
+- §4 alignment with the manuscript restructure: `c_6`, `alg_id`,
+  `joint_step` skeleton + four corollaries (`a8546e8`).
+- Δ → c bridge scaffolding: `deficit_first_order_one` proved,
+  three sub-lemmas isolated (`493e1d5`).
+- `joint_step` proof: helpers, base cases, (a) collapse and
+  (d) linear recursion fully proved at the inductive step
+  (`f87d0c5`).
+- `joint_step` sub-sorry chip-away: `hB_lt`, (c) for n = 7 …
+  (`82b2ef6`); (c) for n = 8, 9, 10 (`3b4b859`); (c) for n = 11, 12
+  (`83481dc`); `hc12` chain + buffer 1/60 (`a4fd139`);
+  `poly_cube_bound` (`2ce697b`).
+- Failed attempt at a clean inductive bound (no commit; kept
+  returning to the buffer requirement).
+- Series-tail bound: `cast_choose_three`, `B_ratio_bound`
+  (`04fb3fa`); `poly_quad_bound`, `delta_ratio_bound` (`5a67add`);
+  `geometric_sum_bound`, `B_tail_bound`, `delta_seq_ratio`,
+  `delta_tail_bound` (`897fab6`); `cum_eps_bound` and final closure
+  of (b) ≥ 13 — **`joint_step` fully proved** (`d1d30a1`).
+- Two manuscript remarks from formalization findings (`2a5d013`).
+- claude.md / journal.md updates (`20b4337`, `2fd2c15`, this).
+
+**Sorry count:** 12 (start of session yesterday) → 10 → 9.
+
+**§4.3 is fully formalized** with no sorry conditionality.
+
+**Tomorrow:** §4.4 — Δ → c bridge sub-lemmas (real analysis),
+Theorem 4.10 limit (Filter.Tendsto), Cor 4.11 shape claims.
+Estimated ~600 lines total. Items 1–3 (real-analysis sub-lemmas)
+and 5–6 (limit theorem) can proceed in parallel; items 4 and 7–9
+follow.

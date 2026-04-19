@@ -1278,3 +1278,68 @@ Pushed as commits `897fab6`, `d1d30a1`.
 > please update claude.md and journal.md
 
 Extended both files with Prompts 90-99 (this update).
+
+### Prompt 100
+> Did anything in the formalization come up which needs an update in
+> manuscript, e.g. edge cases?
+
+Identified three observations from the formalization, with no actual
+mathematical errors but two minor clarifications worth adding to the
+manuscript:
+
+1. The δ-series is **increasing at k = 13** (`δ_14/δ_13 = 11/10`)
+   before decreasing geometrically from k = 14. The closed-form
+   route in the manuscript bypasses this; an inductive proof must
+   split at k = 14.
+2. **`B_n < 1`** for n ≥ 7 is used implicitly (in (1 − B_n)·c_{n−1}
+   for the linear recursion). The numerator
+   `2 + n + C(n,2) + C(n,3)` is strictly less than `2^n` because
+   the missing terms `∑_{j=4}^{n-1} C(n,j) > 0`.
+3. The buffer `ε_12 > 1/60` is *very* tight numerically (actual
+   value ≈ 0.01672 vs `1/60 ≈ 0.01667`); a larger buffer would
+   work too but the manuscript's choice is correct.
+
+### Prompt 101
+> yes
+
+Added the two clarifying remarks (1) and (2) to §4.3 of
+manuscript.tex. Pushed as commit `2a5d013`. PDF stays at 8 pages.
+
+### Prompt 102
+> What needs to be fixed still?
+
+Provided a status snapshot:
+
+**Fully formalized:** §1, §2, §3, §4.1, §4.2, §4.3 (joint_step
+done — Lemmas 4.6, 4.7, 4.8, Prop 4.9 + Example 4.5 values).
+
+**Still has `sorry` (9 total, all in §4.4):**
+1. `constant_term_taylor` — Taylor estimate for the deficit
+   constant term.
+2. `binom_weight_perturb` — linear perturbation of the binomial
+   weights.
+3. `suffMinDelta_first_order` — perturbation of the suffix-min.
+4. `deficit_first_order` (n ≥ 2 step) — combine 1, 2, 3.
+5. `c_limit_exists` — Theorem 4.10 existence.
+6. `c_limit_formula` — Theorem 4.10 explicit formula.
+7. `w_gap_first_order` — Cor 4.11 (i).
+8. `w_local_min_at_five` — Cor 4.11 (ii).
+9. `no_first_order_local_max` — Cor 4.11 (iii).
+
+Items 5, 6 are tractable independently (use the now-proved Prop 4.9
++ Mathlib's filter machinery). Items 7-9 wait on item 4. Items 1-3
+are independent real-analysis lemmas. Estimated total effort:
+~600 lines.
+
+### Prompt 103
+> Let us do this tomorrow and stop formalizing today.
+
+Acknowledged. End-of-session summary: 15 commits today since
+`6c6ce2a`; §1–§4.3 fully formalized; 9 sorries remain in §4.4.
+Latest commit `2a5d013` on `main`, pushed to
+https://github.com/pfaffelh/coins. Build green.
+
+### Prompt 104
+> Final update of journal.md and claude.md for today.
+
+This update — Prompts 100-104.
