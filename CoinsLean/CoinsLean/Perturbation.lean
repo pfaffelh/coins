@@ -280,6 +280,46 @@ theorem deficit_succ (p : ℝ) (n : ℕ) :
   rw [hRHS_sum]
   ring
 
+/-- Proposition 4.2 (i): for `0 < p < 1/2` and `n ≥ 1`, the deficit is positive. -/
+theorem deficit_pos_of_below (p : ℝ) (hp_pos : 0 < p) (hp_lt : p < 1/2) :
+    ∀ n : ℕ, 1 ≤ n → 0 < deficit p n := by
+  intro n hn
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+    obtain ⟨n', rfl⟩ : ∃ n', n = n' + 1 := ⟨n - 1, by omega⟩
+    rw [deficit_succ]
+    have hq_pos : 0 < 1 - p := by linarith
+    have hpq : p < 1 - p := by linarith
+    -- First term: ((1-p)^(n'+1) - p^(n'+1)) / 2 > 0  since 1 - p > p > 0.
+    have hpow_lt : p ^ (n' + 1) < (1 - p) ^ (n' + 1) :=
+      pow_lt_pow_left₀ hpq hp_pos.le (by omega)
+    have h_first : 0 < ((1 - p) ^ (n' + 1) - p ^ (n' + 1)) / 2 := by
+      apply _root_.div_pos (by linarith) (by norm_num)
+    -- Sum term: each summand ≥ 0 (the factor `1/2 - suffMax p j (n'+1)` is ≥ 0
+    -- because every w p m on the suffix is < 1/2 by IH).
+    have h_sum_nn : 0 ≤ ∑ j ∈ Ico 1 (n' + 1),
+        (Nat.choose (n' + 1) j : ℝ) * p ^ (n' + 1 - j) * (1 - p) ^ j *
+          (1/2 - suffMax p j (n' + 1)) := by
+      apply Finset.sum_nonneg
+      intro j hj
+      have hjr := mem_Ico.mp hj
+      have h_choose : 0 ≤ (Nat.choose (n' + 1) j : ℝ) := by exact_mod_cast Nat.zero_le _
+      have h_pp : 0 ≤ p ^ (n' + 1 - j) := pow_nonneg hp_pos.le _
+      have h_qq : 0 ≤ (1 - p) ^ j := pow_nonneg hq_pos.le _
+      have h_sufmax_le : suffMax p j (n' + 1) ≤ 1/2 := by
+        unfold suffMax
+        rw [dif_pos hjr.2]
+        apply Finset.sup'_le
+        intro m _
+        have hm := mem_Ico.mp m.prop
+        have h_def_pos : 0 < deficit p m.val :=
+          ih m.val (by omega) (by omega)
+        unfold deficit at h_def_pos
+        linarith
+      have h_factor : 0 ≤ 1/2 - suffMax p j (n' + 1) := by linarith
+      positivity
+    linarith
+
 theorem c_four_ge : c 4 ≥ 27/16 := by rw [c_four]; norm_num
 
 theorem c_five_ge : c 5 ≥ 27/16 := by rw [c_five]; norm_num
