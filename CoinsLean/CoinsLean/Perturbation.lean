@@ -765,6 +765,31 @@ theorem alg_id (n : ℕ) (hn : 1 ≤ n) :
 
   Base cases: `n ∈ {4, 5, 6}` from `c_four`, `c_five`, `c_six`. -/
 
+/-- Helper: `suffMin j n = c k` whenever `c k` is the minimum of `c m` on `[j, n)`. -/
+private lemma suffMin_eq_of_min (j n k : ℕ) (hjk : j ≤ k) (hkn : k < n)
+    (h_min : ∀ m ∈ Ico j n, c k ≤ c m) :
+    suffMin j n = c k := by
+  apply le_antisymm
+  · unfold suffMin
+    rw [dif_pos (lt_of_le_of_lt hjk hkn)]
+    exact Finset.inf'_le _ (mem_attach _ ⟨k, mem_Ico.mpr ⟨hjk, hkn⟩⟩)
+  · exact suffMin_ge_const j n (lt_of_le_of_lt hjk hkn) (c k) h_min
+
+/-- Helper: under the IH `c k < c (k-1)` for `k ∈ [6, n]`, the c-sequence is
+    bounded as `c n ≤ c m` for any `m ∈ [5, n]`. -/
+private lemma c_anti_chain (m n : ℕ) (hm : 5 ≤ m) (hmn : m ≤ n)
+    (h_dec : ∀ k, 6 ≤ k → k ≤ n → c k < c (k - 1)) :
+    c n ≤ c m := by
+  induction n, hmn using Nat.le_induction with
+  | base => exact le_refl _
+  | succ k hmk ih =>
+    have h_dec' : ∀ k', 6 ≤ k' → k' ≤ k → c k' < c (k' - 1) :=
+      fun k' h1 h2 => h_dec k' h1 (by omega)
+    have hih := ih h_dec'
+    have hstep := h_dec (k + 1) (by omega) (le_refl _)
+    rw [show (k + 1 - 1 : ℕ) = k from by omega] at hstep
+    linarith
+
 /-- Joint statement: for `n ≥ 4`, the four manuscript claims at level `n`. -/
 theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
     -- (b) lower bound (Lemma 4.7 at n)
@@ -777,7 +802,181 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
     (7 ≤ n → ∀ j, 1 ≤ j → j < n →
       (j ≤ 3 → suffMin j n = c j) ∧
       (4 ≤ j → suffMin j n = c (n - 1))) := by
-  sorry
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+    rcases (show n = 4 ∨ n = 5 ∨ n = 6 ∨ 7 ≤ n by omega) with h | h | h | h_ge_7
+    · -- Base case n = 4
+      subst h
+      refine ⟨?_, fun h => by omega, fun h => by omega, fun h => by omega⟩
+      rw [c_four]; norm_num
+    · -- Base case n = 5
+      subst h
+      refine ⟨?_, fun h => by omega, fun h => by omega, fun h => by omega⟩
+      rw [c_five]; norm_num
+    · -- Base case n = 6
+      subst h
+      refine ⟨?_, ?_, fun h => by omega, fun h => by omega⟩
+      · rw [c_six]; norm_num
+      · intro _
+        change c 6 < c 5
+        rw [c_six, c_five]; norm_num
+    · -- Inductive step n ≥ 7
+      -- Extract IH parts.
+      have ih_b : ∀ m, 4 ≤ m → m < n → c m ≥ 27 / 16 :=
+        fun m h1 h2 => (ih m h2 h1).1
+      have ih_c : ∀ m, 6 ≤ m → m < n → c m < c (m - 1) :=
+        fun m h1 h2 => (ih m h2 (by omega)).2.1 h1
+      ----------------------------------------------------------------
+      -- (a) Collapse at level n
+      ----------------------------------------------------------------
+      have h_a : ∀ j, 1 ≤ j → j < n →
+          (j ≤ 3 → suffMin j n = c j) ∧
+          (4 ≤ j → suffMin j n = c (n - 1)) := by
+        intro j hj1 hjn
+        refine ⟨?_, ?_⟩
+        · -- j ≤ 3: suffMin j n = c j
+          intro hj3
+          apply suffMin_eq_of_min j n j (le_refl _) hjn
+          intro m hm
+          have hmr := mem_Ico.mp hm
+          rcases (show j = 1 ∨ j = 2 ∨ j = 3 by omega) with hj | hj | hj
+          · subst hj; rw [c_one]
+            exact c_ge_one_of_ih n ih_b m hmr.1 hmr.2
+          · subst hj; rw [c_two]
+            exact c_ge_three_halves_of_ih n ih_b m hmr.1 hmr.2
+          · subst hj; rw [c_three]
+            exact c_ge_27_16_of_ih n ih_b m hmr.1 hmr.2
+        · -- j ≥ 4: suffMin j n = c (n - 1)
+          intro hj4
+          apply suffMin_eq_of_min j n (n - 1) (by omega) (by omega)
+          intro m hm
+          have hmr := mem_Ico.mp hm
+          rcases (show m = 4 ∨ 5 ≤ m by omega) with h_m4 | h_m5
+          · -- m = 4: c (n - 1) ≤ c 4 via c_4 > c_6 ≥ c (n-1)
+            subst h_m4
+            have hc46 : c 6 < c 4 := by rw [c_six, c_four]; norm_num
+            have hchain : c (n - 1) ≤ c 6 :=
+              c_anti_chain 6 (n - 1) (by omega) (by omega)
+                (fun k h1 h2 => ih_c k h1 (by omega))
+            linarith
+          · -- m ≥ 5: chain via IH(c)
+            exact c_anti_chain m (n - 1) h_m5 (by omega)
+              (fun k h1 h2 => ih_c k h1 (by omega))
+      ----------------------------------------------------------------
+      -- (d) Linear recursion at level n
+      ----------------------------------------------------------------
+      have h_d : c n = A_lin n + (1 - B_lin n) * c (n - 1) := by
+        -- Decompose n = m + 2 with m = n - 2 ≥ 5.
+        obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+        rw [c_succ m, show (m + 2 - 1 : ℕ) = m + 1 from rfl]
+        -- Split Ico 1 (m + 2) at j = 4.
+        have hsplit : Ico 1 (m + 2) = ({1, 2, 3} : Finset ℕ) ∪ Ico 4 (m + 2) := by
+          ext; simp only [mem_Ico, mem_insert, mem_union, mem_singleton]; omega
+        have hd : Disjoint ({1, 2, 3} : Finset ℕ) (Ico 4 (m + 2)) := by
+          rw [Finset.disjoint_left]
+          intro a ha
+          simp only [mem_insert, mem_singleton] at ha
+          simp only [mem_Ico]; omega
+        rw [hsplit, sum_union hd]
+        -- Replace suffMin j (m+2) for j ∈ {1, 2, 3}
+        have hsm1 : suffMin 1 (m + 2) = c 1 := (h_a 1 (le_refl _) (by omega)).1 (by omega)
+        have hsm2 : suffMin 2 (m + 2) = c 2 := (h_a 2 (by omega) (by omega)).1 (by omega)
+        have hsm3 : suffMin 3 (m + 2) = c 3 := (h_a 3 (by omega) (by omega)).1 (by omega)
+        rw [show ({1, 2, 3} : Finset ℕ) = insert 1 (insert 2 {3}) from rfl,
+            sum_insert (by simp), sum_insert (by simp), sum_singleton]
+        rw [hsm1, hsm2, hsm3]
+        -- Replace suffMin j (m+2) for j ∈ Ico 4 (m+2)
+        have hrest : ∑ j ∈ Ico 4 (m + 2),
+            (Nat.choose (m + 2) j : ℝ) * suffMin j (m + 2) =
+            c (m + 1) * ∑ j ∈ Ico 4 (m + 2), (Nat.choose (m + 2) j : ℝ) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro j hj
+          have hjr := mem_Ico.mp hj
+          have h_sm : suffMin j (m + 2) = c (m + 1) := by
+            have := (h_a j (by omega) hjr.2).2 (by omega)
+            rw [show (m + 2 - 1 : ℕ) = m + 1 from rfl] at this
+            exact this
+          rw [h_sm]; ring
+        rw [hrest]
+        -- Compute ∑ Ico 4 (m+2) C(m+2, j) = 2^(m+2) - 2 - (m+2) - C(m+2,2) - C(m+2,3)
+        have hsum_4 : ∑ j ∈ Ico 4 (m + 2), ((Nat.choose (m + 2) j : ℕ) : ℝ) =
+            (2 : ℝ) ^ (m + 2) - 2 - ((m + 2 : ℕ) : ℝ) -
+              ((Nat.choose (m + 2) 2 : ℕ) : ℝ) -
+              ((Nat.choose (m + 2) 3 : ℕ) : ℝ) := by
+          have h_3 := choose_sum_3_to_pred (m + 2) (by omega)
+          have h_split : Ico 3 (m + 2) = insert 3 (Ico 4 (m + 2)) := by
+            ext; simp only [mem_Ico, mem_insert]; omega
+          have h_no3 : 3 ∉ Ico 4 (m + 2) := by simp [mem_Ico]
+          rw [h_split, sum_insert h_no3] at h_3
+          linarith
+        rw [hsum_4]
+        -- C(m+2, 1) = m + 2
+        rw [show ((Nat.choose (m + 2) 1 : ℕ) : ℝ) = ((m + 2 : ℕ) : ℝ) from by
+              rw [Nat.choose_one_right]]
+        -- Final algebra: unfold A_lin, B_lin and ring.
+        unfold A_lin B_lin
+        rw [show (m + 2 - 1 : ℕ) = m + 1 from rfl]
+        have h2pow_pos : (0 : ℝ) < (2 : ℝ) ^ (m + 2) := by positivity
+        have h2pow_pos' : (0 : ℝ) < (2 : ℝ) ^ (m + 1) := by positivity
+        field_simp
+        push_cast
+        ring
+      ----------------------------------------------------------------
+      -- (b) Lower bound at level n
+      ----------------------------------------------------------------
+      have hB_lt : B_lin n < 1 := by
+        -- B_n = (2 + n + C(n,2) + C(n,3)) / 2^n. For n ≥ 7, B_n < 1.
+        sorry
+      have hB_pos : 0 < B_lin n := by
+        unfold B_lin
+        have : (0 : ℝ) < (2 + (n : ℝ) + (Nat.choose n 2 : ℝ) + (Nat.choose n 3 : ℝ)) := by
+          have h1 : (0 : ℝ) ≤ (Nat.choose n 2 : ℝ) := by exact_mod_cast Nat.zero_le _
+          have h2 : (0 : ℝ) ≤ (Nat.choose n 3 : ℝ) := by exact_mod_cast Nat.zero_le _
+          have h3 : (0 : ℝ) ≤ (n : ℝ) := by exact_mod_cast Nat.zero_le _
+          linarith
+        positivity
+      have h_b : c n ≥ 27 / 16 := by
+        rcases (show n ≤ 12 ∨ 13 ≤ n by omega) with h_le | h_ge
+        · -- n ∈ [7, 12]: A_n - (27/16) B_n ≥ 0 by alg_id + poly bound.
+          rw [h_d]
+          have h_alg := alg_id n (by omega)
+          have hcn1 : c (n - 1) ≥ 27 / 16 := ih_b (n - 1) (by omega) (by omega)
+          have h_alg_nn : A_lin n - (27 / 16) * B_lin n ≥ 0 := by
+            rw [h_alg]
+            have hpoly : ((n : ℝ) ^ 2 - 15 * n + 36) ≤ 0 := by
+              have h7 : (7 : ℝ) ≤ (n : ℝ) := by exact_mod_cast (show 7 ≤ n by omega)
+              have h12 : (n : ℝ) ≤ 12 := by exact_mod_cast h_le
+              nlinarith [h7, h12]
+            have hpow : (0 : ℝ) < 32 * (2 : ℝ) ^ n := by positivity
+            apply div_nonneg
+            · linarith
+            · linarith
+          nlinarith [h_alg_nn, hcn1, hB_lt, hB_pos]
+        · -- n ≥ 13: cumulative argument (manuscript: ε_12 > 1/60, etc.)
+          sorry
+      ----------------------------------------------------------------
+      -- (c) Strict decrease at level n
+      ----------------------------------------------------------------
+      have h_c : c n < c (n - 1) := by
+        rcases (show n ≤ 12 ∨ 13 ≤ n by omega) with h_le | h_ge
+        · -- n ∈ [7, 12]: per-n numerical (requires explicit c_7..c_12).
+          sorry
+        · -- n ≥ 13: A_n - (27/16) B_n < 0 by alg_id, so c_n < c_{n-1}.
+          rw [h_d]
+          have h_alg := alg_id n (by omega)
+          have hcn1 : c (n - 1) ≥ 27 / 16 := ih_b (n - 1) (by omega) (by omega)
+          have h_alg_neg : A_lin n - (27 / 16) * B_lin n < 0 := by
+            rw [h_alg]
+            have hpoly : ((n : ℝ) ^ 2 - 15 * n + 36) > 0 := by
+              have h13 : (13 : ℝ) ≤ (n : ℝ) := by exact_mod_cast h_ge
+              nlinarith [h13]
+            have hpow : (0 : ℝ) < 32 * (2 : ℝ) ^ n := by positivity
+            apply div_neg_of_neg_of_pos
+            · linarith
+            · linarith
+          nlinarith [h_alg_neg, hcn1, hB_pos]
+      exact ⟨h_b, fun _ => h_c, fun _ => h_d, fun _ => h_a⟩
 
 /-- Lemma 4.7 (full): `c m ≥ 27/16` for every `m ≥ 4`.
     Corollary of `joint_step.1`. -/
