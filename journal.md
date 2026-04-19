@@ -1440,3 +1440,100 @@ no `c_6`; to mirror the manuscript it should:
    corollaries that just unpack the conjunction.
 
 This adaptation is the next step on the formalization side.
+
+## 2026-04-19 — Aligning the formalization with the restructured manuscript
+
+Carried out the three adaptations identified above:
+
+### `c_6 = 113337/65536`
+
+Same chained `suffMin_split` + `suffMin_pair` + `suffMin_singleton`
+pattern as `c_5`, with explicit `Nat.choose 6 j` cast lemmas for
+`j ∈ {2, 3, 4}` (j = 1, 5 reduce automatically).
+
+### `alg_id`
+
+Proved
+\[
+  A_n - \tfrac{27}{16}\,B_n
+  \;=\;
+  -\tfrac{3\,(n^2 - 15 n + 36)}{32 \cdot 2^n}
+\]
+as a standalone lemma. Key insight: the `c_3` coefficient cancels
+exactly between `A_n` and `(27/16)\,B_n`, so we only need
+`Nat.cast_choose_two`; the rest closes with `field_simp + ring`
+after rewriting `2^(n−1) = 2^n / 2`.
+
+### `joint_step` (master §4.3 induction)
+
+Replaced the four scattered §4.3 stubs with one `joint_step` carrying
+four conjuncts at each `n ≥ 4`, plus four one-line corollaries
+deriving the manuscript-facing lemmas. Two helpers added:
+`suffMin_eq_of_min` (sandwich for `suffMin = c k`) and
+`c_anti_chain` (chains the IH `c k < c (k−1)` into `c n ≤ c m`).
+
+Inductive step at `n ≥ 7` status:
+- **(a) Collapse**: PROVED. For `j ∈ {1,2,3}`, `suffMin = c j` via
+  the existing `c_ge_*_of_ih` helpers; for `j ∈ {4,…,n−1}`,
+  `suffMin = c (n−1)` via `c_anti_chain` plus the explicit numeric
+  `c_4 > c_6`.
+- **(d) Linear recursion**: PROVED. Apply `c_succ`, split `Ico 1 n`
+  at `j = 4`, substitute the collapse on each piece, factor
+  `c (n−1)` from the high piece, evaluate via
+  `choose_sum_3_to_pred`, close with `field_simp + push_cast + ring`.
+- **(b) Lower bound**:
+  - `n ∈ [7, 12]`: PROVED via `alg_id` + IH(b).
+  - `n ≥ 13`: sub-sorry (the manuscript's cumulative argument with
+    `ε_12 > 1/60` and infinite series/products).
+- **(c) Strict decrease**:
+  - `n ≥ 13`: PROVED via `alg_id` + IH(b).
+  - `n ∈ [7, 12]`: sub-sorry (per-n numerical, would need explicit
+    `c_7..c_12`).
+- `hB_lt` (`B_n < 1` for `n ≥ 7`): sub-sorry (easy but skipped).
+
+Pushed as commits `a8546e8`, `493e1d5`, `f87d0c5`.
+
+## 2026-04-19 — The Δ → c bridge (Proposition 4.4)
+
+When asked whether the formalization actually connects `w → Δ → c`
+(rather than just defining the three independently), the answer
+turned out to be **only partially**:
+
+- **`w → Δ`**: fully formalized. `deficit_succ` and `deficit_succ'`
+  derive the deficit recursion (Prop 4.2) directly from `w_succ`,
+  not as a separate axiom.
+- **`Δ → c`**: only as a `sorry` stub. `c` is defined by its own
+  recursion in Lean; the bridge that `c_n` is the leading
+  first-order coefficient of `Δ_{n, 1/2−δ}` as `δ → 0⁺` (Prop 4.4)
+  is not yet proved.
+
+Started building the bridge:
+
+- **Base case `n = 1` proved**: `deficit_first_order_one` —
+  `deficit (1/2 − δ) 1 = c 1 · δ` exactly (no error term).
+  Trivial: `w(1/2−δ, 1) = 1/2−δ` and `c_1 = 1`.
+- **Three sub-lemmas isolated** with explicit statements:
+  1. `constant_term_taylor`: Taylor estimate
+     \[
+       \left|\tfrac{(1/2+\delta)^n - (1/2-\delta)^n}{2}
+              - \tfrac{n\,\delta}{2^{n-1}}\right| \le M\,\delta^2.
+     \]
+     Proof outline: binomial expansion, only odd-`k` terms survive,
+     terms with `k ≥ 3` contribute `O(δ³)` (bounded e.g. by
+     `(3/2)^n · δ³`).
+  2. `binom_weight_perturb`:
+     `|C(n,j)\,(1/2−δ)^{n−j}\,(1/2+δ)^j − C(n,j)/2^n| ≤ M·δ`.
+  3. `suffMinDelta_first_order`: under the IH, the suffix-min of
+     `Δ` is `(suffMin c) · δ + O(δ²)`. Uses the 1-Lipschitz
+     property of `min`.
+- **`deficit_first_order` inductive step**: sub-sorry, with comment
+  outlining the combinatorial argument (apply `deficit_succ`, bound
+  each term via the three sub-lemmas, sum equals `c_n·δ + O(δ²)`
+  by `c_succ`).
+
+The bridge is now scaffolded with four explicit gaps. The first
+three are independent of §4.3 and could be done as standalone
+real-analysis exercises with Mathlib's `Asymptotics.IsBigO`
+machinery; the inductive step is then a direct combination.
+
+Pushed as commit `493e1d5`.

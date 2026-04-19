@@ -1043,3 +1043,100 @@ Asked the user for permission to bring the formalization in line.
 > Please update claude.md and journal.md
 
 Extended both files with Prompts 69-84 (this update).
+
+### Prompt 85
+> Now, please bring the formalization in line, as you suggested above.
+
+Three changes to align `Perturbation.lean` with the restructured
+manuscript §4.3:
+
+1. **Compute `c_6 = 113337/65536`** explicitly. Same chained
+   `suffMin_split` + `suffMin_pair` + `suffMin_singleton` pattern as
+   `c_5`, with explicit `Nat.choose 6 j` cast lemmas for j = 2, 3, 4.
+2. **Prove `alg_id`** (Prop 4.9 algebraic identity):
+   `A_n − (27/16) · B_n = −3·(n²−15n+36) / (32·2^n)`. Key insight:
+   the `c_3` coefficient cancels exactly between `A` and `(27/16)·B`,
+   so only `Nat.cast_choose_two` is needed; close with `field_simp +
+   ring` after rewriting `2^(n−1) = 2^n / 2`.
+3. **Replace four scattered §4.3 stubs with one `joint_step`** (still
+   `sorry`-stubbed) plus four one-line corollaries:
+   - `c_ge_27_16_full := joint_step.1`
+   - `c_strict_anti_from_five := joint_step.2.1` (with index shift)
+   - `c_linear_rec := joint_step.2.2.1`
+   - `suffMin_collapse_low/high := joint_step.2.2.2 …`
+
+Sorry count: 12 → 7 (four §4.3 stubs absorbed into joint_step).
+Pushed as commit `a8546e8`.
+
+Side question from user: *Does the formalization include the
+transition from `w` to `Δ` to `c`?* Answer: `w → Δ` yes (via
+`deficit_succ`/`deficit_succ'` derived from `w_succ`); `Δ → c` no
+(only as a `sorry` stub: `deficit_first_order`).
+
+### Prompt 86
+> Yes, if that fills the gap to Δ!
+
+Built out the `Δ → c` bridge (Prop 4.4):
+
+- **Base case proved**: `deficit_first_order_one : ∀ δ,
+  deficit (1/2 − δ) 1 = c 1 · δ` — exact identity (no error term),
+  since `w(1/2−δ, 1) = 1/2−δ` and `c_1 = 1`.
+- **Three sub-lemmas identified** (each `sorry`-stubbed with
+  explicit statements):
+  - `constant_term_taylor`: Taylor estimate for the constant term
+    `((1/2+δ)^n − (1/2−δ)^n)/2 = nδ/2^(n−1) + O(δ²)`.
+  - `binom_weight_perturb`: `|C·p^a q^b − C/2^(a+b)| ≤ M·δ`.
+  - `suffMinDelta_first_order`: under the IH, `|suffMinDelta −
+    suffMin·δ| ≤ M·δ²` (using 1-Lipschitz of `min`).
+- **Inductive step `sorry`-stubbed** with a comment outlining the
+  combinatorial argument (combine the three sub-lemmas + `c_succ`).
+
+Sorry count: 7 → 10 (added 3 sub-lemma stubs identifying the
+missing real-analysis pieces; gained the proved n=1 base case).
+Pushed as commit `493e1d5`.
+
+### Prompt 87
+> What should we do next?
+
+Offered three options ranked by impact:
+1. Prove `joint_step` (master §4.3 induction) — high impact,
+   collapses many sorries.
+2. Prove `constant_term_taylor` (Δ→c bridge sub-lemma) — clean,
+   independent.
+3. Prove `c_limit_exists` (Theorem 4.10) — requires (1) first.
+
+### Prompt 88
+> Yes, please do (1)!
+
+Wrote out `joint_step` as a strong-induction proof. Added two
+helpers: `suffMin_eq_of_min` (equality version) and `c_anti_chain`
+(chains the IH `c k < c (k-1)` into `c n ≤ c m`).
+
+Status of the inductive step at `n ≥ 7`:
+- **(a) Collapse**: PROVED. Both `j ∈ {1, 2, 3}` (via the existing
+  `c_ge_*_of_ih` helpers) and `j ∈ {4, …, n−1}` (via `c_anti_chain`
+  + the explicit `c_4 > c_6`).
+- **(d) Linear recursion**: PROVED. Apply `c_succ`, split `Ico 1 n`
+  at `j = 4`, substitute `h_a` on each piece, factor out `c (n−1)`
+  on the high piece, evaluate via `choose_sum_3_to_pred`, close with
+  `field_simp + push_cast + ring`.
+- **(b) Lower bound**:
+  - n ∈ [7, 12]: PROVED via `alg_id` + IH(b).
+  - n ≥ 13: SUB-SORRY (cumulative argument: ε_12 > 1/60, infinite
+    series and products).
+- **(c) Strict decrease**:
+  - n ≥ 13: PROVED via `alg_id` + IH(b).
+  - n ∈ [7, 12]: SUB-SORRY (per-n numerical, requires explicit
+    c_7..c_12).
+- **`hB_lt`** (`B_n < 1` for n ≥ 7): SUB-SORRY (easy but skipped).
+
+Base cases n ∈ {4, 5, 6} fully proved from the explicit values.
+
+Sorry count unchanged at 10 — `joint_step` still counts as one
+sorry, but with three explicit internal sub-sorries instead of
+being one giant stub. Pushed as commit `f87d0c5`.
+
+### Prompt 89
+> Please update claude.md and journal.md
+
+Extended both files with Prompts 85-89 (this update).
