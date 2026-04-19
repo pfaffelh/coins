@@ -74,3 +74,53 @@ noncomputable def c : ℕ → ℝ
 
 theorem c_zero : c 0 = 0 := by show c 0 = 0; rw [c]
 theorem c_one : c 1 = 1 := by show c 1 = 1; rw [c]
+
+/-- Suffix-minimum of `c` over indices `[j, n)`; returns `0` when `j ≥ n`. -/
+noncomputable def suffMin (j n : ℕ) : ℝ :=
+  if h : j < n then
+    (Ico j n).attach.inf'
+      ⟨⟨j, mem_Ico.mpr ⟨le_refl _, h⟩⟩, mem_attach _ _⟩
+      (fun m => c m.val)
+  else 0
+
+/-- Singleton suffix-min: `suffMin n (n+1) = c n`. -/
+theorem suffMin_singleton (n : ℕ) : suffMin n (n + 1) = c n := by
+  unfold suffMin
+  rw [dif_pos (Nat.lt_succ_self n)]
+  apply le_antisymm
+  · exact Finset.inf'_le _
+      (mem_attach _ ⟨n, mem_Ico.mpr ⟨le_refl _, Nat.lt_succ_self _⟩⟩)
+  · apply Finset.le_inf'
+    intro m _
+    have hm := mem_Ico.mp m.prop
+    have hval : m.val = n := by omega
+    rw [hval]
+
+/-- The c-recursion in plain (non-attach) form for n ≥ 2. -/
+theorem c_succ (n : ℕ) :
+    c (n + 2) = ((n + 2 : ℕ) : ℝ) / (2 : ℝ) ^ (n + 1) +
+      (1 / (2 : ℝ) ^ (n + 2)) *
+        ∑ j ∈ Ico 1 (n + 2),
+          (Nat.choose (n + 2) j : ℝ) * suffMin j (n + 2) := by
+  show c (n + 2) = _
+  rw [c]
+  congr 1
+  congr 1
+  rw [← Finset.sum_attach (Ico 1 (n + 2))
+        (fun j => (Nat.choose (n + 2) j : ℝ) * suffMin j (n + 2))]
+  apply Finset.sum_congr rfl
+  intro j _
+  have hj := mem_Ico.mp j.prop
+  have hjlt : j.val < n + 2 := hj.2
+  unfold suffMin
+  rw [dif_pos hjlt]
+
+/-- Example 4.5, first value: c_2 = 3/2. -/
+theorem c_two : c 2 = 3/2 := by
+  change c (0 + 2) = 3/2
+  rw [c_succ]
+  have hIco : Ico 1 (0 + 2) = ({1} : Finset ℕ) := by
+    ext x; simp only [mem_Ico, mem_singleton]; omega
+  rw [hIco, sum_singleton]
+  rw [show (0 + 2 : ℕ) = 1 + 1 from rfl, suffMin_singleton, c_one]
+  norm_num
