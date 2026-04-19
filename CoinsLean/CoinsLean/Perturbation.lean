@@ -206,3 +206,35 @@ theorem c_four : c 4 = 111/64 := by
     exact_mod_cast this
   rw [hc2]
   norm_num
+
+/-- Example 4.5, fourth value: c_5 = 3555/2048. -/
+theorem c_five : c 5 = 3555/2048 := by
+  change c (3 + 2) = 3555/2048
+  rw [c_succ]
+  have hIco : Ico 1 (3 + 2) = ({1, 2, 3, 4} : Finset ℕ) := by
+    ext x; simp only [mem_Ico, mem_insert, mem_singleton]; omega
+  rw [hIco]
+  rw [sum_insert (by simp), sum_insert (by simp), sum_insert (by simp), sum_singleton]
+  have hs4 : suffMin 4 (3 + 2) = 111/64 := by
+    change suffMin 4 (4 + 1) = 111/64
+    rw [suffMin_singleton, c_four]
+  have hs3 : suffMin 3 (3 + 2) = 27/16 := by
+    change suffMin 3 (3 + 2) = 27/16
+    rw [suffMin_pair, c_three, c_four]; norm_num
+  have hs2 : suffMin 2 (3 + 2) = 3/2 := by
+    have h1 : suffMin 2 (3 + 2) = min (c 2) (suffMin 3 (3 + 2)) :=
+      suffMin_split 2 (3 + 2) (by omega)
+    rw [h1, hs3, c_two]; norm_num
+  have hs1 : suffMin 1 (3 + 2) = 1 := by
+    have h1 : suffMin 1 (3 + 2) = min (c 1) (suffMin 2 (3 + 2)) :=
+      suffMin_split 1 (3 + 2) (by omega)
+    rw [h1, hs2, c_one]; norm_num
+  rw [hs1, hs2, hs3, hs4]
+  have hc52 : (Nat.choose 5 2 : ℝ) = 10 := by
+    have : Nat.choose 5 2 = 10 := by decide
+    exact_mod_cast this
+  have hc53 : (Nat.choose 5 3 : ℝ) = 10 := by
+    have : Nat.choose 5 3 = 10 := by decide
+    exact_mod_cast this
+  rw [hc52, hc53]
+  norm_num
