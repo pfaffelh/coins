@@ -239,6 +239,46 @@ theorem c_five : c 5 = 3555/2048 := by
   rw [hc52, hc53]
   norm_num
 
+/-- Example 4.5, fifth value (added base case for the §4.3 joint induction):
+    `c_6 = 113337/65536`. -/
+theorem c_six : c 6 = 113337/65536 := by
+  change c (4 + 2) = 113337/65536
+  rw [c_succ]
+  have hIco : Ico 1 (4 + 2) = ({1, 2, 3, 4, 5} : Finset ℕ) := by
+    ext x; simp only [mem_Ico, mem_insert, mem_singleton]; omega
+  rw [hIco]
+  rw [sum_insert (by simp), sum_insert (by simp), sum_insert (by simp),
+      sum_insert (by simp), sum_singleton]
+  have hs5 : suffMin 5 (4 + 2) = 3555/2048 := by
+    change suffMin 5 (5 + 1) = 3555/2048
+    rw [suffMin_singleton, c_five]
+  have hs4 : suffMin 4 (4 + 2) = 111/64 := by
+    rw [suffMin_pair, c_four, c_five]; norm_num
+  have hs3 : suffMin 3 (4 + 2) = 27/16 := by
+    have h1 : suffMin 3 (4 + 2) = min (c 3) (suffMin 4 (4 + 2)) :=
+      suffMin_split 3 (4 + 2) (by omega)
+    rw [h1, hs4, c_three]; norm_num
+  have hs2 : suffMin 2 (4 + 2) = 3/2 := by
+    have h1 : suffMin 2 (4 + 2) = min (c 2) (suffMin 3 (4 + 2)) :=
+      suffMin_split 2 (4 + 2) (by omega)
+    rw [h1, hs3, c_two]; norm_num
+  have hs1 : suffMin 1 (4 + 2) = 1 := by
+    have h1 : suffMin 1 (4 + 2) = min (c 1) (suffMin 2 (4 + 2)) :=
+      suffMin_split 1 (4 + 2) (by omega)
+    rw [h1, hs2, c_one]; norm_num
+  rw [hs1, hs2, hs3, hs4, hs5]
+  have hc62 : (Nat.choose 6 2 : ℝ) = 15 := by
+    have : Nat.choose 6 2 = 15 := by decide
+    exact_mod_cast this
+  have hc63 : (Nat.choose 6 3 : ℝ) = 20 := by
+    have : Nat.choose 6 3 = 20 := by decide
+    exact_mod_cast this
+  have hc64 : (Nat.choose 6 4 : ℝ) = 15 := by
+    have : Nat.choose 6 4 = 15 := by decide
+    exact_mod_cast this
+  rw [hc62, hc63, hc64]
+  norm_num
+
 /-! ### Lemma 4.7: lower bound c_m ≥ 27/16 for m ≥ 4
 
   The full lemma in the manuscript holds for every m ≥ 4. The proof uses the
@@ -690,30 +730,84 @@ noncomputable def A_lin (n : ℕ) : ℝ :=
 noncomputable def B_lin (n : ℕ) : ℝ :=
   (2 + (n : ℝ) + (Nat.choose n 2 : ℝ) + (Nat.choose n 3 : ℝ)) / (2 : ℝ) ^ n
 
-/-- Lemma 4.7 (full): `c m ≥ 27/16` for every `m ≥ 4`. -/
-theorem c_ge_27_16_full : ∀ m : ℕ, 4 ≤ m → c m ≥ 27/16 := by
+/-- The algebraic identity from Proposition 4.9 (eq:alg-id):
+    `A_n − (27/16) · B_n = −3·(n²−15n+36) / (32·2^n)`.
+
+    This identity is independent of the linear recursion itself: it follows
+    by direct algebra from the definitions of `A_lin` and `B_lin`. The
+    `c 3` coefficient cancels exactly between A and `(27/16)·B`, so we only
+    need the closed form for `Nat.choose n 2`. -/
+theorem alg_id (n : ℕ) (hn : 1 ≤ n) :
+    A_lin n - (27 / 16) * B_lin n =
+      -3 * ((n : ℝ) ^ 2 - 15 * n + 36) / (32 * (2 : ℝ) ^ n) := by
+  have hpow_eq : (2 : ℝ) ^ (n - 1) = (2 : ℝ) ^ n / 2 := by
+    have h : (2 : ℝ) ^ n = 2 * (2 : ℝ) ^ (n - 1) := by
+      conv_lhs => rw [show n = (n - 1) + 1 from by omega]
+      rw [pow_succ]; ring
+    rw [h]; field_simp
+  unfold A_lin B_lin
+  rw [c_one, c_two, c_three, Nat.cast_choose_two ℝ n, hpow_eq]
+  have h2pow : (2 : ℝ) ^ n ≠ 0 := pow_ne_zero _ two_ne_zero
+  field_simp
+  ring
+
+/-! ### §4.3 joint inductive structure
+
+  Lemmas 4.6, 4.7, 4.8 and Proposition 4.9 are proved together by a single
+  strong induction on `n` (see the manuscript's joint proof in §4.3):
+
+  ```
+    collapse(n)  ←  IH 4.7 + 4.8                 (uses c values < n)
+    linear(n)    ←  collapse(n)                  (substitution)
+    4.7(n)       ←  linear(n) + alg_id           (polynomial bound)
+    4.8(n)       ←  linear(n) + IH 4.7           (polynomial bound)
+  ```
+
+  Base cases: `n ∈ {4, 5, 6}` from `c_four`, `c_five`, `c_six`. -/
+
+/-- Joint statement: for `n ≥ 4`, the four manuscript claims at level `n`. -/
+theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
+    -- (b) lower bound (Lemma 4.7 at n)
+    c n ≥ 27 / 16 ∧
+    -- (c) strict decrease (Lemma 4.8 at n, valid when n ≥ 6)
+    (6 ≤ n → c n < c (n - 1)) ∧
+    -- (d) linear recursion (Prop 4.9 at n, valid when n ≥ 7)
+    (7 ≤ n → c n = A_lin n + (1 - B_lin n) * c (n - 1)) ∧
+    -- (a) collapse (Lemma 4.6 at n, valid when n ≥ 7)
+    (7 ≤ n → ∀ j, 1 ≤ j → j < n →
+      (j ≤ 3 → suffMin j n = c j) ∧
+      (4 ≤ j → suffMin j n = c (n - 1))) := by
   sorry
 
-/-- Lemma 4.8: the sequence `(c n)_{n ≥ 5}` is strictly decreasing. -/
+/-- Lemma 4.7 (full): `c m ≥ 27/16` for every `m ≥ 4`.
+    Corollary of `joint_step.1`. -/
+theorem c_ge_27_16_full : ∀ m : ℕ, 4 ≤ m → c m ≥ 27 / 16 :=
+  fun m hm => (joint_step m hm).1
+
+/-- Lemma 4.8: the sequence `(c n)_{n ≥ 5}` is strictly decreasing.
+    Corollary of `joint_step.2.1`. -/
 theorem c_strict_anti_from_five : ∀ n : ℕ, 5 ≤ n → c (n + 1) < c n := by
-  sorry
+  intro n hn
+  have h := (joint_step (n + 1) (by omega)).2.1 (by omega)
+  rwa [show (n + 1) - 1 = n from by omega] at h
+
+/-- Proposition 4.9: the linear recursion for `n ≥ 7`.
+    Corollary of `joint_step.2.2.1`. -/
+theorem c_linear_rec (n : ℕ) (h : 7 ≤ n) :
+    c n = A_lin n + (1 - B_lin n) * c (n - 1) :=
+  (joint_step n (by omega)).2.2.1 h
 
 /-- Lemma 4.6 (collapse) — low part: for `n ≥ 7` and `j ∈ {1, 2, 3}`,
-    the suffix-min of `c` over `[j, n)` equals `c j`. -/
+    `suffMin j n = c j`. Corollary of `joint_step.2.2.2`. -/
 theorem suffMin_collapse_low (n j : ℕ) (hn : 7 ≤ n) (h1 : 1 ≤ j) (h3 : j ≤ 3) :
-    suffMin j n = c j := by
-  sorry
+    suffMin j n = c j :=
+  (((joint_step n (by omega)).2.2.2 hn) j h1 (by omega)).1 h3
 
-/-- Lemma 4.6 (collapse) — high part: for `n ≥ 7` and `j ∈ {4, …, n-1}`,
-    the suffix-min of `c` over `[j, n)` equals `c (n - 1)`. -/
+/-- Lemma 4.6 (collapse) — high part: for `n ≥ 7` and `j ∈ {4, …, n−1}`,
+    `suffMin j n = c (n − 1)`. Corollary of `joint_step.2.2.2`. -/
 theorem suffMin_collapse_high (n j : ℕ) (hn : 7 ≤ n) (h4 : 4 ≤ j) (hjn : j < n) :
-    suffMin j n = c (n - 1) := by
-  sorry
-
-/-- Proposition 4.9: the linear recursion for `n ≥ 7`. -/
-theorem c_linear_rec (n : ℕ) (h : 7 ≤ n) :
-    c n = A_lin n + (1 - B_lin n) * c (n - 1) := by
-  sorry
+    suffMin j n = c (n - 1) :=
+  (((joint_step n (by omega)).2.2.2 hn) j (by omega) hjn).2 h4
 
 /-- Theorem 4.10: the limit `L = lim c_n` exists. -/
 theorem c_limit_exists :
