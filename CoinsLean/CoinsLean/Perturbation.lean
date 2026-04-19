@@ -943,6 +943,93 @@ theorem alg_id (n : ℕ) (hn : 1 ≤ n) :
   field_simp
   ring
 
+/-- Cumulative ε bound (helper for the (b) ≥ 13 sub-case of `joint_step`).
+    Given the buffer at `m = 12` and the linear recursion at all `k ∈ [13, m]`,
+    proves the cumulative bound on `c m − 27/16`. Inductive in `m`. -/
+private lemma cum_eps_bound : ∀ m, 12 ≤ m →
+    (c 12 - 27 / 16 ≥ 1 / 60) →
+    (∀ k, 13 ≤ k → k ≤ m → c k = A_lin k + (1 - B_lin k) * c (k - 1)) →
+    c m - 27 / 16 ≥ (1 / 60) * (1 - ∑ k ∈ Finset.Ico 13 (m + 1), B_lin k) -
+                              ∑ k ∈ Finset.Ico 13 (m + 1), delta_seq k := by
+  intro m hm hbuf hrec
+  induction m, hm using Nat.le_induction with
+  | base =>
+    -- m = 12: Finset.Ico 13 13 = ∅, so RHS = (1/60)·1 - 0 = 1/60.
+    simp [Finset.Ico_self]
+    linarith
+  | succ k hk ih =>
+    have hrec' : ∀ j, 13 ≤ j → j ≤ k → c j = A_lin j + (1 - B_lin j) * c (j - 1) :=
+      fun j h1 h2 => hrec j h1 (by omega)
+    have ih' := ih hrec'
+    have h_rec_k1 : c (k + 1) = A_lin (k + 1) + (1 - B_lin (k + 1)) * c k := by
+      have := hrec (k + 1) (by omega) (le_refl _)
+      rw [show ((k + 1) - 1 : ℕ) = k from by omega] at this
+      exact this
+    -- alg_id: A_(k+1) − (27/16)B_(k+1) = −delta_seq(k+1).
+    have h_alg : A_lin (k + 1) - (27 / 16) * B_lin (k + 1) = - delta_seq (k + 1) := by
+      rw [alg_id (k + 1) (by omega)]
+      unfold delta_seq
+      push_cast
+      ring
+    have hB_nn : (0 : ℝ) ≤ B_lin (k + 1) := by unfold B_lin; positivity
+    have hSB_nn : (0 : ℝ) ≤ ∑ j ∈ Finset.Ico 13 (k + 1), B_lin j := by
+      apply Finset.sum_nonneg
+      intro j _; unfold B_lin; positivity
+    have hSδ_nn : (0 : ℝ) ≤ ∑ j ∈ Finset.Ico 13 (k + 1), delta_seq j := by
+      apply Finset.sum_nonneg
+      intro j hj
+      have hj' := Finset.mem_Ico.mp hj
+      unfold delta_seq
+      have hquad : (0 : ℝ) ≤ ((j : ℕ) : ℝ) ^ 2 - 15 * ((j : ℕ) : ℝ) + 36 := by
+        have : (13 : ℝ) ≤ (j : ℝ) := by exact_mod_cast hj'.1
+        nlinarith [this]
+      positivity
+    -- B_lin (k+1) < 1 for k+1 ≥ 13 (in fact for ≥ 7).
+    have hB_lt : B_lin (k + 1) < 1 := by
+      unfold B_lin
+      rw [div_lt_one (by positivity : (0 : ℝ) < (2 : ℝ) ^ (k + 1))]
+      have h_3 := choose_sum_3_to_pred (k + 1) (by omega)
+      have h_split : Ico 3 (k + 1) = insert 3 (Ico 4 (k + 1)) := by
+        ext; simp only [mem_Ico, mem_insert]; omega
+      have h_no3 : 3 ∉ Ico 4 (k + 1) := by simp [mem_Ico]
+      rw [h_split, sum_insert h_no3] at h_3
+      have h_sum_pos : (0 : ℝ) < ∑ j ∈ Ico 4 (k + 1), ((Nat.choose (k + 1) j : ℕ) : ℝ) := by
+        apply Finset.sum_pos
+        · intro j hj
+          have hj' := mem_Ico.mp hj
+          have : 0 < Nat.choose (k + 1) j := Nat.choose_pos (by omega)
+          exact_mod_cast this
+        · exact ⟨4, by simp [mem_Ico]; omega⟩
+      linarith [h_sum_pos]
+    have h_split_B : ∑ j ∈ Finset.Ico 13 (k + 1 + 1), B_lin j =
+        B_lin (k + 1) + ∑ j ∈ Finset.Ico 13 (k + 1), B_lin j := by
+      have h_split : Finset.Ico 13 (k + 1 + 1) = insert (k + 1) (Finset.Ico 13 (k + 1)) := by
+        ext; simp [Finset.mem_Ico, Finset.mem_insert]; omega
+      have h_no : (k + 1) ∉ Finset.Ico 13 (k + 1) := by simp [Finset.mem_Ico]
+      rw [h_split, Finset.sum_insert h_no]
+    have h_split_d : ∑ j ∈ Finset.Ico 13 (k + 1 + 1), delta_seq j =
+        delta_seq (k + 1) + ∑ j ∈ Finset.Ico 13 (k + 1), delta_seq j := by
+      have h_split : Finset.Ico 13 (k + 1 + 1) = insert (k + 1) (Finset.Ico 13 (k + 1)) := by
+        ext; simp [Finset.mem_Ico, Finset.mem_insert]; omega
+      have h_no : (k + 1) ∉ Finset.Ico 13 (k + 1) := by simp [Finset.mem_Ico]
+      rw [h_split, Finset.sum_insert h_no]
+    rw [h_rec_k1, h_split_B, h_split_d]
+    -- LHS = A_(k+1) + (1-B_(k+1)) c k - 27/16 = (1-B_(k+1))(c k - 27/16) - delta_(k+1)
+    -- (using h_alg).
+    -- Goal: this ≥ (1/60)(1 - B_(k+1) - S_B) - delta_(k+1) - S_δ
+    -- Equivalently: (1-B_(k+1))(c k - 27/16) ≥ (1/60)(1 - B_(k+1) - S_B) - S_δ.
+    -- Using ih' (c k - 27/16 ≥ (1/60)(1 - S_B) - S_δ) and (1 - B_(k+1)) ≥ 0:
+    -- (1-B_(k+1))(c k - 27/16) ≥ (1-B_(k+1)) · [(1/60)(1-S_B) - S_δ]
+    -- LHS - RHS = B_(k+1) · [(1/60) S_B + S_δ] ≥ 0.
+    have hone_minus_B : (0 : ℝ) ≤ 1 - B_lin (k + 1) := by linarith
+    have hck_lower : c k - 27 / 16 ≥
+        (1 / 60) * (1 - ∑ j ∈ Finset.Ico 13 (k + 1), B_lin j) -
+          ∑ j ∈ Finset.Ico 13 (k + 1), delta_seq j := ih'
+    nlinarith [h_alg, hB_nn, hSB_nn, hSδ_nn, hone_minus_B, hck_lower,
+               mul_nonneg hB_nn hSB_nn, mul_nonneg hB_nn hSδ_nn,
+               mul_nonneg hone_minus_B (sub_nonneg.mpr (le_of_eq rfl) :
+                 (0 : ℝ) ≤ c k - c k)]
+
 /-! ### §4.3 joint inductive structure
 
   Lemmas 4.6, 4.7, 4.8 and Proposition 4.9 are proved together by a single
@@ -1224,13 +1311,20 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
           -- Step 2: Verify the buffer c_12 ≥ 27/16 + 1/60.
           have h_buffer : c 12 ≥ 27 / 16 + 1 / 60 := by
             rw [h_d12]; norm_num
-          -- Step 3: Cumulative argument (sub-sorry).
-          -- Given h_buffer, show c n ≥ 27/16 by maintaining the invariant
-          --   c n − 27/16 ≥ (c_12 − 27/16) · ∏_{k=13}^n (1 − B_k)
-          --                 − ∑_{k=13}^n (3(k²−15k+36) / (32·2^k))
-          -- and bounding the product ≥ 7/8 and the cumulative sum ≤ 1/200.
-          -- The result is c n − 27/16 ≥ (1/60)·(7/8) − 1/200 = 23/2400 > 0.
-          sorry
+          -- Step 3: Cumulative argument.
+          -- Build the linear-rec function for k ∈ [13, n], using IH(d) at smaller
+          -- levels and h_d at level n.
+          have h_lin_rec : ∀ k, 13 ≤ k → k ≤ n →
+              c k = A_lin k + (1 - B_lin k) * c (k - 1) := by
+            intro k hk1 hkn
+            rcases (eq_or_lt_of_le hkn) with heq | hlt
+            · rw [heq]; exact h_d
+            · exact (ih k hlt (by omega)).2.2.1 (by omega)
+          have h_buffer' : c 12 - 27 / 16 ≥ 1 / 60 := by linarith
+          have h_cum := cum_eps_bound n (by omega) h_buffer' h_lin_rec
+          have hB := B_tail_bound (n + 1)
+          have hδ := delta_tail_bound (n + 1)
+          linarith [h_cum, hB, hδ]
       ----------------------------------------------------------------
       -- (c) Strict decrease at level n
       ----------------------------------------------------------------
