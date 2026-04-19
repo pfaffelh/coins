@@ -413,6 +413,64 @@ theorem c_pos : ∀ n : ℕ, 1 ≤ n → 0 < c n := by
         positivity
       linarith
 
+/-- `c_n ≥ 1` for every `n ≥ 1`. (Stronger than `c_pos`.) -/
+theorem c_ge_one : ∀ n : ℕ, 1 ≤ n → 1 ≤ c n := by
+  intro n hn
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+    match n, hn with
+    | 1, _ => rw [c_one]
+    | n + 2, _ =>
+      rw [c_succ]
+      -- Lower bound the inner sum: each suffMin ≥ 1 by IH.
+      have hsuff_ge : ∀ j ∈ Ico 1 (n + 2), 1 ≤ suffMin j (n + 2) := by
+        intro j hj
+        have hjr := mem_Ico.mp hj
+        unfold suffMin
+        rw [dif_pos hjr.2]
+        apply Finset.le_inf'
+        intro m _
+        have hmr := mem_Ico.mp m.prop
+        exact ih m.val hmr.2 (by omega)
+      -- ∑ C(n+2, j) * suffMin j (n+2) ≥ ∑ C(n+2, j) = 2^(n+2) - 2.
+      have hsum_lb : ∑ j ∈ Ico 1 (n + 2),
+          (Nat.choose (n + 2) j : ℝ) * suffMin j (n + 2)
+          ≥ ∑ j ∈ Ico 1 (n + 2), (Nat.choose (n + 2) j : ℝ) := by
+        apply Finset.sum_le_sum
+        intro j hj
+        have hcj : 0 ≤ (Nat.choose (n + 2) j : ℝ) := by exact_mod_cast Nat.zero_le _
+        have h_one : 1 ≤ suffMin j (n + 2) := hsuff_ge j hj
+        nlinarith
+      -- ∑ C(n+2, j) for j in Ico 1 (n+2) = 2^(n+2) - 2.
+      have hsum_eq : (∑ j ∈ Ico 1 (n + 2), (Nat.choose (n + 2) j : ℝ)) =
+          (2 : ℝ) ^ (n + 2) - 2 := by
+        have htot : (∑ j ∈ range (n + 3), (Nat.choose (n + 2) j : ℝ)) = (2 : ℝ) ^ (n + 2) := by
+          exact_mod_cast Nat.sum_range_choose (n + 2)
+        have hsplit : range (n + 3) = insert 0 (insert (n + 2) (Ico 1 (n + 2))) := by
+          ext j; simp only [mem_range, mem_insert, mem_Ico]; omega
+        have h0 : 0 ∉ insert (n + 2) (Ico 1 (n + 2)) := by simp [mem_Ico]
+        have hn_in : n + 2 ∉ Ico 1 (n + 2) := by simp [mem_Ico]
+        rw [hsplit, sum_insert h0, sum_insert hn_in] at htot
+        simp only [Nat.choose_zero_right, Nat.choose_self, Nat.cast_one] at htot
+        linarith
+      have hpow_pos : (0 : ℝ) < (2 : ℝ) ^ (n + 2) := by positivity
+      have hpow_pos' : (0 : ℝ) < (2 : ℝ) ^ (n + 1) := by positivity
+      -- Now: c (n+2) ≥ (n+2)/2^(n+1) + (1/2^(n+2)) * (2^(n+2) - 2)
+      --             = (n+2)/2^(n+1) + 1 - 1/2^(n+1)
+      --             = 1 + (n+1)/2^(n+1) ≥ 1
+      have hQ_eq : (2 : ℝ) ^ (n + 2) = 2 * (2 : ℝ) ^ (n + 1) := by rw [pow_succ]; ring
+      have hN_ge : (2 : ℝ) ≤ ((n + 2 : ℕ) : ℝ) := by
+        exact_mod_cast (by omega : 2 ≤ n + 2)
+      -- Combine fractions: N/Qp + S/Q = (2N + S) / Q  (using Q = 2 Qp).
+      rw [show ((n + 2 : ℕ) : ℝ) / (2 : ℝ) ^ (n + 1) + 1 / (2 : ℝ) ^ (n + 2) *
+            (∑ j ∈ Ico 1 (n + 2), ((Nat.choose (n + 2) j : ℕ) : ℝ) * suffMin j (n + 2))
+          = (2 * ((n + 2 : ℕ) : ℝ) +
+              ∑ j ∈ Ico 1 (n + 2), ((Nat.choose (n + 2) j : ℕ) : ℝ) * suffMin j (n + 2))
+            / (2 : ℝ) ^ (n + 2)
+          from by rw [hQ_eq]; field_simp]
+      rw [le_div_iff₀ hpow_pos]
+      linarith [hsum_lb, hsum_eq, hN_ge]
+
 /-- Generic lower bound for `suffMin`: if every `c m` on `[j, n)` is at least `x`,
     then `suffMin j n ≥ x`. -/
 private lemma suffMin_ge_const (j n : ℕ) (h : j < n) (x : ℝ)
