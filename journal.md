@@ -1248,3 +1248,195 @@ called **ONE** (set aside 1 head) and **ALL** (set aside every head).
 4. Dubins–Savage (1965) — subfair gambling
 5. Puterman (1994) — MDP textbook
 6. Stokey–Lucas–Prescott (1989) — recursive methods
+
+## 2026-04-19 — Repository public on GitHub
+
+Made the working folder a git repository and pushed it as the
+public repo [pfaffelh/coins](https://github.com/pfaffelh/coins)
+(initial commit `dccd127`). The `.gitignore` excludes:
+
+- `CoinsLean/.lake/` (~7 GB of Lean build artifacts and the fetched
+  mathlib copy — managed by Lake from `lake-manifest.json`),
+- `__pycache__`, LaTeX intermediates (`*.aux`, `*.fls`, `*.log`,
+  `*.fdb_latexmk`, `*.synctex.gz`, `*.out`, `*~` editor backups),
+- `.claude/settings.local.json`.
+
+Tracked content: 3.8 MB across 46 files. The inner `CoinsLean/.git`
+(an empty `lake new` artifact) was removed so `CoinsLean/` is a
+normal subfolder. Mathlib stays a Lake-managed dependency; no git
+submodule needed because `lake update mathlib` works on the pinned
+`lake-manifest.json` regardless of the surrounding repo structure.
+
+## 2026-04-19 — Formalizing §2, §3, §4 of the manuscript
+
+Substantial extension of `CoinsLean/` to formalize the bulk of
+sections 2, 3, and 4 of `manuscript.tex` in Lean 4 / mathlib.
+
+### §2 (fair coin)
+
+`Optimal.lean` defines the optimal value
+$w_{n,p}$ via the Bellman equation with
+$\mathrm{Finset.sup}'$ over an attached $\mathrm{Ico}$, plus a
+total `suffMax p j n` helper (returns 0 when $j \ge n$) so a
+non-attach `w_succ` is available. Theorem 2.1 step 1
+($w_{n,1/2} = 1/2$) follows by strong recursion.
+
+`Strategies.lean` adds the strategy ONE value $a_{n,p}$ with
+$a_{n,1/2} = 1/2$.
+
+### §3 (above the fair coin)
+
+`Above.lean` proves Theorem 3.1 by joint strong induction on $n
+\ge 2$, with the three claims
+\[
+  w_{n-1} < w_n,\quad w_{n-1}\,(p^n + q^n) < p^n,\quad w_n = a_n
+\]
+established together at each step. The (ii) inductive step uses
+the algebraic identity
+\[
+  ((A + (1{-}A{-}B)\,w_{n-1})(C + D) - C)(A + B)
+  \;=\; AB(q-p) + (1{-}A{-}B)(C+D)(w_{n-1}(A+B) - A),
+\]
+where $A = p^{n+1}$, $B = q^{n+1}$, $C = p^{n+2}$, $D = q^{n+2}$,
+and both terms on the RHS are non-positive (the first because
+$q < p$, the second by IH).
+
+Auxiliary lemmas exposed:
+- `binom_sum_middle`: $\sum_{j=1}^{n-1}\binom{n}{j} p^{n-j} q^j = 1 - p^n - q^n$,
+  cleanly via `add_pow` with $x = 1-p$, $y = p$.
+- `suffMax_eq_top`, `chain_mono`, `w_rec_of_mono`.
+
+### §4 (below the fair coin) — partial
+
+`Perturbation.lean` covers:
+
+- **Definitions**: `deficit p n := 1/2 - w p n`,
+  `c : ℕ → ℝ` from the manuscript recursion, `suffMin j n` (suffix
+  min of `c`), `suffMinDelta p j n` (suffix min of `Δ`).
+- **Equivalences**: `suffMinDelta_eq: suffMinDelta = 1/2 - suffMax`
+  (general inf/sup duality for $f$ and $\tfrac12 - f$).
+- **Sign claims** (Proposition 4.2 i, ii):
+  $\Delta_{n,p} > 0$ for $0 < p < 1/2$,
+  $\Delta_{n,p} < 0$ for $1/2 < p < 1$, both for $n \ge 1$.
+- **Recursion**: `deficit_succ` and `deficit_succ'` (the same
+  recursion expressed first via $\mathrm{suffMax}\,w$ and then via
+  $\mathrm{suffMinDelta}\,\Delta$, matching the manuscript exactly).
+- **Numerical values**: $c_2 = 3/2$, $c_3 = 27/16$, $c_4 = 111/64$,
+  $c_5 = 3555/2048$ — all four entries of Example 4.5.
+- **Pointwise / bound lemmas**: `c_pos` ($c_n > 0$),
+  `c_ge_one` ($c_n \ge 1$), and strict monotonicity on $\{1, \ldots, 5\}$
+  (`c_one_lt_two` through `c_four_lt_five`).
+- **Lemma 4.7 partial**: `c_ge_27_16_le_12` proves
+  $c_n \ge 27/16$ for $4 \le n \le 12$ by strong induction. The
+  step uses the polynomial inequality
+  $7n - 18 - C(n,2) \ge 0$ (equivalently $n^2 - 15n + 36 \le 0$),
+  decided by `interval_cases` after casting to ℕ.
+
+### Scaffolded with `sorry` (TODO)
+
+A "Remaining §4 lemmas" section lists the remaining manuscript
+statements as `theorem ... := by sorry` placeholders:
+`A_lin`, `B_lin`, `c_ge_27_16_full` (Lemma 4.7),
+`c_strict_anti_from_five` (Lemma 4.8), `suffMin_collapse_low/_high`
+(Lemma 4.6), `c_linear_rec` (Prop 4.9), `c_limit_exists` /
+`c_limit_formula` (Theorem 4.10), `deficit_first_order` (Prop 4.4),
+`w_gap_first_order`, `w_local_min_at_five`,
+`no_first_order_local_max` (Corollary 4.11 i, ii, iii). The full
+package builds (8256 jobs, 12 `sorry` warnings).
+
+### Technical notes from this round
+
+- **`sup'`/`inf'` over attached Icos**: total wrappers
+  (`suffMax`, `suffMin`, `suffMinDelta` returning 0 outside the
+  domain) sidestep the proof-irrelevance issues that arise when
+  passing `Nonempty` witnesses through nested closures.
+- **Casting `Nat.choose`**: `decide` does not reduce
+  `(Nat.choose n k : ℝ) = m` (real-valued goals can't decide); the
+  pattern is `exact_mod_cast (by decide : Nat.choose n k = m)`.
+- **`pow_lt_pow_left`** for ordered fields with `0 ≤ a` is
+  `pow_lt_pow_left₀` in current mathlib (the unsubscripted name
+  exists only for unordered/extended types).
+- **`field_simp` inside a `show`**: when clearing denominators in
+  the middle of a tactic block where part of the expression
+  involves a `set` definition, the cleanest pattern is to do the
+  rewrite via `rw [show ... = ... from by ...; field_simp]` rather
+  than fighting with the resulting `ring` goal.
+
+## 2026-04-19 — Manuscript fixes and joint-induction restructure
+
+Two rounds of cleanup of `manuscript.tex`:
+
+### Notation fixes
+
+- §1.2 now defines a *policy* $\pi$ via $i_\pi(n,k)\in\{1,\dots,k\}$
+  and the resulting winning probability $v_n^\pi$. Theorem 2.1 and
+  Remark 2.2 had been using these symbols without prior definition.
+- §1.3 now states that BOTH the strategy-ONE recursion and the
+  strategy-ALL recursion are linear (no $\max$ operator); the
+  earlier wording mentioned only $b$.
+
+### §4 restructure: making the joint induction explicit
+
+The manuscript previously stated four results with cross-citing
+proofs:
+\[
+  \text{Lem 4.6 (collapse)} \leftarrow \text{Lem 4.7, 4.8},
+  \quad
+  \text{Lem 4.7} \leftarrow \text{Prop 4.9},
+  \quad
+  \text{Prop 4.9} \leftarrow \text{Lem 4.6}.
+\]
+Each individual proof referenced a later result, creating an
+apparent circular dependency. This was the chief obstacle when
+trying to formalize §4: the formalization can't faithfully follow
+proofs that aren't well-founded as stated.
+
+The actual proof in the manuscript is a **simultaneous strong
+induction on $n$**: at each step $n \ge 7$, the IH for indices
+$<n$ supplies what is needed for all four claims at $n$:
+\[
+  \text{collapse}(n) \xleftarrow{\;} \text{IH 4.7, 4.8},
+  \quad
+  \text{linear}(n) \xleftarrow{\;} \text{collapse}(n),
+\]
+\[
+  4.7(n) \xleftarrow{\;} \text{linear}(n) + \text{alg.\ id.},
+  \quad
+  4.8(n) \xleftarrow{\;} \text{linear}(n) + \text{IH 4.7}.
+\]
+Base cases $n \in \{4, 5, 6\}$ come from explicit values
+$c_4 = 111/64$, $c_5 = 3555/2048$, $c_6 = 113337/65536$, all
+$> 27/16 = 108/64$, with $c_5 > c_6$.
+
+Restructured §4.3-4.4 to expose this:
+
+- Merged "Collapse of the minimum" + "Linear recursion and the
+  limit" into a single §4.3 "Collapse, lower bound, and linear
+  recursion".
+- All four results stated upfront, then one *joint proof* by
+  induction on $n$ establishing claims (a)-(d) at each step.
+- The algebraic identity (eq:alg-id) is now part of the *statement*
+  of Proposition 4.9 (where the constants $A_n$, $B_n$ are defined),
+  so the joint proof can cite it freely without having proven the
+  linear recursion first.
+- Added $c_6$ to Example 4.5 with the base-case inequalities
+  $c_4 > c_6$ and $c_5 > c_6$ flagged.
+- New §4.4 "The limit" houses Theorem 4.10.
+
+The PDF stays at 8 pages (manuscript commit `db6613c`).
+
+### Implication for the formalization
+
+The Lean scaffold currently has four independent `sorry` stubs and
+no `c_6`; to mirror the manuscript it should:
+
+1. Compute `c_6 = 113337/65536` explicitly.
+2. Add `alg_id` as a standalone algebraic lemma about
+   `A_lin n - (27/16) * B_lin n`.
+3. Replace the four scattered stubs with one master
+   `joint_step` theorem (`sorry`) carrying four conjuncts, then
+   derive `suffMin_collapse_*`, `c_ge_27_16_full`,
+   `c_strict_anti_from_five`, `c_linear_rec` as one-line
+   corollaries that just unpack the conjunction.
+
+This adaptation is the next step on the formalization side.

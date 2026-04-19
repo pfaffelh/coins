@@ -780,3 +780,266 @@ Stokey–Lucas–Prescott 1989.
 > Update journal.md and claude.md
 
 Extended both files with Prompt 67.
+
+### Prompt 69
+> Make this folder a git repo, and push it to github as a public repo.
+
+After clarifying questions about visibility, what to track, and how
+to handle the inner Lean project: created `.gitignore` excluding
+`CoinsLean/.lake/` (7 GB of Lean build + mathlib), `__pycache__`,
+LaTeX intermediates (`*.aux`, `*.log`, `*.fls`, `*.fdb_latexmk`,
+`*.synctex.gz`, `*.out`), `*~` backups, and
+`.claude/settings.local.json`. Final tracked size: 3.8 MB across
+46 files (largest 396 KB).
+
+Removed the inner `CoinsLean/.git` (an empty `lake new` artifact
+with no commits or remote) so `CoinsLean/` is treated as a normal
+subfolder. Mathlib remains a Lake-managed dependency (pinned via
+`lake-manifest.json`); `lake update mathlib` works without git
+submodules — submodules don't help with Lake.
+
+`git init -b main`, initial commit, then
+`gh repo create coins --public --source=. --push` published the
+repo at https://github.com/pfaffelh/coins.
+
+### Prompt 70
+> Now, we have the next big thing, formalization of all results in
+> Manuskript/manuscript.pdf. Please do as much of the results as you
+> can do. The p = 1/2 case is already formalized, as far as I remember.
+
+Inventoried the existing formalization
+(`HalfP.lean`: only `b(1/2,n)=1/2`) and the manuscript scope, then
+extended `CoinsLean/` substantially:
+
+- **Strategies.lean** — `a p n` (strategy ONE), with `a_succ`,
+  `a_one`, and `a_half` (`a(1/2, n) = 1/2` for `n ≥ 1`).
+- **Optimal.lean** — `w p n` defined via the Bellman equation with
+  a `Finset.sup'` over `(Ico j (n+1)).attach`. Total `suffMax p j n`
+  helper to enable a non-attach `w_succ`. Proved `w(1/2, n) = 1/2`
+  by strong recursion (Theorem 2.1 step 1).
+- **Above.lean** — Theorem 3.1 for `p > 1/2`: joint strong induction
+  on `n ≥ 2` proving (i) strict monotonicity, (ii) the sharp bound
+  `w(p, n-1)·(p^n + q^n) < p^n`, (iii) `w = a`. Required:
+  - `binom_sum_middle`: `∑_{j=1}^{n-1} C(n,j) p^{n-j} q^j = 1 − p^n − (1−p)^n`
+    (via `add_pow` with `x = 1−p`, `y = p` to dodge reindexing).
+  - `suffMax_eq_top` under monotonicity.
+  - `chain_mono`: pointwise step → chained inequality.
+  - `w_rec_of_mono`: collapses Bellman to the strategy-ONE recursion
+    when `w` is monotone on `[1, n+1]`.
+  - The (ii) inductive step uses the algebraic identity
+    `(LHS − pA) · (A+B) = AB(q−p) + (1−A−B)·(C+D)·(w·(A+B) − A)`
+    with both terms on the RHS non-positive.
+- **Perturbation.lean** — `deficit p n := 1/2 − w p n`,
+  `deficit_zero`, `deficit_half`, `deficit_neg_of_above` (sign for
+  `p > 1/2`). Defined `c : ℕ → ℝ` via the manuscript's recursion
+  with `(Ico j (n+2)).attach.inf'`.
+- Wired everything into `CoinsLean.lean` and verified with
+  `lake build` (8256 jobs, green).
+
+Pushed as commit `3ecf718`.
+
+### Prompt 71
+> Let us work on §4 now. Start with the simplest task, please.
+
+Picked **Example 4.5, first value: `c_2 = 3/2`**. Refactored
+`Perturbation.lean`:
+- Added `suffMin j n` (total suffix-min, `0` when `j ≥ n`).
+- `suffMin_singleton: suffMin n (n+1) = c n` via `Finset.inf'_le`
+  + `Finset.le_inf'` on the singleton attach.
+- `c_succ`: plain-sum form of the c-recursion at `n+2`,
+  derived from the original definition by `Finset.sum_attach`.
+- `c_two : c 2 = 3/2` via `c_succ` + singleton reduction.
+
+Pushed as commit `84ca569`.
+
+### Prompt 72
+> Can you proceed with the next task?
+
+`c_3 = 27/16`:
+- Added `suffMin_pair: suffMin n (n+2) = min (c n) (c (n+1))`.
+- `c_three: c 3 = 27/16` by reducing `Ico 1 3 = {1,2}`,
+  using `suffMin_pair` for `j=1` and `suffMin_singleton` for `j=2`.
+
+Pushed as commit `12d8aac`.
+
+### Prompt 73
+> continue
+
+`c_4 = 111/64`:
+- Added the general `suffMin_split: suffMin n m = min (c n) (suffMin (n+1) m)`
+  (for `n+1 < m`), reducing any `suffMin` to a chain of mins.
+- `c_four`: chain `suffMin_split` + `suffMin_pair` + `suffMin_singleton`.
+- Hit `decide` failure on `(Nat.choose 4 2 : ℝ) = 6` (decide can't
+  reduce real-valued Nat.cast); worked around with
+  `exact_mod_cast (by decide : Nat.choose 4 2 = 6)`.
+
+Pushed as commit `f62c628`.
+
+### Prompt 74
+> do c_5
+
+`c_5 = 3555/2048`: same pattern, 4 sum terms, four `suffMin`
+reductions. Concrete arithmetic via `norm_num` after substituting
+`(Nat.choose 5 2 : ℝ) = 10` and `(Nat.choose 5 3 : ℝ) = 10`.
+
+Pushed as commit `a66b14e`. All four numerical values from
+Example 4.5 are now verified.
+
+### Prompt 75
+> lemma 4.7
+
+Flagged the manuscript's circular dependency for the full Lemma 4.7
+(uses linear recursion → collapse → 4.7). Did the trivial part:
+`c_four_ge`, `c_five_ge` (`c_n ≥ 27/16` from the explicit values).
+
+Pushed as commit `b87bc08`.
+
+### Prompt 76
+> Formalize the inductive bound for n ∈ {4,...,12} — needs suffMin_eq_c_k
+
+Strong-induction proof `c_ge_27_16_le_12: ∀ n, 4 ≤ n → n ≤ 12 → c n ≥ 27/16`.
+Built up:
+- `suffMin_ge_const`: lift a pointwise lower bound on `c` to a
+  lower bound on `suffMin`.
+- `c_ge_one_of_ih`, `c_ge_three_halves_of_ih`,
+  `c_ge_27_16_of_ih`: pointwise lower bounds on `c m` under the IH
+  `c k ≥ 27/16` for `4 ≤ k < N`.
+- `choose_sum_3_to_pred`: `∑_{j=3}^{n-1} C(n,j) = 2^n − 2 − n − C(n,2)`.
+- `c_ind_step`: combines all of the above with the polynomial
+  inequality `7n − 18 − C(n,2) ≥ 0` (i.e. `n² − 15n + 36 ≤ 0`),
+  decided by `interval_cases n' <;> decide` after casting to ℕ.
+- The final algebra clears `Q*Qp` denominators via `field_simp`
+  inside a `show … from …` rewrite.
+
+Pushed as commit `0e02311`.
+
+### Prompt 77
+> please keep going.
+
+Did the next foundational pieces in §4:
+
+- `deficit_succ` (Proposition 4.2 recursion) using `binom_sum_middle`
+  (made non-private in Above.lean).
+- `deficit_pos_of_below`: `Δ_{n,p} > 0` for `0 < p < 1/2`, by
+  strong induction with the hypothesis "every `w(p, m)` on the
+  suffix is `< 1/2`" → `1/2 − suffMax ≥ 0`.
+
+Pushed as commits `d65293f`, `7bb7382`.
+
+### Prompt 78
+> please keep going.
+
+Cleaned up the deficit recursion to match the manuscript exactly:
+
+- `suffMinDelta p j n` (suffix-min of the deficit).
+- `suffMinDelta_eq: suffMinDelta = 1/2 − suffMax` via
+  `Finset.exists_mem_eq_sup'` (one direction) + `Finset.le_inf'`
+  (other direction).
+- `deficit_succ'`: restated recursion with `suffMinDelta` factor.
+- Added `c_pos: c n > 0 for n ≥ 1` and `c_ge_one: c n ≥ 1 for n ≥ 1`
+  (the latter via `field_simp` + `le_div_iff₀`).
+- `c_one_lt_two`, `c_two_lt_three`, `c_three_lt_four`, `c_four_lt_five`
+  — strict monotonicity on `{1,…,5}` (Example 4.5).
+
+Pushed as commits `f922fd5`, `751152f`, `d359645`, `6603e60`.
+
+### Prompt 79
+> In the manuscipt, I think i_π(n,n) in Thm 2.1 was not introduced. In
+> the last sentence of Section 1.3, note that the same applies to the
+> recursion a.
+
+Two manuscript fixes:
+
+- §1.2: added a proper definition of `i_π(n, k) ∈ {1, …, k}` and
+  `v_n^π` so the symbol used in Theorem 2.1 / Remark 2.2 is
+  introduced.
+- §1.3: linearity comment now mentions BOTH `a` and `b`
+  (was only mentioning `b`).
+
+PDF rebuilt cleanly.
+
+### Prompt 80
+> For the formalization, I want you to write out the lemmas you will
+> have to prove, and say by sorry for their proofs.
+
+Added a "Remaining §4 lemmas (TODO)" section at the end of
+`Perturbation.lean` with `sorry` stubs for:
+
+- `A_lin n`, `B_lin n` — the constants from Prop 4.9 (eq:AB).
+- `c_ge_27_16_full` (Lemma 4.7 in full).
+- `c_strict_anti_from_five` (Lemma 4.8).
+- `suffMin_collapse_low / _high` (Lemma 4.6, two cases).
+- `c_linear_rec` (Prop 4.9).
+- `c_limit_exists` and `c_limit_formula` (Theorem 4.10, existence
+  and explicit form via products and series).
+- `deficit_first_order` (Proposition 4.4).
+- `w_gap_first_order`, `w_local_min_at_five`,
+  `no_first_order_local_max` (Corollary 4.11 i, ii, iii).
+
+Each statement uses `sorry`; the file builds with 12 `sorry`
+warnings. A section comment sketches the dependency structure
+(circularly tangled at first glance — clarified next).
+
+Pushed combined with the manuscript fixes as commit `287b119`.
+
+### Prompt 81
+> Wait. As you say above, is the complete argument circular? This
+> way, will not be able to formalize it...
+
+Re-examined and clarified: the dependencies between Lemmas 4.6,
+4.7, 4.8 and Prop 4.9 form a circle **at the lemma level** but the
+manuscript's actual proof is a **simultaneous strong induction on
+n**. At each step `n ≥ 7`, the IH for indices `< n` provides
+exactly what's needed for all four claims at level `n`:
+
+```
+collapse@n  ← IH 4.7 + 4.8     (only c values at < n)
+linear@n    ← collapse@n
+4.7@n       ← linear@n + algebraic identity
+4.8@n       ← linear@n + IH 4.7
+```
+
+Base cases `n ∈ {4, 5, 6}` come from explicit values of
+`c_4, c_5, c_6` (need `c_6 = 113337/65536`). So formalization is
+possible — just needs the joint-induction structure.
+
+### Prompt 82
+> Great insight. Please first cean this in the manuscript, such that
+> the stories of manuscript and formalization will eventually fit
+> together.
+
+Restructured manuscript §4.3-4.4 to match the joint induction:
+
+- Merged §4.3 (Collapse) and §4.4 (Linear recursion and the limit)
+  into one §4.3 "Collapse, lower bound, and linear recursion".
+- All four results stated upfront, then a single "Joint proof"
+  proceeds by induction on `n` establishing claims (a)-(d) at each
+  step.
+- Algebraic identity (eq:alg-id) moved into the statement of
+  Prop 4.9 so it's available without circular reference.
+- Added `c_6 = 113337/65536` to Example 4.5 with the inequalities
+  `c_4 > c_6` and `c_5 > c_6` flagged as base cases.
+- New §4.4 "The limit" houses Theorem 4.10.
+
+PDF rebuilt cleanly (8 pages). Pushed as commit `db6613c`.
+
+### Prompt 83
+> Is the formalization in line with the manuscript now, or do you
+> have to adapt it?
+
+Identified three mismatches that need adapting:
+
+1. The Lean scaffold has four independent `sorry` stubs, but the
+   manuscript proves them jointly — should be one master
+   `joint_step` theorem with four corollaries.
+2. The algebraic identity `eq:alg-id` is now in the statement of
+   Prop 4.9; the formalization doesn't have it as a separate lemma.
+3. `c_6 = 113337/65536` appears in the manuscript's Example 4.5 as
+   a base case; the Lean side hasn't computed it.
+
+Asked the user for permission to bring the formalization in line.
+
+### Prompt 84
+> Please update claude.md and journal.md
+
+Extended both files with Prompts 69-84 (this update).
