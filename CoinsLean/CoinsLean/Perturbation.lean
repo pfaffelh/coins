@@ -238,3 +238,19 @@ theorem c_five : c 5 = 3555/2048 := by
     exact_mod_cast this
   rw [hc52, hc53]
   norm_num
+
+/-! ### Lemma 4.7: lower bound c_m ≥ 27/16 for m ≥ 4
+
+  The full lemma in the manuscript holds for every m ≥ 4. The proof uses the
+  linear recursion (Prop 4.9), which itself relies on the collapse lemma (4.6),
+  which in turn relies on Lemma 4.7 — the circle is broken in the manuscript by
+  proving the polynomial bound  A_m − (27/16)·B_m  ≥ 0 directly for m ∈ {3,…,12}
+  and treating m ≥ 13 with a contraction argument.
+
+  Below we prove the two cases that follow trivially from the values computed in
+  Example 4.5; the inductive bound for m ∈ {6,…,12} and the asymptotic case
+  m ≥ 13 are left for future work. -/
+
+theorem c_four_ge : c 4 ≥ 27/16 := by rw [c_four]; norm_num
+
+theorem c_five_ge : c 5 ≥ 27/16 := by rw [c_five]; norm_num
