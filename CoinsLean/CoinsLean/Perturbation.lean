@@ -1068,8 +1068,48 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
                     exact_mod_cast (by decide : Nat.choose 10 3 = 120)
                   rw [hA2, hA3]
                   norm_num
-                · -- n ∈ [11, 12]: extend chain again.
-                  sorry
+                · -- n ∈ [11, 12]: extend the chain by deriving hc10 (symbolically).
+                  have h_d10 := (ih 10 (by omega) (by omega)).2.2.1 (by omega)
+                  rw [show (10 - 1 : ℕ) = 9 from rfl, hc9] at h_d10
+                  unfold A_lin B_lin at h_d10
+                  rw [c_one, c_two, c_three] at h_d10
+                  have hA2_10 : ((Nat.choose 10 2 : ℕ) : ℝ) = 45 := by
+                    exact_mod_cast (by decide : Nat.choose 10 2 = 45)
+                  have hA3_10 : ((Nat.choose 10 3 : ℕ) : ℝ) = 120 := by
+                    exact_mod_cast (by decide : Nat.choose 10 3 = 120)
+                  rw [hA2_10, hA3_10] at h_d10
+                  rcases (show n = 11 ∨ n = 12 by omega) with hn11' | hn12
+                  · -- n = 11.
+                    subst hn11'
+                    rw [show (11 - 1 : ℕ) = 10 from rfl, h_d10]
+                    unfold A_lin B_lin
+                    rw [c_one, c_two, c_three]
+                    have hB2 : ((Nat.choose 11 2 : ℕ) : ℝ) = 55 := by
+                      exact_mod_cast (by decide : Nat.choose 11 2 = 55)
+                    have hB3 : ((Nat.choose 11 3 : ℕ) : ℝ) = 165 := by
+                      exact_mod_cast (by decide : Nat.choose 11 3 = 165)
+                    rw [hB2, hB3]
+                    norm_num
+                  · -- n = 12: also derive h_d11 first (symbolic).
+                    subst hn12
+                    have h_d11 := (ih 11 (by omega) (by omega)).2.2.1 (by omega)
+                    rw [show (11 - 1 : ℕ) = 10 from rfl, h_d10] at h_d11
+                    unfold A_lin B_lin at h_d11
+                    rw [c_one, c_two, c_three] at h_d11
+                    have hB2_11 : ((Nat.choose 11 2 : ℕ) : ℝ) = 55 := by
+                      exact_mod_cast (by decide : Nat.choose 11 2 = 55)
+                    have hB3_11 : ((Nat.choose 11 3 : ℕ) : ℝ) = 165 := by
+                      exact_mod_cast (by decide : Nat.choose 11 3 = 165)
+                    rw [hB2_11, hB3_11] at h_d11
+                    rw [show (12 - 1 : ℕ) = 11 from rfl, h_d11]
+                    unfold A_lin B_lin
+                    rw [c_one, c_two, c_three]
+                    have hC2 : ((Nat.choose 12 2 : ℕ) : ℝ) = 66 := by
+                      exact_mod_cast (by decide : Nat.choose 12 2 = 66)
+                    have hC3 : ((Nat.choose 12 3 : ℕ) : ℝ) = 220 := by
+                      exact_mod_cast (by decide : Nat.choose 12 3 = 220)
+                    rw [hC2, hC3]
+                    norm_num
         · -- n ≥ 13: A_n - (27/16) B_n < 0 by alg_id, so c_n < c_{n-1}.
           rw [h_d]
           have h_alg := alg_id n (by omega)
