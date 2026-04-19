@@ -106,7 +106,11 @@ $i\in\{1,\dots,k\}$ of heads to set aside (where $k$ is the random
 number of heads), and the transition is
 $m\mapsto m-i$.  There are two absorbing states: \emph{win}
 ($m=0$, all coins collected) and \emph{lose} (reached when $k=0$ in
-some round).
+some round).  A \emph{policy} (or \emph{strategy})~$\pi$ specifies,
+for each state~$n$ and each observed number~$k\in\{1,\dots,n\}$ of
+heads, the number $i_\pi(n,k)\in\{1,\dots,k\}$ of heads to set
+aside; we write $v_n^\pi$ for the resulting winning probability
+starting from state~$n$.
 
 Because every policy absorbs with probability at least
 $p^m+(1-p)^m>0$ per round, the MDP is a \emph{stochastic
@@ -152,8 +156,9 @@ number of tails), giving
   b_{j,p},
   \qquad b_{0,p}:=1.
 \end{equation}
-Note that the recursion for~$b$ is \emph{linear} (no $\max$
-operator), which makes it analytically more tractable.
+Note that the recursions for both~$a$ and~$b$ are \emph{linear}
+(no $\max$ operator), which makes them analytically more tractable
+than the Bellman equation~\eqref{eq:bellman}.
 
 \subsection{Outline}
 

@@ -661,3 +661,101 @@ theorem c_ge_27_16_le_12 : ∀ n : ℕ, 4 ≤ n → n ≤ 12 → c n ≥ 27/16 :
     apply c_ind_step n h4 h12
     intro k hk1 hk2
     exact ih k hk2 hk1 (by omega)
+
+/-! ## Remaining §4 lemmas (TODO)
+
+  The lemmas below complete §4 of the manuscript. They form an interconnected
+  cluster which the manuscript breaks via specific algebraic identities
+  involving the constants `A_lin`, `B_lin` defined below.
+
+  Dependency sketch:
+    - `c_ge_27_16_full` (Lemma 4.7) — uses `c_linear_rec` for `m ≥ 13` and
+      direct computation for `m ∈ {4, …, 12}` (already done in
+      `c_ge_27_16_le_12`).
+    - `c_strict_anti_from_five` (Lemma 4.8) — uses `c_linear_rec` and
+      `c_ge_27_16_full`.
+    - `suffMin_collapse_*` (Lemma 4.6) — uses Lemmas 4.7 and 4.8.
+    - `c_linear_rec` (Prop 4.9) — uses Lemma 4.6 (collapse).
+    - `c_limit_exists` (Thm 4.10) — uses Prop 4.9.
+    - `deficit_first_order` (Prop 4.4) — independent (asymptotic claim).
+    - `w_*` (Cor 4.11) — uses Prop 4.4 + properties of `c`. -/
+
+/-- The constant `A_n` from the linear recursion (Prop 4.9, eq:AB). -/
+noncomputable def A_lin (n : ℕ) : ℝ :=
+  (n : ℝ) / (2 : ℝ) ^ (n - 1) +
+    ((n : ℝ) * c 1 + (Nat.choose n 2 : ℝ) * c 2 + (Nat.choose n 3 : ℝ) * c 3) /
+      (2 : ℝ) ^ n
+
+/-- The constant `B_n` from the linear recursion (Prop 4.9, eq:AB). -/
+noncomputable def B_lin (n : ℕ) : ℝ :=
+  (2 + (n : ℝ) + (Nat.choose n 2 : ℝ) + (Nat.choose n 3 : ℝ)) / (2 : ℝ) ^ n
+
+/-- Lemma 4.7 (full): `c m ≥ 27/16` for every `m ≥ 4`. -/
+theorem c_ge_27_16_full : ∀ m : ℕ, 4 ≤ m → c m ≥ 27/16 := by
+  sorry
+
+/-- Lemma 4.8: the sequence `(c n)_{n ≥ 5}` is strictly decreasing. -/
+theorem c_strict_anti_from_five : ∀ n : ℕ, 5 ≤ n → c (n + 1) < c n := by
+  sorry
+
+/-- Lemma 4.6 (collapse) — low part: for `n ≥ 7` and `j ∈ {1, 2, 3}`,
+    the suffix-min of `c` over `[j, n)` equals `c j`. -/
+theorem suffMin_collapse_low (n j : ℕ) (hn : 7 ≤ n) (h1 : 1 ≤ j) (h3 : j ≤ 3) :
+    suffMin j n = c j := by
+  sorry
+
+/-- Lemma 4.6 (collapse) — high part: for `n ≥ 7` and `j ∈ {4, …, n-1}`,
+    the suffix-min of `c` over `[j, n)` equals `c (n - 1)`. -/
+theorem suffMin_collapse_high (n j : ℕ) (hn : 7 ≤ n) (h4 : 4 ≤ j) (hjn : j < n) :
+    suffMin j n = c (n - 1) := by
+  sorry
+
+/-- Proposition 4.9: the linear recursion for `n ≥ 7`. -/
+theorem c_linear_rec (n : ℕ) (h : 7 ≤ n) :
+    c n = A_lin n + (1 - B_lin n) * c (n - 1) := by
+  sorry
+
+/-- Theorem 4.10: the limit `L = lim c_n` exists. -/
+theorem c_limit_exists :
+    ∃ L : ℝ, Filter.Tendsto (fun n => c n) Filter.atTop (nhds L) := by
+  sorry
+
+/-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
+    `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
+    (Convergence at geometric rate from `A_n, B_n = O(n³ / 2^n)`.) -/
+theorem c_limit_formula (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
+    ∃ L : ℝ, Filter.Tendsto (fun n => c n) Filter.atTop (nhds L) ∧
+      L = c (n₀ - 1) * ∏' m : {m : ℕ // n₀ ≤ m}, (1 - B_lin m) +
+          ∑' k : {k : ℕ // n₀ ≤ k},
+            A_lin k * ∏' m : {m : ℕ // k < m}, (1 - B_lin m) := by
+  sorry
+
+/-- Proposition 4.4 (first-order coefficient): `c n` is the first-order
+    coefficient of `Δ_{n, 1/2 - δ}` as `δ → 0⁺`. -/
+theorem deficit_first_order (n : ℕ) (hn : 1 ≤ n) :
+    ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      |deficit (1/2 - δ) n - c n * δ| ≤ M * δ ^ 2 := by
+  sorry
+
+/-- Corollary 4.11 (i): the gap `w(p, n-1) - w(p, n)` has first-order
+    coefficient `c_n - c_{n-1}` as `p = 1/2 - δ`, `δ → 0⁺`. -/
+theorem w_gap_first_order (n : ℕ) (hn : 2 ≤ n) :
+    ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      |w (1/2 - δ) (n - 1) - w (1/2 - δ) n - (c n - c (n - 1)) * δ| ≤
+        M * δ ^ 2 := by
+  sorry
+
+/-- Corollary 4.11 (ii): to first order, `n = 5` is a strict local minimum
+    of `n ↦ w(1/2 - δ, n)`. -/
+theorem w_local_min_at_five :
+    ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      w (1/2 - δ) 5 < w (1/2 - δ) 4 ∧ w (1/2 - δ) 5 < w (1/2 - δ) 6 := by
+  sorry
+
+/-- Corollary 4.11 (iii): there is no local maximum at first order;
+    `c_n` is eventually decreasing, so `w(1/2 - δ, n)` is eventually increasing
+    in `n`. -/
+theorem no_first_order_local_max :
+    ∃ N : ℕ, ∀ n, N ≤ n → ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      w (1/2 - δ) n < w (1/2 - δ) (n + 1) := by
+  sorry
