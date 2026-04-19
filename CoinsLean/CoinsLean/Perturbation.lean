@@ -381,6 +381,38 @@ theorem c_five_ge : c 5 ≥ 27/16 := by rw [c_five]; norm_num
       c_n ≥ 27/16 + (3 / (16 · 2^n)) · (7n − 18 − C(n,2))
   The bracket is `≥ 0` iff `n² − 15n + 36 ≤ 0`, i.e. `3 ≤ n ≤ 12`. -/
 
+/-- `c_n > 0` for every `n ≥ 1`. -/
+theorem c_pos : ∀ n : ℕ, 1 ≤ n → 0 < c n := by
+  intro n hn
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+    match n, hn with
+    | 1, _ => rw [c_one]; norm_num
+    | n + 2, _ =>
+      rw [c_succ]
+      have h1 : 0 < ((n + 2 : ℕ) : ℝ) / (2 : ℝ) ^ (n + 1) := by
+        apply _root_.div_pos
+        · exact_mod_cast (by omega : 0 < n + 2)
+        · positivity
+      have h2 : 0 ≤ (1 / (2 : ℝ) ^ (n + 2)) *
+          ∑ j ∈ Ico 1 (n + 2),
+            (Nat.choose (n + 2) j : ℝ) * suffMin j (n + 2) := by
+        apply mul_nonneg (by positivity)
+        apply Finset.sum_nonneg
+        intro j hj
+        have hjr := mem_Ico.mp hj
+        have h_choose : 0 ≤ (Nat.choose (n + 2) j : ℝ) := by
+          exact_mod_cast Nat.zero_le _
+        have h_suffMin_pos : 0 ≤ suffMin j (n + 2) := by
+          unfold suffMin
+          rw [dif_pos hjr.2]
+          apply Finset.le_inf'
+          intro m _
+          have hmr := mem_Ico.mp m.prop
+          exact (ih m.val hmr.2 (by omega)).le
+        positivity
+      linarith
+
 /-- Generic lower bound for `suffMin`: if every `c m` on `[j, n)` is at least `x`,
     then `suffMin j n ≥ x`. -/
 private lemma suffMin_ge_const (j n : ℕ) (h : j < n) (x : ℝ)
