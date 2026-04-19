@@ -280,6 +280,50 @@ theorem deficit_succ (p : ℝ) (n : ℕ) :
   rw [hRHS_sum]
   ring
 
+/-- Suffix-minimum of the deficit `Δ p` over `[j, n)`. Returns 0 when `j ≥ n`. -/
+noncomputable def suffMinDelta (p : ℝ) (j n : ℕ) : ℝ :=
+  if h : j < n then
+    (Ico j n).attach.inf'
+      ⟨⟨j, mem_Ico.mpr ⟨le_refl _, h⟩⟩, mem_attach _ _⟩
+      (fun m => deficit p m.val)
+  else 0
+
+/-- The inf of `1/2 − w` equals `1/2 − sup w`. -/
+theorem suffMinDelta_eq (p : ℝ) (j n : ℕ) (h : j < n) :
+    suffMinDelta p j n = 1/2 - suffMax p j n := by
+  unfold suffMinDelta suffMax
+  rw [dif_pos h, dif_pos h]
+  apply le_antisymm
+  · -- inf' deficit ≤ 1/2 − sup' w: use the sup'-achieving element.
+    obtain ⟨m_max, hmax_mem, hmax_eq⟩ := Finset.exists_mem_eq_sup'
+      ⟨⟨j, mem_Ico.mpr ⟨le_refl _, h⟩⟩, mem_attach _ _⟩
+      (fun m : (Ico j n) => w p m.val)
+    rw [hmax_eq]
+    have h_inf := Finset.inf'_le (s := (Ico j n).attach)
+                    (f := fun m : (Ico j n) => deficit p m.val) hmax_mem
+    unfold deficit at h_inf ⊢
+    linarith
+  · -- 1/2 − sup' w ≤ inf' deficit: bound below by each element.
+    apply Finset.le_inf'
+    intro m _
+    have h_le := Finset.le_sup' (s := (Ico j n).attach)
+                  (f := fun m : (Ico j n) => w p m.val) (mem_attach _ m)
+    unfold deficit
+    linarith
+
+/-- Proposition 4.2 in deficit form (manuscript statement). -/
+theorem deficit_succ' (p : ℝ) (n : ℕ) :
+    deficit p (n + 1) = ((1 - p) ^ (n + 1) - p ^ (n + 1)) / 2 +
+      ∑ j ∈ Ico 1 (n + 1),
+        (Nat.choose (n + 1) j : ℝ) * p ^ (n + 1 - j) * (1 - p) ^ j *
+          suffMinDelta p j (n + 1) := by
+  rw [deficit_succ]
+  apply congrArg (((1 - p) ^ (n + 1) - p ^ (n + 1)) / 2 + ·)
+  apply Finset.sum_congr rfl
+  intros j hj
+  have hjr := mem_Ico.mp hj
+  rw [suffMinDelta_eq p j (n + 1) hjr.2]
+
 /-- Proposition 4.2 (i): for `0 < p < 1/2` and `n ≥ 1`, the deficit is positive. -/
 theorem deficit_pos_of_below (p : ℝ) (hp_pos : 0 < p) (hp_lt : p < 1/2) :
     ∀ n : ℕ, 1 ≤ n → 0 < deficit p n := by
