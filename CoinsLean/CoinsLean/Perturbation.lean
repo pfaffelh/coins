@@ -368,6 +368,13 @@ theorem c_four_ge : c 4 ≥ 27/16 := by rw [c_four]; norm_num
 
 theorem c_five_ge : c 5 ≥ 27/16 := by rw [c_five]; norm_num
 
+/-! Strict monotonicity of `c` on `{1, …, 5}` (Example 4.5). -/
+
+theorem c_one_lt_two   : c 1 < c 2 := by rw [c_one,   c_two];   norm_num
+theorem c_two_lt_three : c 2 < c 3 := by rw [c_two,   c_three]; norm_num
+theorem c_three_lt_four : c 3 < c 4 := by rw [c_three, c_four];  norm_num
+theorem c_four_lt_five : c 4 < c 5 := by rw [c_four,  c_five];  norm_num
+
 /-! ### Inductive bound for n ∈ {4, …, 12}
 
   We give the strong-induction proof that `c n ≥ 27/16` for `4 ≤ n ≤ 12`.
