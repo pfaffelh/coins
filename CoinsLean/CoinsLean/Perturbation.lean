@@ -254,3 +254,200 @@ theorem c_five : c 5 = 3555/2048 := by
 theorem c_four_ge : c 4 ≥ 27/16 := by rw [c_four]; norm_num
 
 theorem c_five_ge : c 5 ≥ 27/16 := by rw [c_five]; norm_num
+
+/-! ### Inductive bound for n ∈ {4, …, 12}
+
+  We give the strong-induction proof that `c n ≥ 27/16` for `4 ≤ n ≤ 12`.
+  The argument bounds the c-recursion sum term-by-term:
+
+    suffMin 1 n ≥ 1     (from c_1 = 1, c_2 = 3/2 ≥ 1, c_3 = 27/16 ≥ 1, IH for m ≥ 4)
+    suffMin 2 n ≥ 3/2   (from c_2 = 3/2, c_3 = 27/16 ≥ 3/2, IH for m ≥ 4)
+    suffMin j n ≥ 27/16 for j ≥ 3 (c_3 = 27/16, IH for m ≥ 4)
+
+  Combining and using ∑ C(n,j) = 2^n - 2:
+      c_n ≥ 27/16 + (3 / (16 · 2^n)) · (7n − 18 − C(n,2))
+  The bracket is `≥ 0` iff `n² − 15n + 36 ≤ 0`, i.e. `3 ≤ n ≤ 12`. -/
+
+/-- Generic lower bound for `suffMin`: if every `c m` on `[j, n)` is at least `x`,
+    then `suffMin j n ≥ x`. -/
+private lemma suffMin_ge_const (j n : ℕ) (h : j < n) (x : ℝ)
+    (hx : ∀ m ∈ Ico j n, x ≤ c m) :
+    x ≤ suffMin j n := by
+  unfold suffMin
+  rw [dif_pos h]
+  apply Finset.le_inf'
+  intro m _
+  exact hx m.val m.prop
+
+/-- Pointwise lower bound on `c`: under the IH `c k ≥ 27/16` for `4 ≤ k < N`,
+    every `c m` with `1 ≤ m < N` is `≥ 1`. -/
+private lemma c_ge_one_of_ih (N : ℕ) (h_ih : ∀ k, 4 ≤ k → k < N → c k ≥ 27/16)
+    (m : ℕ) (h1 : 1 ≤ m) (hN : m < N) : 1 ≤ c m := by
+  rcases (show m = 1 ∨ m = 2 ∨ m = 3 ∨ 4 ≤ m by omega) with h | h | h | h
+  · subst h; rw [c_one]
+  · subst h; rw [c_two]; norm_num
+  · subst h; rw [c_three]; norm_num
+  · have := h_ih m h hN; linarith
+
+/-- Pointwise lower bound on `c`: under the IH, every `c m` with `2 ≤ m < N` is `≥ 3/2`. -/
+private lemma c_ge_three_halves_of_ih (N : ℕ) (h_ih : ∀ k, 4 ≤ k → k < N → c k ≥ 27/16)
+    (m : ℕ) (h2 : 2 ≤ m) (hN : m < N) : 3/2 ≤ c m := by
+  rcases (show m = 2 ∨ m = 3 ∨ 4 ≤ m by omega) with h | h | h
+  · subst h; rw [c_two]
+  · subst h; rw [c_three]; norm_num
+  · have := h_ih m h hN; linarith
+
+/-- Pointwise lower bound on `c`: under the IH, every `c m` with `3 ≤ m < N` is `≥ 27/16`. -/
+private lemma c_ge_27_16_of_ih (N : ℕ) (h_ih : ∀ k, 4 ≤ k → k < N → c k ≥ 27/16)
+    (m : ℕ) (h3 : 3 ≤ m) (hN : m < N) : 27/16 ≤ c m := by
+  rcases (show m = 3 ∨ 4 ≤ m by omega) with h | h
+  · subst h; rw [c_three]
+  · exact h_ih m h hN
+
+/-- ∑_{j=3}^{n-1} C(n, j) = 2^n - 2 - n - C(n, 2) for n ≥ 3. -/
+private lemma choose_sum_3_to_pred (n : ℕ) (hn : 3 ≤ n) :
+    (∑ j ∈ Ico 3 n, (Nat.choose n j : ℝ)) =
+    (2 : ℝ) ^ n - 2 - n - Nat.choose n 2 := by
+  -- We have ∑_{j ∈ Ico 1 n} C(n,j) = 2^n - 2 (from HalfP via add_pow); split at j ∈ {1, 2}.
+  have htotal : (∑ j ∈ Ico 1 n, (Nat.choose n j : ℝ)) = (2 : ℝ) ^ n - 2 := by
+    -- Replicate the proof from HalfP.lean's choose_sum_Ico for direct ℕ ≥ 1.
+    have htot' : (∑ j ∈ range (n + 1), (Nat.choose n j : ℝ)) = (2 : ℝ) ^ n := by
+      exact_mod_cast Nat.sum_range_choose n
+    have hsplit : range (n + 1) = insert 0 (insert n (Ico 1 n)) := by
+      ext j; simp only [mem_range, mem_insert, mem_Ico]; omega
+    have h0 : 0 ∉ insert n (Ico 1 n) := by simp [mem_Ico]; omega
+    have hn_in : n ∉ Ico 1 n := by simp [mem_Ico]
+    rw [hsplit, sum_insert h0, sum_insert hn_in] at htot'
+    simp only [Nat.choose_zero_right, Nat.choose_self, Nat.cast_one] at htot'
+    linarith
+  have hsplit : Ico 1 n = insert 1 (insert 2 (Ico 3 n)) := by
+    ext j; simp only [mem_Ico, mem_insert]; omega
+  have h1 : 1 ∉ insert 2 (Ico 3 n) := by simp [mem_Ico]
+  have h2 : 2 ∉ Ico 3 n := by simp [mem_Ico]
+  rw [hsplit, sum_insert h1, sum_insert h2] at htotal
+  simp only [Nat.choose_one_right] at htotal
+  linarith
+
+/-- Inductive step: under the IH, `c n ≥ 27/16` for `4 ≤ n ≤ 12`. -/
+private lemma c_ind_step (n : ℕ) (h4 : 4 ≤ n) (h12 : n ≤ 12)
+    (h_ih : ∀ k, 4 ≤ k → k < n → c k ≥ 27/16) : c n ≥ 27/16 := by
+  obtain ⟨n', rfl⟩ : ∃ n', n = n' + 2 := ⟨n - 2, by omega⟩
+  have hn'2 : 2 ≤ n' := by omega
+  have hn'10 : n' ≤ 10 := by omega
+  rw [c_succ]
+  -- Split Ico 1 (n'+2) into {1} ∪ {2} ∪ Ico 3 (n'+2).
+  have hsplit : Ico 1 (n' + 2) = insert 1 (insert 2 (Ico 3 (n' + 2))) := by
+    ext j; simp only [mem_Ico, mem_insert]; omega
+  have hd1 : 1 ∉ insert 2 (Ico 3 (n' + 2)) := by simp [mem_Ico]
+  have hd2 : 2 ∉ Ico 3 (n' + 2) := by simp [mem_Ico]
+  rw [hsplit, sum_insert hd1, sum_insert hd2]
+  -- Set abbreviations for compactness.
+  set N : ℝ := ((n' + 2 : ℕ) : ℝ) with hN_def
+  set C2 : ℝ := ((Nat.choose (n' + 2) 2 : ℕ) : ℝ) with hC2_def
+  set Q : ℝ := (2 : ℝ) ^ (n' + 2) with hQ_def
+  set Qp : ℝ := (2 : ℝ) ^ (n' + 1) with hQp_def
+  have hQ_pos : 0 < Q := by rw [hQ_def]; positivity
+  have hQp_pos : 0 < Qp := by rw [hQp_def]; positivity
+  have hQ_eq : Q = 2 * Qp := by rw [hQ_def, hQp_def, pow_succ]; ring
+  have hN_nn : 0 ≤ N := by rw [hN_def]; exact_mod_cast Nat.zero_le _
+  have hC2_nn : 0 ≤ C2 := by rw [hC2_def]; exact_mod_cast Nat.zero_le _
+  -- Lower bounds on each suffMin.
+  have hs1 : suffMin 1 (n' + 2) ≥ 1 := by
+    apply suffMin_ge_const 1 (n' + 2) (by omega) 1
+    intro m hm
+    have hmr := mem_Ico.mp hm
+    exact c_ge_one_of_ih (n' + 2) h_ih m hmr.1 hmr.2
+  have hs2 : suffMin 2 (n' + 2) ≥ 3/2 := by
+    apply suffMin_ge_const 2 (n' + 2) (by omega) (3/2)
+    intro m hm
+    have hmr := mem_Ico.mp hm
+    exact c_ge_three_halves_of_ih (n' + 2) h_ih m hmr.1 hmr.2
+  have hs_rest : ∀ j ∈ Ico 3 (n' + 2), suffMin j (n' + 2) ≥ 27/16 := by
+    intro j hj
+    have hjr := mem_Ico.mp hj
+    apply suffMin_ge_const j (n' + 2) hjr.2 (27/16)
+    intro m hm
+    have hmr := mem_Ico.mp hm
+    exact c_ge_27_16_of_ih (n' + 2) h_ih m (by omega) hmr.2
+  -- Sum bound on Ico 3 (n'+2).
+  have hsum_3 : (∑ j ∈ Ico 3 (n' + 2),
+      ((Nat.choose (n' + 2) j : ℕ) : ℝ) * suffMin j (n' + 2)) ≥
+      (27/16 : ℝ) * ∑ j ∈ Ico 3 (n' + 2), ((Nat.choose (n' + 2) j : ℕ) : ℝ) := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_le_sum
+    intro j hj
+    have hcj : 0 ≤ ((Nat.choose (n' + 2) j : ℕ) : ℝ) := by exact_mod_cast Nat.zero_le _
+    have := hs_rest j hj
+    nlinarith [this, hcj]
+  -- Identity for the binomial sum: ∑_{j ∈ Ico 3} C(n+2, j) = Q - 2 - N - C2.
+  have hsum_eq : (∑ j ∈ Ico 3 (n' + 2), ((Nat.choose (n' + 2) j : ℕ) : ℝ)) = Q - 2 - N - C2 := by
+    rw [hQ_def, hN_def, hC2_def]; exact choose_sum_3_to_pred (n' + 2) (by omega)
+  -- C(n+2, 1) = n+2.
+  have hc1 : ((Nat.choose (n' + 2) 1 : ℕ) : ℝ) = N := by
+    rw [hN_def, show Nat.choose (n' + 2) 1 = n' + 2 from Nat.choose_one_right _]
+  -- Polynomial inequality 7N - 18 - C2 ≥ 0 (the key fact, holds for n' + 2 ∈ {4,…,12}).
+  have hpoly : 7 * N - 18 - C2 ≥ 0 := by
+    have key_nat : 7 * (n' + 2) ≥ 18 + Nat.choose (n' + 2) 2 := by
+      interval_cases n' <;> decide
+    have h_cast : ((7 * (n' + 2) : ℕ) : ℝ) ≥ ((18 + Nat.choose (n' + 2) 2 : ℕ) : ℝ) := by
+      exact_mod_cast key_nat
+    rw [hN_def, hC2_def]
+    push_cast at h_cast ⊢
+    linarith
+  -- Combine: lower-bound the inner sum.
+  have hsum_inner_lb :
+      N * suffMin 1 (n' + 2) + C2 * suffMin 2 (n' + 2) +
+        ∑ j ∈ Ico 3 (n' + 2), ((Nat.choose (n' + 2) j : ℕ) : ℝ) * suffMin j (n' + 2)
+      ≥ N + (3/2) * C2 + (27/16) * (Q - 2 - N - C2) := by
+    have h_t1 : N * 1 ≤ N * suffMin 1 (n' + 2) :=
+      mul_le_mul_of_nonneg_left hs1 hN_nn
+    have h_t2 : C2 * (3/2) ≤ C2 * suffMin 2 (n' + 2) :=
+      mul_le_mul_of_nonneg_left hs2 hC2_nn
+    have h_t3 := hsum_3
+    rw [hsum_eq] at h_t3
+    linarith
+  -- Final calculation: the three-term goal becomes
+  --   N/Qp + (1/Q) * (inner) ≥ 27/16.
+  -- Multiply through by 16Q (positive); reduces to 27Q ≤ 32N + 16 * inner with inner ≥ ...
+  rw [hc1]
+  -- Now: N/Qp + (1/Q) * (N * sM1 + C2 * sM2 + ∑) ≥ 27/16.
+  -- Combine and use the polynomial bound.
+  have hge_sum :
+      N * suffMin 1 (n' + 2) +
+          (C2 * suffMin 2 (n' + 2) +
+            ∑ j ∈ Ico 3 (n' + 2), ((Nat.choose (n' + 2) j : ℕ) : ℝ) * suffMin j (n' + 2))
+      ≥ N + (3/2) * C2 + (27/16) * (Q - 2 - N - C2) := by
+    have := hsum_inner_lb; linarith
+  -- Multiply through by Q · Qp (both positive) to clear denominators.
+  -- The cleanest path: lower-bound the LHS by an expression in N, C2, Q only,
+  -- then use hpoly via nlinarith.
+  have hQQp_pos : 0 < Q * Qp := mul_pos hQ_pos hQp_pos
+  have hQQpne : Q * Qp ≠ 0 := ne_of_gt hQQp_pos
+  rw [ge_iff_le, ← sub_nonneg]
+  have h_clear :
+      N / Qp + 1 / Q *
+        (N * suffMin 1 (n' + 2) +
+          (C2 * suffMin 2 (n' + 2) +
+            ∑ j ∈ Ico 3 (n' + 2), ((Nat.choose (n' + 2) j : ℕ) : ℝ) * suffMin j (n' + 2)))
+        - 27/16 =
+      (Q * N + Qp * (N * suffMin 1 (n' + 2) +
+          (C2 * suffMin 2 (n' + 2) +
+            ∑ j ∈ Ico 3 (n' + 2), ((Nat.choose (n' + 2) j : ℕ) : ℝ) * suffMin j (n' + 2)))
+        - 27/16 * (Q * Qp)) / (Q * Qp) := by
+    field_simp
+  rw [h_clear]
+  apply div_nonneg _ hQQp_pos.le
+  -- Now: Q * N + Qp * inner - (27/16) * Q * Qp ≥ 0
+  -- Substitute Q = 2 * Qp (so Q * Qp = 2 * Qp²) and lower bound inner.
+  rw [hQ_eq]
+  nlinarith [hge_sum, hpoly, hQp_pos, hN_nn, hC2_nn,
+             mul_pos hQp_pos hQp_pos, sq_nonneg Qp]
+
+/-- Lemma 4.7 for `n ∈ {4, …, 12}`. -/
+theorem c_ge_27_16_le_12 : ∀ n : ℕ, 4 ≤ n → n ≤ 12 → c n ≥ 27/16 := by
+  intro n h4 h12
+  induction n using Nat.strongRecOn with
+  | _ n ih =>
+    apply c_ind_step n h4 h12
+    intro k hk1 hk2
+    exact ih k hk2 hk1 (by omega)
