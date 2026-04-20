@@ -1409,3 +1409,64 @@ User chose option (a) = explicit form of Theorem 4.10
 - Sorry count: 9 → 8 (net -1, but really 2 items resolved with 1
   new focused sub-gap introduced).
 - Build green throughout. All commits pushed to GitHub.
+
+### Prompt 110
+> Is the open gap also in the manuscript?
+
+Identified that the open gap *is* in the manuscript: the proof of
+Theorem 4.10 says only "Iterating the recursion from $n=n_0$ and
+taking $n\to\infty$ yields (eq:L-formula); the rate follows from
+$B_n=O(n^3/2^n)$." This compresses into one sentence both:
+(a) infinite-product convergence and
+(b) dominated-convergence / Tannery interchange for the series of
+    products (exactly the Lean `tendsto_sum_Ico_A_prod` sorry).
+
+### Prompt 111
+> Please make the manuscript more exact, including a reference.
+> Then we will go to its formalization.
+
+Rewrote the proof of Theorem 4.10 with three explicit steps:
+existence (Lemmas 4.7 + 4.8), infinite product (via summability
+of $B_m$ and $0<B_m<1$ for $m\ge 7$), and series of products
+(Tannery's theorem with dominant $|A_k|$ summable). Added
+Knopp 1990 (*Theory and Application of Infinite Series*) to the
+bibliography as the reference for both steps. PDF: 8 → 9 pages.
+Commit `cd121b4`.
+
+### Prompt 112
+> yes
+
+Started formalizing the three pieces for
+`tendsto_sum_Ico_A_prod`:
+
+**Piece 1 — summable `|A_lin|` on ℕ.** Proved via
+`A_lin_le_bound`: decomposed `A_lin n` into four pieces each
+≤ (polynomial) · (1/2)^n, summable by
+`summable_pow_mul_geometric_of_norm_lt_one`. Cubic bound
+`n(n-1)(n-2) ≤ n³` uses `n³ − n(n-1)(n-2) = 3n² − 2n ≥ 0`,
+split on `n = 0` vs `n ≥ 1` to avoid cubic-polynomial nlinarith
+timeouts. `A_lin_nonneg`, `n_div_pow_pred_le` as helpers.
+Commits `73f3ecb`, `4653150`.
+
+**Piece 2 — uniform bound on inner products.** Extracted
+`B_lin_pos` and `B_lin_lt_one` (for `n ≥ 7`) as global lemmas
+from inline inside `joint_step`. Added `one_minus_B_pos`,
+`one_minus_B_le_one`, and `prod_Ico_one_minus_B_in_unit_interval`
+(finite partial products of `(1-B_m)` for `m ≥ 7` lie in `[0, 1]`).
+Commit `e771c74`.
+
+**Piece 3 — pointwise inner-product convergence + Tannery.**
+Not attempted yet. Pointwise convergence would follow from
+applying `tendsto_prod_Ico_B` with `n₀ := k+1` (noting `{m // k < m}
+= {m // k+1 ≤ m}` since `<` on ℕ is `+1 ≤`). The Tannery
+application requires converting the finite Finset.Ico-sum into a
+subtype tsum with zero-extension — moderate but fiddly.
+
+**Final status (2026-04-20, evening):**
+- Sorry count: 9 → 8 (one new narrow sorry introduced, one older
+  resolved).
+- `c_limit_exists`, `c_iterate`, `summable_A_lin`, and all Piece 1 +
+  Piece 2 infrastructure: done.
+- `tendsto_sum_Ico_A_prod` (Piece 3): still sorry. The manuscript
+  now documents the Tannery step explicitly with a reference, so
+  the formal/informal gap aligns.

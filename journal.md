@@ -1811,3 +1811,85 @@ applied to the shifted ℕ form, needing:
   (new, narrow — dominated convergence).
 - §4.4 Cor 4.11: `w_gap_first_order`, `w_local_min_at_five`,
   `no_first_order_local_max`.
+
+## 2026-04-20 — Evening session: manuscript sharpening + Tannery prereqs
+
+### Manuscript: sharper proof of Theorem 4.10
+
+Observation: the manuscript's original one-sentence proof ("Iterating
+the recursion from $n=n_0$ and taking $n\to\infty$ yields
+(eq:L-formula); the rate follows from $B_n=O(n^3/2^n)$") compresses
+exactly the dominated-convergence step that the Lean proof surfaces
+as `tendsto_sum_Ico_A_prod`. Rewrote the proof into three explicit
+steps:
+1. Existence — via Lemmas 4.7 (lower bound) + 4.8 (decreasing).
+2. Infinite product — `∑ B_m < ∞` + `0 < B_m < 1` for `m ≥ 7`.
+3. Series of products — pointwise inner-product convergence +
+   dominant `|A_k|` + `∑ |A_k| < ∞` → Tannery's theorem.
+
+Added Knopp 1990 (*Theory and Application of Infinite Series*, 2nd
+English ed., Dover) to the bibliography as the reference for both
+product and dominated-convergence arguments. PDF: 8 → 9 pages.
+Commit `cd121b4`.
+
+### Lean: formalization of the three Tannery prerequisites
+
+**Piece 1 — `Summable |A_lin|`** (done).
+
+Structure: `A_lin n ≤ A_lin_bound n` where
+`A_lin_bound n := 2(n+1)·(1/2)^n + c₁·n·(1/2)^n + c₂·n²·(1/2)^n +
+c₃·n³·(1/2)^n`. Each piece is summable from
+`summable_pow_mul_geometric_of_norm_lt_one`. Pointwise bound
+`A_lin_le_bound` assembled from per-term sub-bounds (`hT1` via
+`n_div_pow_pred_le`; `hT2` direct; `hT3` from `n(n-1) ≤ n²`;
+`hT4` from `n(n-1)(n-2) ≤ n³`).
+
+Key algebraic identity used in the cubic bound:
+`n³ − n(n-1)(n-2) = 3n² − 2n`. Since `3n²-2n = n(3n-2) ≥ 0` for
+`n ∈ ℕ` (split on `n = 0` vs `n ≥ 1`), the cubic bound holds. This
+split was necessary because `nlinarith` times out on generic cubic
+polynomial inequalities even with sq_nonneg hints.
+
+Commits `73f3ecb` (infrastructure + placeholder sorry), `4653150`
+(closes sorry).
+
+**Piece 2 — uniform bound on inner products** (done).
+
+Extracted `B_lin_pos` (all `n`) and `B_lin_lt_one` (for `n ≥ 7`) as
+global lemmas (previously inlined inside `joint_step`). Derived
+`one_minus_B_pos`, `one_minus_B_le_one`, and the main utility
+`prod_Ico_one_minus_B_in_unit_interval`: for `k + 1 ≥ 7`, the finite
+product `∏ m ∈ Ico (k+1) (n+1), (1 - B_lin m)` lies in `[0, 1]`.
+This is the uniform dominator needed in Tannery's theorem.
+Commit `e771c74`.
+
+**Piece 3 — pointwise convergence + Tannery application** (not done).
+
+Pointwise: for each fixed `k ≥ n₀`, the finite inner product
+converges to the infinite tprod; this should reduce to
+`tendsto_prod_Ico_B (k+1)` via the identity `{m // k < m} =
+{m // k+1 ≤ m}` (definitionally for ℕ). Tannery application:
+requires converting `∑ k ∈ Finset.Ico n₀ (n+1), …` into
+`∑' k : {k // n₀ ≤ k}, f_n k` (via zero-extension / `tsum_eq_sum`)
+before invoking `tendsto_tsum_of_dominated_convergence`.
+Deferred — this is the remaining gap in `c_limit_formula`.
+
+### Session tally (2026-04-20, full day)
+
+**Commits (11):** `7ffd55a`, `aff03c3`, `0a1ab5b`, `2cd8ef9`,
+`0157050`, `ba8c703`, `2bcfbb1`, `cd121b4`, `73f3ecb`, `4653150`,
+`e771c74`.
+
+**Sorry count:** 9 → 8.
+
+**Files added to infrastructure:** `c_limit_exists`, `c_iterate`,
+`summable_B_lin`, `multipliable_one_minus_B`,
+`multipliable_one_minus_B_shifted`, `tprod_subtype_eq_tprod_shifted`,
+`tendsto_prod_Ico_B`, `A_lin_nonneg`, `n_div_pow_pred_le`, four
+polynomial-geometric summability lemmas, `A_lin_bound` + helpers,
+`summable_A_lin`, `summable_A_lin_abs`, `B_lin_pos`, `B_lin_lt_one`,
+`one_minus_B_pos`, `one_minus_B_le_one`,
+`prod_Ico_one_minus_B_in_unit_interval`.
+
+**Manuscript:** now documents the Tannery step explicitly with a
+Knopp 1990 reference, exactly matching the Lean gap.
