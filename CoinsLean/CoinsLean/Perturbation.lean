@@ -1918,9 +1918,43 @@ private lemma summable_A_lin_abs : Summable (fun n : ℕ => |A_lin n|) := by
     ext n; exact abs_of_nonneg (A_lin_nonneg n)
   rw [h_eq]; exact h
 
+/-- For each fixed `k ≥ 6`, the finite inner product converges as `n → ∞`
+    to the tprod over `{m // k < m}`. Specialisation of `tendsto_prod_Ico_B`. -/
+private lemma tendsto_inner_prod_for_k (k : ℕ) :
+    Filter.Tendsto
+      (fun n : ℕ => ∏ m ∈ Finset.Ico (k + 1) (n + 1), ((1 : ℝ) - B_lin m))
+      Filter.atTop
+      (nhds (∏' m : {m : ℕ // k < m}, (1 - B_lin m.val))) := by
+  have h := tendsto_prod_Ico_B (k + 1)
+  -- h tends to `∏' m : {m // k + 1 ≤ m}, (1 - B_lin m.val)`, which equals the
+  -- target since `k < m ↔ k + 1 ≤ m` on ℕ (definitionally).
+  exact h
+
+/-- Summability of `A_lin` on the subtype `{k // n₀ ≤ k}`. -/
+private lemma summable_A_lin_subtype (n₀ : ℕ) :
+    Summable (fun k : {k : ℕ // n₀ ≤ k} => A_lin k.val) :=
+  summable_A_lin.comp_injective Subtype.val_injective
+
+/-- Summability of `fun j => A_lin (n₀ + j)` on ℕ (shifted). -/
+private lemma summable_A_lin_shifted (n₀ : ℕ) :
+    Summable (fun j : ℕ => A_lin (n₀ + j)) := by
+  have h := (summable_nat_add_iff n₀).mpr summable_A_lin
+  -- h : Summable (fun n => A_lin (n + n₀))
+  convert h using 1
+  ext j; rw [add_comm]
+
+/-- Convert ℕ tsum to subtype tsum (via shiftEquiv). -/
+private lemma tsum_shifted_eq_subtype (n₀ : ℕ) (h : ℕ → ℝ) :
+    ∑' j : ℕ, h (n₀ + j) =
+      ∑' k : {k : ℕ // n₀ ≤ k}, h k.val := by
+  have := (shiftEquiv n₀).tsum_eq (fun k : {k // n₀ ≤ k} => h k.val)
+  -- this : ∑' j, h ((shiftEquiv n₀ j).val) = ∑' k, h k.val
+  -- (shiftEquiv n₀ j).val = n₀ + j
+  simpa using this
+
 /-- Sum convergence: as `n → ∞`, the finite double-sum from `c_iterate`
     converges to the infinite series over the subtype. Uses Tannery's theorem
-    (`tendsto_tsum_of_dominated_convergence`). -/
+    (`tendsto_tsum_of_dominated_convergence`) with ℕ indexing (via shiftEquiv). -/
 private lemma tendsto_sum_Ico_A_prod (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
     Filter.Tendsto
       (fun n : ℕ => ∑ k ∈ Finset.Ico n₀ (n + 1),
@@ -1928,7 +1962,99 @@ private lemma tendsto_sum_Ico_A_prod (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
       Filter.atTop
       (nhds (∑' k : {k : ℕ // n₀ ≤ k},
         A_lin k * ∏' m : {m : ℕ // k.val < m}, (1 - B_lin m.val))) := by
-  sorry
+  -- Define shifted functions (indexed by j ∈ ℕ, via k = n₀ + j).
+  set f : ℕ → ℕ → ℝ := fun n j =>
+    if n₀ + j ≤ n
+    then A_lin (n₀ + j) * ∏ m ∈ Finset.Ico (n₀ + j + 1) (n + 1), (1 - B_lin m)
+    else 0 with hf_def
+  set g : ℕ → ℝ := fun j =>
+    A_lin (n₀ + j) * ∏' m : {m : ℕ // n₀ + j < m}, (1 - B_lin m.val) with hg_def
+  set bound : ℕ → ℝ := fun j => A_lin (n₀ + j) with hb_def
+  -- Hypothesis 1: Summable bound.
+  have h_sum : Summable bound := summable_A_lin_shifted n₀
+  -- Hypothesis 2: Pointwise convergence f n j → g j.
+  have h_ptw : ∀ j : ℕ, Filter.Tendsto (fun n => f n j) Filter.atTop (nhds (g j)) := by
+    intro j
+    have h_inner := tendsto_inner_prod_for_k (n₀ + j)
+    have h_scale : Filter.Tendsto
+        (fun n : ℕ => A_lin (n₀ + j) *
+            ∏ m ∈ Finset.Ico (n₀ + j + 1) (n + 1), (1 - B_lin m))
+        Filter.atTop (nhds (g j)) := h_inner.const_mul (A_lin (n₀ + j))
+    have h_ev : (fun n => f n j) =ᶠ[Filter.atTop]
+        (fun n : ℕ => A_lin (n₀ + j) *
+            ∏ m ∈ Finset.Ico (n₀ + j + 1) (n + 1), (1 - B_lin m)) := by
+      filter_upwards [Filter.eventually_ge_atTop (n₀ + j)] with n hn
+      show f n j = _
+      rw [hf_def]; dsimp only
+      rw [if_pos hn]
+    exact Filter.Tendsto.congr' h_ev.symm h_scale
+  -- Hypothesis 3: uniform bound ‖f n j‖ ≤ bound j.
+  have h_bnd : ∀ᶠ n in Filter.atTop, ∀ j : ℕ, ‖f n j‖ ≤ bound j := by
+    filter_upwards with n j
+    show ‖f n j‖ ≤ bound j
+    rw [hf_def, hb_def]; dsimp only
+    by_cases hnj : n₀ + j ≤ n
+    · rw [if_pos hnj]
+      have hA_nn := A_lin_nonneg (n₀ + j)
+      have hk7 : 7 ≤ n₀ + j + 1 := by omega
+      have h_prod_bound := prod_Ico_one_minus_B_in_unit_interval (n₀ + j) n hk7
+      have h_mul_nn : (0 : ℝ) ≤ A_lin (n₀ + j) *
+          ∏ m ∈ Finset.Ico (n₀ + j + 1) (n + 1), (1 - B_lin m) :=
+        mul_nonneg hA_nn h_prod_bound.1
+      rw [Real.norm_eq_abs, abs_of_nonneg h_mul_nn]
+      calc A_lin (n₀ + j) * ∏ m ∈ Finset.Ico (n₀ + j + 1) (n + 1), (1 - B_lin m)
+          ≤ A_lin (n₀ + j) * 1 :=
+            mul_le_mul_of_nonneg_left h_prod_bound.2 hA_nn
+        _ = A_lin (n₀ + j) := by ring
+    · rw [if_neg hnj]
+      simp [A_lin_nonneg (n₀ + j)]
+  -- Apply Tannery.
+  have h_tannery : Filter.Tendsto (fun n : ℕ => ∑' j : ℕ, f n j) Filter.atTop
+      (nhds (∑' j : ℕ, g j)) :=
+    tendsto_tsum_of_dominated_convergence h_sum h_ptw h_bnd
+  -- Convert LHS: ∑' j : ℕ, f n j = ∑ k ∈ Ico n₀ (n+1), A_lin k * (finite prod).
+  have h_lhs : (fun n : ℕ => ∑' j : ℕ, f n j) =ᶠ[Filter.atTop]
+      (fun n : ℕ => ∑ k ∈ Finset.Ico n₀ (n + 1),
+        A_lin k * ∏ m ∈ Finset.Ico (k + 1) (n + 1), ((1 : ℝ) - B_lin m)) := by
+    filter_upwards [Filter.eventually_ge_atTop n₀] with n hn
+    -- Support of j ↦ f n j is {j | n₀ + j ≤ n}; outside `range (n + 1 - n₀)`, f = 0.
+    have h_tsum_eq : ∑' j : ℕ, f n j =
+        ∑ j ∈ Finset.range (n + 1 - n₀), f n j := by
+      apply tsum_eq_sum
+      intro j hj
+      show f n j = 0
+      rw [hf_def]; dsimp only
+      rw [if_neg]
+      intro h_le
+      apply hj
+      simp only [Finset.mem_range]
+      omega
+    rw [h_tsum_eq]
+    -- Each term in range: f n j = A_lin (n₀+j) * (finite prod).
+    have h_term_eq : ∀ j ∈ Finset.range (n + 1 - n₀), f n j =
+        A_lin (n₀ + j) * ∏ m ∈ Finset.Ico (n₀ + j + 1) (n + 1), (1 - B_lin m) := by
+      intro j hj
+      simp only [Finset.mem_range] at hj
+      show f n j = _
+      rw [hf_def]; dsimp only
+      rw [if_pos (by omega)]
+    rw [Finset.sum_congr rfl h_term_eq]
+    -- Reindex: ∑ j ∈ range (n+1-n₀), h (n₀+j) = ∑ k ∈ Ico n₀ (n+1), h k,
+    -- by reverse direction of Finset.sum_Ico_eq_sum_range.
+    exact (Finset.sum_Ico_eq_sum_range
+      (fun k => A_lin k * ∏ m ∈ Finset.Ico (k + 1) (n + 1), ((1 : ℝ) - B_lin m))
+      n₀ (n + 1)).symm
+  -- Convert RHS: ∑' j : ℕ, g j = ∑' k : subtype, ...
+  have h_rhs : ∑' j : ℕ, g j =
+      ∑' k : {k : ℕ // n₀ ≤ k},
+        A_lin k * ∏' m : {m : ℕ // k.val < m}, (1 - B_lin m.val) := by
+    show ∑' j : ℕ, _ = _
+    rw [hg_def]
+    have := (shiftEquiv n₀).tsum_eq (fun k : {k // n₀ ≤ k} =>
+      A_lin k.val * ∏' m : {m : ℕ // k.val < m}, (1 - B_lin m.val))
+    simpa using this
+  rw [← h_rhs]
+  exact Filter.Tendsto.congr' h_lhs h_tannery
 
 /-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
     `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
