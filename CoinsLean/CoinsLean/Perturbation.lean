@@ -1719,23 +1719,67 @@ private lemma tendsto_prod_Ico_B (n₀ : ℕ) :
     rw [Finset.prod_Ico_eq_prod_range]
   exact Filter.Tendsto.congr' h_ev.symm h_comp
 
+/-- Sum convergence: as `n → ∞`, the finite double-sum from `c_iterate`
+    converges to the infinite series over the subtype.
+
+    Status: requires dominated convergence (since each inner product tends
+    to the infinite tprod as `n → ∞`, with uniform bound `≤ 1` for all `n`
+    once `n ≥ n₀ ≥ 7`). Left as a narrow `sorry`. -/
+private lemma tendsto_sum_Ico_A_prod (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
+    Filter.Tendsto
+      (fun n : ℕ => ∑ k ∈ Finset.Ico n₀ (n + 1),
+        A_lin k * ∏ m ∈ Finset.Ico (k + 1) (n + 1), ((1 : ℝ) - B_lin m))
+      Filter.atTop
+      (nhds (∑' k : {k : ℕ // n₀ ≤ k},
+        A_lin k * ∏' m : {m : ℕ // k.val < m}, (1 - B_lin m.val))) := by
+  sorry
+
 /-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
     `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
-    (Convergence at geometric rate from `A_n, B_n = O(n³ / 2^n)`.)
-
-    Status: the finite iteration identity (`c_iterate`) is proved. The step to
-    the infinite formula requires `Multipliable` of `(1 - B_m)_{m ≥ n₀}` and
-    `Summable` of `A_k · ∏_{m>k} (1-B_m)`. Both follow from the summability
-    `∑ B_m < ∞` (now established via `summable_B_lin`) and `∑ A_m < ∞`,
-    but the Mathlib plumbing of `tprod` and `HasProd` over subtypes is
-    substantial. The existence of the limit is already established by
-    `c_limit_exists`. -/
+    Proved by taking the limit of `c_iterate`: the finite identity
+    `c n = c (n₀-1) · P_n + S_n` passes to the limit by `tendsto_prod_Ico_B`
+    and `tendsto_sum_Ico_A_prod`. Combined with `c_limit_exists` via
+    uniqueness of limits. -/
 theorem c_limit_formula (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
     ∃ L : ℝ, Filter.Tendsto (fun n => c n) Filter.atTop (nhds L) ∧
-      L = c (n₀ - 1) * ∏' m : {m : ℕ // n₀ ≤ m}, (1 - B_lin m) +
+      L = c (n₀ - 1) * ∏' m : {m : ℕ // n₀ ≤ m}, (1 - B_lin m.val) +
           ∑' k : {k : ℕ // n₀ ≤ k},
-            A_lin k * ∏' m : {m : ℕ // k < m}, (1 - B_lin m) := by
-  sorry
+            A_lin k * ∏' m : {m : ℕ // k.val < m}, (1 - B_lin m.val) := by
+  obtain ⟨L, hL⟩ := c_limit_exists
+  refine ⟨L, hL, ?_⟩
+  -- The finite iteration identity.
+  have h_c_eq : ∀ n, n₀ ≤ n →
+      c n = c (n₀ - 1) * (∏ m ∈ Finset.Ico n₀ (n + 1), (1 - B_lin m)) +
+            ∑ k ∈ Finset.Ico n₀ (n + 1),
+              A_lin k * ∏ m ∈ Finset.Ico (k + 1) (n + 1), (1 - B_lin m) :=
+    c_iterate n₀ hn₀
+  -- Product part converges.
+  have h_prod_tendsto := tendsto_prod_Ico_B n₀
+  -- Sum part converges.
+  have h_sum_tendsto := tendsto_sum_Ico_A_prod n₀ hn₀
+  -- Combined: the RHS of c_iterate converges.
+  have h_comb_tendsto :
+      Filter.Tendsto
+        (fun n : ℕ =>
+          c (n₀ - 1) * (∏ m ∈ Finset.Ico n₀ (n + 1), ((1 : ℝ) - B_lin m)) +
+            ∑ k ∈ Finset.Ico n₀ (n + 1),
+              A_lin k * ∏ m ∈ Finset.Ico (k + 1) (n + 1), (1 - B_lin m))
+        Filter.atTop
+        (nhds
+          (c (n₀ - 1) * (∏' m : {m : ℕ // n₀ ≤ m}, ((1 : ℝ) - B_lin m.val)) +
+            ∑' k : {k : ℕ // n₀ ≤ k},
+              A_lin k * ∏' m : {m : ℕ // k.val < m}, (1 - B_lin m.val))) :=
+    (h_prod_tendsto.const_mul (c (n₀ - 1))).add h_sum_tendsto
+  -- `c` agrees eventually with the combined expression.
+  have h_ev : (fun n => c n) =ᶠ[Filter.atTop]
+      (fun n => c (n₀ - 1) * (∏ m ∈ Finset.Ico n₀ (n + 1), ((1 : ℝ) - B_lin m)) +
+                ∑ k ∈ Finset.Ico n₀ (n + 1),
+                  A_lin k * ∏ m ∈ Finset.Ico (k + 1) (n + 1), (1 - B_lin m)) := by
+    filter_upwards [Filter.eventually_ge_atTop n₀] with n hn
+    exact h_c_eq n hn
+  -- Transfer and apply uniqueness.
+  have h_lim := Filter.Tendsto.congr' h_ev.symm h_comb_tendsto
+  exact tendsto_nhds_unique hL h_lim
 
 /-! ### Bridge from `Δ` to `c` (Proposition 4.4)
 
