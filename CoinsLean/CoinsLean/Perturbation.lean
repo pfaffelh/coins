@@ -1548,9 +1548,80 @@ theorem c_limit_exists :
     congr 1; omega
   exact Filter.Tendsto.congr' h_eq.symm h_comp
 
+/-- Finite iteration of the linear recursion: for `n ≥ n₀ ≥ 7`,
+    `c n = c (n₀ - 1) · ∏_{m=n₀}^n (1 - B_m) + ∑_{k=n₀}^n A_k · ∏_{m=k+1}^n (1 - B_m)`. -/
+private lemma c_iterate (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
+    ∀ n, n₀ ≤ n →
+      c n = c (n₀ - 1) * ∏ m ∈ Finset.Ico n₀ (n + 1), (1 - B_lin m) +
+            ∑ k ∈ Finset.Ico n₀ (n + 1),
+              A_lin k * ∏ m ∈ Finset.Ico (k + 1) (n + 1), (1 - B_lin m) := by
+  intro n hn
+  induction n, hn using Nat.le_induction with
+  | base =>
+    -- n = n₀: c n₀ = c (n₀-1) · (1 - B_{n₀}) + A_{n₀} · (empty product = 1).
+    have h_rec : c n₀ = A_lin n₀ + (1 - B_lin n₀) * c (n₀ - 1) := c_linear_rec n₀ hn₀
+    have h_Ico_sing : Finset.Ico n₀ (n₀ + 1) = ({n₀} : Finset ℕ) := by
+      ext x; simp only [Finset.mem_Ico, Finset.mem_singleton]; omega
+    rw [h_Ico_sing, Finset.prod_singleton, Finset.sum_singleton, Finset.Ico_self,
+        Finset.prod_empty, mul_one]
+    linarith [h_rec]
+  | succ m hm ih =>
+    -- Step: c (m + 1) = A_{m+1} + (1 - B_{m+1}) · c m.
+    have h_rec : c (m + 1) = A_lin (m + 1) + (1 - B_lin (m + 1)) * c m :=
+      c_linear_rec (m + 1) (by omega)
+    -- Split the new Ico ranges at m + 1.
+    have h_split_prod : Finset.Ico n₀ (m + 1 + 1) = insert (m + 1) (Finset.Ico n₀ (m + 1)) := by
+      ext; simp [Finset.mem_Ico, Finset.mem_insert]; omega
+    have h_no : (m + 1) ∉ Finset.Ico n₀ (m + 1) := by simp [Finset.mem_Ico]
+    have h_split_sum : Finset.Ico n₀ (m + 1 + 1) = insert (m + 1) (Finset.Ico n₀ (m + 1)) := h_split_prod
+    -- Transform the product `∏ Ico n₀ (m+2) (1-B_m) = (1 - B_{m+1}) * ∏ Ico n₀ (m+1) (1-B_m)`.
+    have h_prod_eq : ∏ l ∈ Finset.Ico n₀ (m + 1 + 1), (1 - B_lin l) =
+        (1 - B_lin (m + 1)) * ∏ l ∈ Finset.Ico n₀ (m + 1), (1 - B_lin l) := by
+      rw [h_split_prod, Finset.prod_insert h_no]
+    -- Transform each inner product in the sum for k ∈ Ico n₀ (m+1):
+    -- `∏ Ico (k+1) (m+2) (1-B) = (1 - B_{m+1}) * ∏ Ico (k+1) (m+1) (1-B)`
+    -- (since (m+1) ∉ Ico (k+1) (m+1), and Ico (k+1) (m+2) = insert (m+1) (Ico (k+1) (m+1))
+    -- when k+1 ≤ m+1, i.e., k ≤ m).
+    have h_inner_prod : ∀ k, n₀ ≤ k → k ≤ m →
+        ∏ l ∈ Finset.Ico (k + 1) (m + 1 + 1), (1 - B_lin l) =
+        (1 - B_lin (m + 1)) * ∏ l ∈ Finset.Ico (k + 1) (m + 1), (1 - B_lin l) := by
+      intro k _ hk
+      have h_split_k : Finset.Ico (k + 1) (m + 1 + 1) =
+          insert (m + 1) (Finset.Ico (k + 1) (m + 1)) := by
+        ext; simp [Finset.mem_Ico, Finset.mem_insert]; omega
+      have h_no_k : (m + 1) ∉ Finset.Ico (k + 1) (m + 1) := by simp [Finset.mem_Ico]
+      rw [h_split_k, Finset.prod_insert h_no_k]
+    -- The new term at k = m + 1 in the sum has ∏ over empty = 1.
+    have h_new_term_prod : ∏ l ∈ Finset.Ico (m + 1 + 1) (m + 1 + 1), (1 - B_lin l) = 1 := by
+      simp [Finset.Ico_self]
+    -- Rewrite sum over insert at m+1:
+    have h_sum_eq : ∑ k ∈ Finset.Ico n₀ (m + 1 + 1),
+        A_lin k * ∏ l ∈ Finset.Ico (k + 1) (m + 1 + 1), (1 - B_lin l) =
+        A_lin (m + 1) +
+        (1 - B_lin (m + 1)) *
+          ∑ k ∈ Finset.Ico n₀ (m + 1),
+            A_lin k * ∏ l ∈ Finset.Ico (k + 1) (m + 1), (1 - B_lin l) := by
+      rw [h_split_sum, Finset.sum_insert h_no, h_new_term_prod, mul_one]
+      rw [Finset.mul_sum]
+      apply congr_arg (A_lin (m + 1) + ·)
+      apply Finset.sum_congr rfl
+      intro k hk
+      have hk' := Finset.mem_Ico.mp hk
+      rw [h_inner_prod k hk'.1 (by omega)]
+      ring
+    rw [h_prod_eq, h_sum_eq, h_rec, ih]
+    ring
+
 /-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
     `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
-    (Convergence at geometric rate from `A_n, B_n = O(n³ / 2^n)`.) -/
+    (Convergence at geometric rate from `A_n, B_n = O(n³ / 2^n)`.)
+
+    Status: the finite iteration identity (`c_iterate`) is proved. The step to
+    the infinite formula requires `Multipliable` of `(1 - B_m)_{m ≥ n₀}` and
+    `Summable` of `A_k · ∏_{m>k} (1-B_m)`. Both follow from the summability
+    `∑ B_m < ∞` (from `B_tail_bound`) and `∑ A_m < ∞` (analogous to `B_tail_bound`),
+    but the Mathlib plumbing of `tprod` and `HasProd` is ~150 lines.
+    The existence of the limit is already established by `c_limit_exists`. -/
 theorem c_limit_formula (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
     ∃ L : ℝ, Filter.Tendsto (fun n => c n) Filter.atTop (nhds L) ∧
       L = c (n₀ - 1) * ∏' m : {m : ℕ // n₀ ≤ m}, (1 - B_lin m) +
