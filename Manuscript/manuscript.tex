@@ -7,6 +7,8 @@
 \usepackage{enumerate}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
 
 % Theorem environments
 \newtheorem{theorem}{Theorem}[section]
@@ -609,8 +611,159 @@ $<n$ supplying exactly what is needed at level~$n$.
 \end{remark}
 
 %% ====================================================================
-%\section*{Acknowledgements}
+\section{Numerical experiments}\label{sec:numerics}
 %% ====================================================================
+
+The first-order analysis of Section~\ref{sec:below} describes
+the shape of $n\mapsto w_{n,p}$ only in a shrinking neighbourhood
+of $p=\tfrac12$.  Corollary~\ref{cor:shape} guarantees, for every
+sufficiently small $\delta>0$, a unique local minimum at $n=5$ and
+no local maximum.  Numerical computation of $w_{n,p}$ confirms
+this picture for $p$ close to $\tfrac12$, and shows that local
+maxima emerge for $p$ bounded away from $\tfrac12$.
+
+All values of $w_{n,p}$ below are computed by the exact Bellman
+recursion~\eqref{eq:bellman}, evaluated in arbitrary-precision
+rational (or $80$-decimal-digit) arithmetic via
+\texttt{mpmath}.  The code is available in the \texttt{simulation/}
+subdirectory of the repository.
+
+\subsection{Optimal winning probability for $p<\tfrac12$}
+
+Figure~\ref{fig:w_vs_n} plots $w_{n,p}$ against $n$ for five
+values of $p$.  For $p=0.49$ (first-order regime) the sequence
+bottoms out at $n=5$ and increases thereafter, in agreement with
+Corollary~\ref{cor:shape}.  For $p=0.42$ and $p=0.45$ a
+non-monotone structure emerges: the sequence first decreases,
+passes through a local minimum, then rises to a local
+\emph{maximum} before decreasing again and converging.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\linewidth]{figures/w_vs_n.pdf}
+  \caption{The optimal winning probability $w_{n,p}$ as a
+    function of~$n$ for five values of $p<\tfrac12$.  Computed by
+    the exact Bellman recursion in $80$-digit arithmetic.  For
+    $p=0.49$ only the predicted local minimum at $n=5$ is visible;
+    for $p=0.42$ and $p=0.45$ local maxima appear.  For $p=0.35$
+    and $p=0.25$ no local extrema occur within $n\le 20$.}
+  \label{fig:w_vs_n}
+\end{figure}
+
+The non-monotone behaviour is invisible in the plot at the scale
+of Figure~\ref{fig:w_vs_n}, because the oscillations are small
+compared with the total variation of $w_{n,p}$ in~$n$.
+Figure~\ref{fig:local_max_detail} zooms in on $p=0.42$ and
+$p=0.45$ and highlights the local minima and maxima found by
+direct inspection of the sequence.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{figures/local_max_detail.pdf}
+  \caption{Zoomed-in view of $w_{n,p}$ for $p\in\{0.42,0.45\}$ and
+    $n\in[5,20]$.  Stars mark local maxima, inverted triangles
+    mark local minima.  At $p=0.42$ there is a local maximum at
+    $n=9$; at $p=0.45$ there is a local maximum at $n=15$.}
+  \label{fig:local_max_detail}
+\end{figure}
+
+Table~\ref{tab:w-values} lists the numerical values of~$w_{n,p}$
+for $1\le n\le 20$ and the five values of~$p$ considered in
+Figure~\ref{fig:w_vs_n}.  The local extrema are tabulated in
+Table~\ref{tab:extrema}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{r *{5}{r}}
+\toprule
+$n$ & $p=0.49$ & $p=0.45$ & $p=0.42$ & $p=0.35$ & $p=0.25$ \\
+\midrule
+ 1 & 0.49000000 & 0.45000000 & 0.42000000 & 0.35000000 & 0.25000000 \\
+ 2 & 0.48500200 & 0.42525000 & 0.38102400 & 0.28175000 & 0.15625000 \\
+ 3 & 0.48309103 & 0.41514272 & 0.36450348 & 0.25147259 & 0.11669922 \\
+ 4 & 0.48258194 & 0.41184019 & 0.35845021 & 0.23820137 & 0.09781647 \\
+ 5 & \textbf{0.48254059} & 0.41107840 & 0.35657129 & 0.23236999 & 0.08782906 \\
+ 6 & 0.48259223 & \textbf{0.41104082} & 0.35610901 & 0.22977285 & 0.08215652 \\
+ 7 & 0.48264193 & 0.41111568 & \textbf{0.35603793} & 0.22859504 & 0.07878468 \\
+ 8 & 0.48268806 & 0.41117954 & 0.35604004 & 0.22805232 & 0.07672145 \\
+ 9 & 0.48272442 & 0.41122762 & \textit{0.35604176} & 0.22779987 & 0.07543431 \\
+10 & 0.48275111 & 0.41125863 & 0.35603705 & 0.22768230 & 0.07462024 \\
+11 & 0.48276987 & 0.41127677 & 0.35603062 & 0.22762785 & 0.07410012 \\
+12 & 0.48278262 & 0.41128638 & 0.35602626 & 0.22760288 & 0.07376520 \\
+13 & 0.48279104 & 0.41129079 & \textbf{0.35602460} & 0.22759155 & 0.07354821 \\
+14 & 0.48279647 & 0.41129231 & 0.35602484 & 0.22758643 & 0.07340694 \\
+15 & 0.48279990 & \textit{0.41129237} & 0.35602596 & 0.22758409 & 0.07331459 \\
+16 & 0.48280201 & 0.41129184 & 0.35602720 & 0.22758299 & 0.07325404 \\
+17 & 0.48280329 & \textbf{0.41129168} & 0.35602833 & 0.22758245 & 0.07321422 \\
+18 & 0.48280406 & 0.41129173 & 0.35602926 & 0.22758218 & 0.07318798 \\
+19 & 0.48280451 & 0.41129185 & 0.35602997 & 0.22758204 & 0.07317065 \\
+20 & 0.48280478 & 0.41129198 & 0.35603049 & 0.22758197 & 0.07315919 \\
+\bottomrule
+\end{tabular}
+\caption{Numerical values of~$w_{n,p}$ for $n\in[1,20]$ and five
+  values of $p<\tfrac12$.  Local minima are marked in
+  \textbf{bold}, local maxima in \textit{italics}.}\label{tab:w-values}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+$p$ & Local minima at $n=$ & Local maxima at $n=$ \\
+\midrule
+$0.49$ & $5$ & --- \\
+$0.45$ & $6$, $17$ & $15$ \\
+$0.42$ & $7$, $13$ & $9$ \\
+$0.35$ & --- & --- \\
+$0.25$ & --- & --- \\
+\bottomrule
+\end{tabular}
+\caption{Local extrema of $n\mapsto w_{n,p}$ for
+  $n\in[2,19]$.}\label{tab:extrema}
+\end{table}
+
+\subsection{Discussion}
+
+Two features of the numerical data are worth flagging.
+
+\emph{(a) Local maxima are a non-perturbative phenomenon.}
+Corollary~\ref{cor:shape}(iii) rules out local maxima of
+$n\mapsto w_{n,p}$ \emph{to first order in $\delta=\tfrac12-p$}:
+for any fixed~$n$, there is a $\delta_0(n)>0$ below which the
+predicted sign of $c_{n+1}-c_n<0$ forces~$w_{n,p}<w_{n+1,p}$.
+The local maximum at $n=9$ for $p=0.42$ ($\delta=0.08$), and the
+one at $n=15$ for $p=0.45$ ($\delta=0.05$), correspond to the
+threshold $\delta_0(n)$ being \emph{larger} than the actual
+perturbation size at that~$n$, so higher-order terms dominate.
+Numerically, $\delta_0(n)$ appears to decay rapidly in~$n$ (we
+see no local maxima at all for $p\le 0.35$ within $n\le 20$),
+which is consistent with the expected geometric decay of the
+first-order constants~$A_n$ and~$B_n=O(n^3/2^n)$.
+
+\emph{(b) The first-order picture holds robustly near $p=\tfrac12$.}
+For $p=0.49$ ($\delta=0.01$), the only local extremum within
+$n\le 20$ is the predicted minimum at $n=5$, with no spurious
+oscillations.  This confirms numerically that the first-order
+range-of-validity extends at least to $\delta=0.01$.  Pinning down
+the size of $\delta_0(n)$ as a function of~$n$ remains open; we
+conjecture that it decays roughly like $C/n^2$ for some absolute
+constant~$C$.
+
+\begin{remark}
+  The picture for $p\le 0.35$ in our data --- a strictly
+  decreasing sequence with no local extrema within $n\le 20$ ---
+  is consistent with, but does not prove, monotone decrease on
+  all of~$\mathbb{N}$.  Van~Doorn~\cite{vanDoorn2024} proves that
+  strategy~\All{} is \emph{not} optimal for $p<\tfrac12$ (there
+  exists $n$ with $w_{n,p}\ne b_{n,p}$); equivalently, the
+  sequence $n\mapsto w_{n,p}$ is not monotone non-increasing.
+  The failure of monotonicity is, however, not always detectable
+  as a local extremum in~$n$; it can manifest as strict inequality
+  $w_{n,p}>b_{n,p}$ without the sequence~$w_{n,p}$ itself having
+  oscillations.  Investigating this gap is beyond the scope of the
+  present paper.
+\end{remark}
 
 \appendix
 
