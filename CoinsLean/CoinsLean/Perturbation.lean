@@ -2141,14 +2141,8 @@ theorem deficit_first_order_one (δ : ℝ) : deficit (1/2 - δ) 1 = c 1 * δ := 
      Uses the fact that `min` is `1`-Lipschitz: if each `|Δ_m − c_m·δ| ≤ M·δ²`,
      then `|min Δ_m − (min c_m)·δ| ≤ M·δ²`. -/
 
-/-- Sub-lemma 1: Taylor bound for the constant term. -/
-private lemma constant_term_taylor (n : ℕ) (hn : 1 ≤ n) :
-    ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
-      |((1/2 + δ) ^ n - (1/2 - δ) ^ n) / 2 - (n : ℝ) * δ / (2 : ℝ) ^ (n - 1)|
-        ≤ M * δ ^ 2 := by
-  sorry
-
-/-- Lipschitz bound on `a^k - b^k` for `|a|, |b| ≤ 1`. -/
+/-- Lipschitz bound on `a^k - b^k` for `|a|, |b| ≤ 1`. (Placed here as it is
+    used by both `constant_term_taylor` and `binom_weight_perturb` below.) -/
 private lemma pow_sub_pow_bound (a b : ℝ) (ha : |a| ≤ 1) (hb : |b| ≤ 1) (k : ℕ) :
     |a ^ k - b ^ k| ≤ k * |a - b| := by
   induction k with
@@ -2163,14 +2157,159 @@ private lemma pow_sub_pow_bound (a b : ℝ) (ha : |a| ≤ 1) (hb : |b| ≤ 1) (k
     have hsum_le : |a * (a ^ n - b ^ n)| + |(a - b) * b ^ n|
         ≤ ((n : ℝ) + 1) * |a - b| := by
       rw [abs_mul, abs_mul]
-      have h1 : |a| * |a ^ n - b ^ n| ≤ 1 * ((n : ℝ) * |a - b|) := by
-        exact mul_le_mul ha ih (abs_nonneg _) (by norm_num)
-      have h2 : |a - b| * |b ^ n| ≤ |a - b| * 1 := by
-        exact mul_le_mul_of_nonneg_left habk (abs_nonneg _)
+      have h1 : |a| * |a ^ n - b ^ n| ≤ 1 * ((n : ℝ) * |a - b|) :=
+        mul_le_mul ha ih (abs_nonneg _) (by norm_num)
+      have h2 : |a - b| * |b ^ n| ≤ |a - b| * 1 :=
+        mul_le_mul_of_nonneg_left habk (abs_nonneg _)
       linarith
     have h_cast : ((n + 1 : ℕ) : ℝ) = (n : ℝ) + 1 := by push_cast; ring
     rw [h_cast]
     linarith
+
+/-- Sub-lemma 1: Taylor bound for the constant term.
+    Uses `geom_sum₂_mul`: `(∑ (1/2+δ)^i (1/2-δ)^(n-1-i)) · 2δ = (1/2+δ)^n - (1/2-δ)^n`.
+    Divide by 2 to get `f(δ) = δ · ∑ (1/2+δ)^i (1/2-δ)^(n-1-i)`. At δ=0 the sum is
+    `n · (1/2)^(n-1) = n / 2^(n-1)`, so `f(δ) - n·δ/2^(n-1) = δ · ∑ [...]` where each
+    summand is bounded by `(n-1)·δ` (Lipschitz of `A·B − C·D`). Total: `n(n-1)·δ²`. -/
+private lemma constant_term_taylor (n : ℕ) (hn : 1 ≤ n) :
+    ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+      |((1/2 + δ) ^ n - (1/2 - δ) ^ n) / 2 - (n : ℝ) * δ / (2 : ℝ) ^ (n - 1)|
+        ≤ M * δ ^ 2 := by
+  refine ⟨(n : ℝ) * (n - 1), 1/2, by norm_num, ?_⟩
+  intro δ hδ_pos hδ_lt
+  -- Apply geom_sum₂_mul.
+  have h_geom := geom_sum₂_mul ((1/2 : ℝ) + δ) ((1/2 : ℝ) - δ) n
+  -- h_geom : (∑ i ∈ range n, (1/2+δ)^i · (1/2-δ)^(n-1-i)) · ((1/2+δ) - (1/2-δ)) =
+  --         (1/2+δ)^n - (1/2-δ)^n
+  have h_sub : ((1/2 : ℝ) + δ) - (1/2 - δ) = 2 * δ := by ring
+  rw [h_sub] at h_geom
+  -- h_geom : (∑ ...) · (2δ) = (1/2+δ)^n - (1/2-δ)^n
+  -- Divide by 2: f(δ) := ((1/2+δ)^n - (1/2-δ)^n)/2 = δ · (∑ ...)
+  have h_f_form : ((1/2 : ℝ) + δ) ^ n - (1 / 2 - δ) ^ n =
+      2 * δ * ∑ i ∈ Finset.range n,
+        ((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) := by linarith
+  -- Rewrite the goal.
+  have h_f_half : ((1/2 : ℝ) + δ) ^ n / 2 - (1/2 - δ) ^ n / 2 =
+      δ * ∑ i ∈ Finset.range n,
+        ((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) := by linarith
+  -- Also: n δ / 2^(n-1) = δ · n · (1/2)^(n-1) = δ · ∑ i, (1/2)^(n-1).
+  have h_constant : (n : ℝ) * δ / (2 : ℝ) ^ (n - 1) = δ * ∑ _ ∈ Finset.range n,
+      ((1/2 : ℝ) ^ (n - 1)) := by
+    rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+    have : (1/2 : ℝ) ^ (n - 1) = 1 / 2^(n - 1) := by rw [div_pow, one_pow]
+    rw [this]; ring
+  -- Compute the goal.
+  have h_diff : ((1/2 : ℝ) + δ) ^ n / 2 - (1/2 - δ) ^ n / 2 -
+      (n : ℝ) * δ / (2 : ℝ) ^ (n - 1) =
+      δ * ∑ i ∈ Finset.range n,
+        (((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1)) := by
+    rw [h_f_half, h_constant, ← mul_sub, ← Finset.sum_sub_distrib]
+  have h_goal_eq : ((1/2 : ℝ) + δ) ^ n / 2 - (1/2 - δ) ^ n / 2 -
+      (n : ℝ) * δ / (2 : ℝ) ^ (n - 1) =
+      (((1/2 : ℝ) + δ) ^ n - (1/2 - δ) ^ n) / 2 - (n : ℝ) * δ / (2 : ℝ) ^ (n - 1) := by
+    ring
+  -- The main goal: |((1/2+δ)^n - (1/2-δ)^n)/2 - n δ/2^(n-1)| ≤ n(n-1) δ²
+  rw [← h_goal_eq, h_diff, abs_mul, abs_of_pos hδ_pos]
+  -- Goal: δ * |∑ ...| ≤ n(n-1) δ²
+  -- Bound the sum: each term is ≤ (n-1) δ.
+  have h_sum_bound : |∑ i ∈ Finset.range n,
+      (((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1))| ≤
+        (n : ℝ) * ((n - 1 : ℕ) : ℝ) * δ := by
+    have h_term_bound : ∀ i ∈ Finset.range n,
+        |((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1)| ≤
+          ((n - 1 : ℕ) : ℝ) * δ := by
+      intro i hi
+      have hi_lt_n := Finset.mem_range.mp hi
+      -- (1/2)^(n-1) = (1/2)^i · (1/2)^(n-1-i) for i ≤ n-1.
+      have h_split : (1/2 : ℝ) ^ (n - 1) = (1/2 : ℝ) ^ i * (1/2 : ℝ) ^ (n - 1 - i) := by
+        rw [← pow_add]
+        congr 1; omega
+      rw [h_split]
+      -- Now: |((1/2+δ)^i (1/2-δ)^(n-1-i) - (1/2)^i (1/2)^(n-1-i)|.
+      -- Apply A·B - C·D = (A-C)·B + C·(B-D).
+      have h_factor : ((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) -
+            (1/2 : ℝ) ^ i * (1/2 : ℝ) ^ (n - 1 - i) =
+          (((1/2 : ℝ) + δ) ^ i - (1/2 : ℝ) ^ i) * (1/2 - δ) ^ (n - 1 - i) +
+          (1/2 : ℝ) ^ i * ((1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1 - i)) := by ring
+      rw [h_factor]
+      have h_half : |(1/2 : ℝ)| ≤ 1 := by norm_num
+      have h_half_plus : |(1/2 + δ : ℝ)| ≤ 1 := by
+        rw [abs_of_pos (by linarith : (0 : ℝ) < 1/2 + δ)]; linarith
+      have h_half_minus : |(1/2 - δ : ℝ)| ≤ 1 := by
+        rw [abs_of_pos (by linarith : (0 : ℝ) < 1/2 - δ)]; linarith
+      -- Bound each factor.
+      have hp1 : |((1/2 : ℝ) + δ) ^ i - (1/2 : ℝ) ^ i| ≤ (i : ℝ) * δ := by
+        have := pow_sub_pow_bound (1/2 + δ) (1/2 : ℝ) h_half_plus h_half i
+        have h_abs : |((1/2 : ℝ) + δ) - 1/2| = δ := by
+          rw [show ((1/2 : ℝ) + δ - 1/2) = δ from by ring, abs_of_pos hδ_pos]
+        rw [h_abs] at this; exact this
+      have hp2 : |((1/2 : ℝ) - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1 - i)| ≤
+            ((n - 1 - i : ℕ) : ℝ) * δ := by
+        have := pow_sub_pow_bound (1/2 - δ) (1/2 : ℝ) h_half_minus h_half (n - 1 - i)
+        have h_abs : |((1/2 : ℝ) - δ) - 1/2| = δ := by
+          rw [show ((1/2 : ℝ) - δ - 1/2) = -δ from by ring, abs_neg, abs_of_pos hδ_pos]
+        rw [h_abs] at this; exact this
+      have h_sum_le : |(((1/2 : ℝ) + δ) ^ i - (1/2 : ℝ) ^ i) * (1/2 - δ) ^ (n - 1 - i) +
+            (1/2 : ℝ) ^ i * ((1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1 - i))| ≤
+          ((i : ℝ) * δ) * 1 + 1 * (((n - 1 - i : ℕ) : ℝ) * δ) := by
+        have h_triangle := abs_add_le
+          ((((1/2 : ℝ) + δ) ^ i - (1/2 : ℝ) ^ i) * (1/2 - δ) ^ (n - 1 - i))
+          ((1/2 : ℝ) ^ i * ((1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1 - i)))
+        have h_eq : |(((1/2 : ℝ) + δ) ^ i - (1/2 : ℝ) ^ i) * (1/2 - δ) ^ (n - 1 - i)| +
+                    |(1/2 : ℝ) ^ i * ((1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1 - i))| =
+                    |((1/2 : ℝ) + δ) ^ i - (1/2 : ℝ) ^ i| * |(1/2 - δ) ^ (n - 1 - i)| +
+                    |(1/2 : ℝ) ^ i| * |(1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1 - i)| := by
+          rw [abs_mul, abs_mul]
+        have h_prod_B : |(1/2 - δ : ℝ) ^ (n - 1 - i)| ≤ 1 := by
+          rw [abs_pow]; exact pow_le_one₀ (abs_nonneg _) h_half_minus
+        have h_prod_C : |(1/2 : ℝ) ^ i| ≤ 1 := by
+          rw [abs_pow]; exact pow_le_one₀ (abs_nonneg _) h_half
+        have h_idδ_nn : (0 : ℝ) ≤ (i : ℝ) * δ := by positivity
+        have hp1' : |((1/2 : ℝ) + δ) ^ i - (1/2 : ℝ) ^ i| * |(1/2 - δ) ^ (n - 1 - i)| ≤
+            (i : ℝ) * δ * 1 :=
+          mul_le_mul hp1 h_prod_B (abs_nonneg _) h_idδ_nn
+        have hp2' : |(1/2 : ℝ) ^ i| * |(1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1 - i)| ≤
+            1 * (((n - 1 - i : ℕ) : ℝ) * δ) :=
+          mul_le_mul h_prod_C hp2 (abs_nonneg _) (by norm_num)
+        linarith
+      have h_cast : ((i : ℝ) * δ) * 1 + 1 * (((n - 1 - i : ℕ) : ℝ) * δ) =
+          ((n - 1 : ℕ) : ℝ) * δ := by
+        have h_sum_cast : (i : ℝ) + ((n - 1 - i : ℕ) : ℝ) = ((n - 1 : ℕ) : ℝ) := by
+          have h_nat : (n - 1 - i : ℕ) + i = n - 1 := by omega
+          have h_cast_eq := congrArg (Nat.cast (R := ℝ)) h_nat
+          push_cast at h_cast_eq
+          linarith
+        have : ((i : ℝ) * δ) * 1 + 1 * (((n - 1 - i : ℕ) : ℝ) * δ) =
+            ((i : ℝ) + ((n - 1 - i : ℕ) : ℝ)) * δ := by ring
+        rw [this, h_sum_cast]
+      linarith
+    -- Sum the per-term bounds.
+    calc |∑ i ∈ Finset.range n,
+          (((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1))|
+        ≤ ∑ i ∈ Finset.range n,
+            |((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1)| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ _ ∈ Finset.range n, ((n - 1 : ℕ) : ℝ) * δ := Finset.sum_le_sum h_term_bound
+      _ = (n : ℝ) * (((n - 1 : ℕ) : ℝ) * δ) := by
+            rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+      _ = (n : ℝ) * ((n - 1 : ℕ) : ℝ) * δ := by ring
+  -- Final bound.
+  have hn_sub_cast : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
+    have h : (n - 1 : ℕ) + 1 = n := by omega
+    have h_cast_eq := congrArg (Nat.cast (R := ℝ)) h
+    push_cast at h_cast_eq
+    linarith
+  have : δ * |∑ i ∈ Finset.range n,
+          (((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1))|
+      ≤ δ * ((n : ℝ) * ((n - 1 : ℕ) : ℝ) * δ) :=
+    mul_le_mul_of_nonneg_left h_sum_bound (le_of_lt hδ_pos)
+  have hn_nn : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg _
+  have hnn1 : (0 : ℝ) ≤ ((n - 1 : ℕ) : ℝ) := Nat.cast_nonneg _
+  calc δ * |∑ i ∈ Finset.range n,
+          (((1/2 : ℝ) + δ) ^ i * (1/2 - δ) ^ (n - 1 - i) - (1/2 : ℝ) ^ (n - 1))|
+      ≤ δ * ((n : ℝ) * ((n - 1 : ℕ) : ℝ) * δ) := this
+    _ = δ * ((n : ℝ) * ((n : ℝ) - 1) * δ) := by rw [hn_sub_cast]
+    _ = (n : ℝ) * ((n : ℝ) - 1) * δ ^ 2 := by ring
 
 /-- Sub-lemma 2: Binomial weight perturbation. Using the identity
     `A·B − C·D = (A−C)·B + C·(B−D)` and the Lipschitz bound on powers. -/
