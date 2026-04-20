@@ -2148,12 +2148,122 @@ private lemma constant_term_taylor (n : ℕ) (hn : 1 ≤ n) :
         ≤ M * δ ^ 2 := by
   sorry
 
-/-- Sub-lemma 2: Binomial weight perturbation. -/
+/-- Lipschitz bound on `a^k - b^k` for `|a|, |b| ≤ 1`. -/
+private lemma pow_sub_pow_bound (a b : ℝ) (ha : |a| ≤ 1) (hb : |b| ≤ 1) (k : ℕ) :
+    |a ^ k - b ^ k| ≤ k * |a - b| := by
+  induction k with
+  | zero => simp
+  | succ n ih =>
+    have h_rec : a ^ (n + 1) - b ^ (n + 1) = a * (a ^ n - b ^ n) + (a - b) * b ^ n := by ring
+    rw [h_rec]
+    have habk : |b ^ n| ≤ 1 := by
+      rw [abs_pow]; exact pow_le_one₀ (abs_nonneg _) hb
+    have hadd : |a * (a ^ n - b ^ n) + (a - b) * b ^ n|
+        ≤ |a * (a ^ n - b ^ n)| + |(a - b) * b ^ n| := abs_add_le _ _
+    have hsum_le : |a * (a ^ n - b ^ n)| + |(a - b) * b ^ n|
+        ≤ ((n : ℝ) + 1) * |a - b| := by
+      rw [abs_mul, abs_mul]
+      have h1 : |a| * |a ^ n - b ^ n| ≤ 1 * ((n : ℝ) * |a - b|) := by
+        exact mul_le_mul ha ih (abs_nonneg _) (by norm_num)
+      have h2 : |a - b| * |b ^ n| ≤ |a - b| * 1 := by
+        exact mul_le_mul_of_nonneg_left habk (abs_nonneg _)
+      linarith
+    have h_cast : ((n + 1 : ℕ) : ℝ) = (n : ℝ) + 1 := by push_cast; ring
+    rw [h_cast]
+    linarith
+
+/-- Sub-lemma 2: Binomial weight perturbation. Using the identity
+    `A·B − C·D = (A−C)·B + C·(B−D)` and the Lipschitz bound on powers. -/
 private lemma binom_weight_perturb (n j : ℕ) (hj1 : 1 ≤ j) (hjn : j ≤ n - 1) :
     ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
       |(Nat.choose n j : ℝ) * (1/2 - δ) ^ (n - j) * (1/2 + δ) ^ j -
         (Nat.choose n j : ℝ) / (2 : ℝ) ^ n| ≤ M * δ := by
-  sorry
+  -- n ≥ 2 since j ≥ 1 and j ≤ n - 1.
+  have hn2 : 2 ≤ n := by omega
+  refine ⟨(Nat.choose n j : ℝ) * n, 1/2, by norm_num, ?_⟩
+  intro δ hδ_pos hδ_lt
+  have hC_nn : (0 : ℝ) ≤ (Nat.choose n j : ℝ) := by exact_mod_cast Nat.zero_le _
+  -- Split (1/2)^n = (1/2)^(n-j) · (1/2)^j.
+  have h_pow_split : (1/2 : ℝ) ^ n = (1/2 : ℝ) ^ (n - j) * (1/2 : ℝ) ^ j := by
+    rw [← pow_add]
+    congr 1; omega
+  have h_div_eq : (1 : ℝ) / (2 : ℝ) ^ n = (1/2 : ℝ) ^ n := by
+    rw [one_div, ← inv_pow, show ((2 : ℝ)⁻¹ : ℝ) = (1/2 : ℝ) from by norm_num]
+  -- Factor the difference.
+  have h_factor : (Nat.choose n j : ℝ) * (1/2 - δ) ^ (n - j) * (1/2 + δ) ^ j -
+        (Nat.choose n j : ℝ) / (2 : ℝ) ^ n =
+      (Nat.choose n j : ℝ) *
+        (((1/2 - δ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)) * (1/2 + δ) ^ j +
+         (1/2 : ℝ) ^ (n - j) * ((1/2 + δ) ^ j - (1/2 : ℝ) ^ j)) := by
+    have : (Nat.choose n j : ℝ) / (2 : ℝ) ^ n =
+        (Nat.choose n j : ℝ) * ((1/2 : ℝ) ^ (n - j) * (1/2 : ℝ) ^ j) := by
+      rw [show ((Nat.choose n j : ℝ) / (2 : ℝ) ^ n) = (Nat.choose n j : ℝ) * (1 / (2 : ℝ)^n) from
+        by ring]
+      rw [h_div_eq, h_pow_split]
+    rw [this]; ring
+  rw [h_factor, abs_mul, abs_of_nonneg hC_nn]
+  -- Bound the inner expression.
+  have h_half : |(1/2 : ℝ)| ≤ 1 := by norm_num
+  have h_half_plus : |(1/2 + δ : ℝ)| ≤ 1 := by
+    rw [abs_of_pos (by linarith : (0 : ℝ) < 1/2 + δ)]; linarith
+  have h_half_minus : |(1/2 - δ : ℝ)| ≤ 1 := by
+    rw [abs_of_pos (by linarith : (0 : ℝ) < 1/2 - δ)]; linarith
+  -- Bound on power differences.
+  have h_diff1 : |(1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)| ≤ ((n - j : ℕ) : ℝ) * δ := by
+    have h := pow_sub_pow_bound (1/2 - δ) (1/2 : ℝ) h_half_minus h_half (n - j)
+    have h_abs : |(1/2 - δ : ℝ) - 1/2| = δ := by
+      rw [show ((1/2 : ℝ) - δ - 1/2) = -δ from by ring, abs_neg, abs_of_pos hδ_pos]
+    rw [h_abs] at h
+    exact h
+  have h_diff2 : |(1/2 + δ : ℝ) ^ j - (1/2 : ℝ) ^ j| ≤ j * δ := by
+    have h := pow_sub_pow_bound (1/2 + δ) (1/2 : ℝ) h_half_plus h_half j
+    have h_abs : |(1/2 + δ : ℝ) - 1/2| = δ := by
+      rw [show ((1/2 : ℝ) + δ - 1/2) = δ from by ring, abs_of_pos hδ_pos]
+    rw [h_abs] at h
+    exact h
+  -- Assemble.
+  have h_halfpow_le : |(1/2 + δ : ℝ) ^ j| ≤ 1 := by
+    rw [abs_pow]; exact pow_le_one₀ (abs_nonneg _) h_half_plus
+  have h_halfpow_le' : |(1/2 : ℝ) ^ (n - j)| ≤ 1 := by
+    rw [abs_pow]; exact pow_le_one₀ (abs_nonneg _) h_half
+  have h_inner_bound : |((1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)) * (1/2 + δ) ^ j +
+        (1/2 : ℝ) ^ (n - j) * ((1/2 + δ) ^ j - (1/2 : ℝ) ^ j)| ≤ (n : ℝ) * δ := by
+    have h_triangle : |((1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)) * (1/2 + δ) ^ j +
+          (1/2 : ℝ) ^ (n - j) * ((1/2 + δ) ^ j - (1/2 : ℝ) ^ j)|
+        ≤ |((1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)) * (1/2 + δ) ^ j| +
+          |(1/2 : ℝ) ^ (n - j) * ((1/2 + δ) ^ j - (1/2 : ℝ) ^ j)| := abs_add_le _ _
+    have h_eq_mul : |((1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)) * (1/2 + δ) ^ j| +
+        |(1/2 : ℝ) ^ (n - j) * ((1/2 + δ) ^ j - (1/2 : ℝ) ^ j)| =
+        |(1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)| * |(1/2 + δ) ^ j| +
+        |(1/2 : ℝ) ^ (n - j)| * |(1/2 + δ) ^ j - (1/2 : ℝ) ^ j| := by
+      rw [abs_mul, abs_mul]
+    have h_term_bound : |(1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)| * |(1/2 + δ) ^ j| +
+        |(1/2 : ℝ) ^ (n - j)| * |(1/2 + δ) ^ j - (1/2 : ℝ) ^ j| ≤
+        ((n - j : ℕ) : ℝ) * δ * 1 + 1 * ((j : ℝ) * δ) := by
+      have hδ_nn : (0 : ℝ) ≤ δ := le_of_lt hδ_pos
+      have hnj_nn : (0 : ℝ) ≤ ((n - j : ℕ) : ℝ) * δ := by positivity
+      have hp1 : |(1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)| * |(1/2 + δ) ^ j| ≤
+          ((n - j : ℕ) : ℝ) * δ * 1 :=
+        mul_le_mul h_diff1 h_halfpow_le (abs_nonneg _) hnj_nn
+      have hp2 : |(1/2 : ℝ) ^ (n - j)| * |(1/2 + δ) ^ j - (1/2 : ℝ) ^ j| ≤
+          1 * ((j : ℝ) * δ) :=
+        mul_le_mul h_halfpow_le' h_diff2 (abs_nonneg _) (by norm_num)
+      linarith
+    have h_sum_cast : ((n - j : ℕ) : ℝ) + (j : ℝ) = (n : ℝ) := by
+      have h : ((n - j : ℕ) + j : ℕ) = n := by omega
+      have := congrArg (Nat.cast (R := ℝ)) h
+      push_cast at this
+      linarith
+    have h_final_eq : ((n - j : ℕ) : ℝ) * δ * 1 + 1 * ((j : ℝ) * δ) = (n : ℝ) * δ := by
+      have : ((n - j : ℕ) : ℝ) * δ * 1 + 1 * ((j : ℝ) * δ) =
+          (((n - j : ℕ) : ℝ) + (j : ℝ)) * δ := by ring
+      rw [this, h_sum_cast]
+    linarith
+  calc (Nat.choose n j : ℝ) * |((1/2 - δ : ℝ) ^ (n - j) - (1/2 : ℝ) ^ (n - j)) * (1/2 + δ) ^ j +
+        (1/2 : ℝ) ^ (n - j) * ((1/2 + δ) ^ j - (1/2 : ℝ) ^ j)|
+      ≤ (Nat.choose n j : ℝ) * ((n : ℝ) * δ) := by
+        apply mul_le_mul_of_nonneg_left h_inner_bound hC_nn
+    _ = (Nat.choose n j : ℝ) * n * δ := by ring
 
 /-- Lipschitz of `Finset.inf'`: if `|f m - g m| ≤ K` pointwise, then
     `|inf' f - inf' g| ≤ K`. -/
