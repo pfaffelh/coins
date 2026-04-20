@@ -1643,6 +1643,17 @@ private lemma summable_B_lin : Summable B_lin := by
       have h_tail := B_tail_bound N
       linarith
 
+/-- `Multipliable (fun m : {m // n₀ ≤ m} => 1 - B_lin m)` for any `n₀ ≥ 7`.
+    Uses `Real.multipliable_one_add_of_summable` with `f = -B_lin`. -/
+private lemma multipliable_one_minus_B (n₀ : ℕ) :
+    Multipliable (fun m : {m : ℕ // n₀ ≤ m} => (1 : ℝ) - B_lin m.val) := by
+  have h_sub : Summable (fun m : {m : ℕ // n₀ ≤ m} => B_lin m.val) :=
+    summable_B_lin.comp_injective Subtype.val_injective
+  have h_neg : Summable (fun m : {m : ℕ // n₀ ≤ m} => -B_lin m.val) := h_sub.neg
+  have h := Real.multipliable_one_add_of_summable h_neg
+  -- h : Multipliable (fun i => 1 + -B_lin i.val)
+  simpa [sub_eq_add_neg] using h
+
 /-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
     `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
     (Convergence at geometric rate from `A_n, B_n = O(n³ / 2^n)`.)
