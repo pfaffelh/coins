@@ -2195,24 +2195,182 @@ theorem deficit_first_order (n : ℕ) (hn : 1 ≤ n) :
       sorry
 
 /-- Corollary 4.11 (i): the gap `w(p, n-1) - w(p, n)` has first-order
-    coefficient `c_n - c_{n-1}` as `p = 1/2 - δ`, `δ → 0⁺`. -/
+    coefficient `c_n - c_{n-1}` as `p = 1/2 - δ`, `δ → 0⁺`.
+    Reduces to `deficit_first_order` applied to `n` and `n-1`. -/
 theorem w_gap_first_order (n : ℕ) (hn : 2 ≤ n) :
     ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
       |w (1/2 - δ) (n - 1) - w (1/2 - δ) n - (c n - c (n - 1)) * δ| ≤
         M * δ ^ 2 := by
-  sorry
+  obtain ⟨M₁, δ₁, hδ₁_pos, h₁⟩ := deficit_first_order n (by omega : 1 ≤ n)
+  obtain ⟨M₂, δ₂, hδ₂_pos, h₂⟩ := deficit_first_order (n - 1) (by omega : 1 ≤ n - 1)
+  refine ⟨M₁ + M₂, min δ₁ δ₂, lt_min hδ₁_pos hδ₂_pos, ?_⟩
+  intro δ hδ_pos hδ_lt
+  have hδ_lt₁ : δ < δ₁ := lt_of_lt_of_le hδ_lt (min_le_left _ _)
+  have hδ_lt₂ : δ < δ₂ := lt_of_lt_of_le hδ_lt (min_le_right _ _)
+  have b1 := h₁ δ hδ_pos hδ_lt₁
+  have b2 := h₂ δ hδ_pos hδ_lt₂
+  -- w p n = 1/2 - deficit p n, so w p (n-1) - w p n = deficit p n - deficit p (n-1).
+  have hw_rel : w (1 / 2 - δ) (n - 1) - w (1 / 2 - δ) n =
+      deficit (1 / 2 - δ) n - deficit (1 / 2 - δ) (n - 1) := by
+    unfold deficit
+    ring
+  rw [hw_rel]
+  -- (Δ_n - Δ_{n-1}) - (c_n - c_{n-1}) δ = (Δ_n - c_n δ) - (Δ_{n-1} - c_{n-1} δ).
+  have h_eq : deficit (1 / 2 - δ) n - deficit (1 / 2 - δ) (n - 1) -
+        (c n - c (n - 1)) * δ =
+      (deficit (1 / 2 - δ) n - c n * δ) -
+      (deficit (1 / 2 - δ) (n - 1) - c (n - 1) * δ) := by ring
+  rw [h_eq]
+  calc |deficit (1 / 2 - δ) n - c n * δ -
+          (deficit (1 / 2 - δ) (n - 1) - c (n - 1) * δ)|
+      ≤ |deficit (1 / 2 - δ) n - c n * δ| +
+        |deficit (1 / 2 - δ) (n - 1) - c (n - 1) * δ| :=
+        abs_sub _ _
+    _ ≤ M₁ * δ ^ 2 + M₂ * δ ^ 2 := add_le_add b1 b2
+    _ = (M₁ + M₂) * δ ^ 2 := by ring
 
 /-- Corollary 4.11 (ii): to first order, `n = 5` is a strict local minimum
-    of `n ↦ w(1/2 - δ, n)`. -/
+    of `n ↦ w(1/2 - δ, n)`. Uses `w_gap_first_order` at `n = 5` (where
+    `c_5 > c_4`) and at `n = 6` (where `c_5 > c_6` from
+    `c_strict_anti_from_five`). -/
 theorem w_local_min_at_five :
     ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
       w (1/2 - δ) 5 < w (1/2 - δ) 4 ∧ w (1/2 - δ) 5 < w (1/2 - δ) 6 := by
-  sorry
+  obtain ⟨M₁, δ₁, hδ₁_pos, h₁⟩ := w_gap_first_order 5 (by omega)
+  obtain ⟨M₂, δ₂, hδ₂_pos, h₂⟩ := w_gap_first_order 6 (by omega)
+  -- (5 - 1 = 4). Gap at n=5: |w_4 - w_5 - (c_5 - c_4) δ| ≤ M₁ δ².
+  -- Gap at n=6: |w_5 - w_6 - (c_6 - c_5) δ| ≤ M₂ δ².
+  have h_gap5 : c 5 - c 4 > 0 := by linarith [c_four_lt_five]
+  have h_gap6 : c 5 - c 6 > 0 := by
+    have := c_strict_anti_from_five 5 (by norm_num)
+    -- c (5+1) < c 5, i.e., c 6 < c 5.
+    linarith
+  -- Choose δ₀ small enough: δ₀ ≤ min(δ₁, δ₂, (c_5-c_4)/(2(|M₁|+1)), (c_5-c_6)/(2(|M₂|+1))).
+  set ε1 : ℝ := (c 5 - c 4) / (2 * (|M₁| + 1))
+  set ε2 : ℝ := (c 5 - c 6) / (2 * (|M₂| + 1))
+  have hε1_pos : 0 < ε1 := by
+    apply div_pos h_gap5; positivity
+  have hε2_pos : 0 < ε2 := by
+    apply div_pos h_gap6; positivity
+  refine ⟨min (min δ₁ δ₂) (min ε1 ε2),
+    lt_min (lt_min hδ₁_pos hδ₂_pos) (lt_min hε1_pos hε2_pos), ?_⟩
+  intro δ hδ_pos hδ_lt
+  have hδ_lt₁ : δ < δ₁ := lt_of_lt_of_le hδ_lt
+    (le_trans (min_le_left _ _) (min_le_left _ _))
+  have hδ_lt₂ : δ < δ₂ := lt_of_lt_of_le hδ_lt
+    (le_trans (min_le_left _ _) (min_le_right _ _))
+  have hδ_lt_ε1 : δ < ε1 := lt_of_lt_of_le hδ_lt
+    (le_trans (min_le_right _ _) (min_le_left _ _))
+  have hδ_lt_ε2 : δ < ε2 := lt_of_lt_of_le hδ_lt
+    (le_trans (min_le_right _ _) (min_le_right _ _))
+  have bd1 := h₁ δ hδ_pos hδ_lt₁
+  have bd2 := h₂ δ hδ_pos hδ_lt₂
+  -- For each part, unfold |...| into a bound.
+  refine ⟨?_, ?_⟩
+  · -- w_5 < w_4, i.e., w_4 - w_5 > 0.
+    -- bd1 : |w_4 - w_5 - (c_5 - c_4) δ| ≤ M₁ δ²
+    -- so w_4 - w_5 ≥ (c_5 - c_4) δ - M₁ δ²
+    have bd_lb : w (1/2 - δ) 4 - w (1/2 - δ) 5 ≥ (c 5 - c 4) * δ - M₁ * δ^2 := by
+      have := abs_le.mp bd1
+      have : -(M₁ * δ^2) ≤ w (1/2 - δ) (5 - 1) - w (1/2 - δ) 5 - (c 5 - c (5 - 1)) * δ :=
+        this.1
+      have hfive : (5 : ℕ) - 1 = 4 := by norm_num
+      rw [hfive] at this
+      linarith
+    -- M₁ δ² ≤ |M₁| δ² ≤ (|M₁| + 1) δ² < δ · ε1 · (|M₁| + 1) = δ · (c_5 - c_4)/2.
+    have hM₁_bound : M₁ * δ^2 < (c 5 - c 4) / 2 * δ := by
+      have hM₁_le : M₁ * δ^2 ≤ |M₁| * δ^2 := by
+        have := le_abs_self M₁; nlinarith [sq_nonneg δ]
+      have : |M₁| * δ^2 < (c 5 - c 4) / 2 * δ := by
+        have h_abs_nn : 0 ≤ |M₁| := abs_nonneg M₁
+        have h_one_nn : (0 : ℝ) ≤ |M₁| + 1 := by linarith
+        have h_pos : (0 : ℝ) < 2 * (|M₁| + 1) := by linarith
+        have h1 : |M₁| * δ^2 ≤ (|M₁| + 1) * δ * δ := by nlinarith [sq_nonneg δ, hδ_pos]
+        have h2 : (|M₁| + 1) * δ * δ < (|M₁| + 1) * ε1 * δ := by
+          apply mul_lt_mul_of_pos_right _ hδ_pos
+          apply mul_lt_mul_of_pos_left hδ_lt_ε1
+          linarith
+        have h3 : (|M₁| + 1) * ε1 * δ = (c 5 - c 4) / 2 * δ := by
+          rw [show ε1 = (c 5 - c 4) / (2 * (|M₁| + 1)) from rfl]
+          field_simp
+        linarith
+      linarith
+    have : (c 5 - c 4) * δ - M₁ * δ^2 > (c 5 - c 4) * δ - (c 5 - c 4) / 2 * δ := by
+      linarith
+    have : (c 5 - c 4) * δ - M₁ * δ^2 > 0 := by
+      have : (c 5 - c 4) * δ - (c 5 - c 4) / 2 * δ = (c 5 - c 4) / 2 * δ := by ring
+      nlinarith [h_gap5, hδ_pos]
+    linarith [bd_lb]
+  · -- w_5 < w_6, i.e., w_6 - w_5 > 0. From gap at n=6:
+    -- bd2 : |w_5 - w_6 - (c_6 - c_5) δ| ≤ M₂ δ²
+    -- so (c_6 - c_5) δ - M₂ δ² ≤ w_5 - w_6 ≤ (c_6 - c_5) δ + M₂ δ²
+    -- w_6 - w_5 ≥ -(c_6 - c_5) δ - M₂ δ² = (c_5 - c_6) δ - M₂ δ².
+    have bd_lb : w (1/2 - δ) 6 - w (1/2 - δ) 5 ≥ (c 5 - c 6) * δ - M₂ * δ^2 := by
+      have := abs_le.mp bd2
+      have h6 : (6 : ℕ) - 1 = 5 := by norm_num
+      rw [h6] at this
+      linarith [this.2]
+    -- Analogous to above: M₂ δ² < (c_5 - c_6)/2 · δ.
+    have hM₂_bound : M₂ * δ^2 < (c 5 - c 6) / 2 * δ := by
+      have hM₂_le : M₂ * δ^2 ≤ |M₂| * δ^2 := by
+        have := le_abs_self M₂; nlinarith [sq_nonneg δ]
+      have : |M₂| * δ^2 < (c 5 - c 6) / 2 * δ := by
+        have h_abs_nn : 0 ≤ |M₂| := abs_nonneg M₂
+        have h_pos : (0 : ℝ) < 2 * (|M₂| + 1) := by linarith
+        have h1 : |M₂| * δ^2 ≤ (|M₂| + 1) * δ * δ := by nlinarith [sq_nonneg δ, hδ_pos]
+        have h2 : (|M₂| + 1) * δ * δ < (|M₂| + 1) * ε2 * δ := by
+          apply mul_lt_mul_of_pos_right _ hδ_pos
+          apply mul_lt_mul_of_pos_left hδ_lt_ε2
+          linarith
+        have h3 : (|M₂| + 1) * ε2 * δ = (c 5 - c 6) / 2 * δ := by
+          rw [show ε2 = (c 5 - c 6) / (2 * (|M₂| + 1)) from rfl]
+          field_simp
+        linarith
+      linarith
+    have : (c 5 - c 6) * δ - M₂ * δ^2 > 0 := by
+      nlinarith [h_gap6, hδ_pos, hM₂_bound]
+    linarith [bd_lb]
 
 /-- Corollary 4.11 (iii): there is no local maximum at first order;
     `c_n` is eventually decreasing, so `w(1/2 - δ, n)` is eventually increasing
-    in `n`. -/
+    in `n`. Uses `w_gap_first_order` at `n+1` plus `c_strict_anti_from_five`. -/
 theorem no_first_order_local_max :
     ∃ N : ℕ, ∀ n, N ≤ n → ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
       w (1/2 - δ) n < w (1/2 - δ) (n + 1) := by
-  sorry
+  refine ⟨5, ?_⟩
+  intro n hn
+  obtain ⟨M, δ_max, hδ_pos, hbd⟩ := w_gap_first_order (n + 1) (by omega)
+  have h_anti : c (n + 1) < c n := c_strict_anti_from_five n hn
+  have h_pos_gap : 0 < c n - c (n + 1) := by linarith
+  set ε : ℝ := (c n - c (n + 1)) / (2 * (|M| + 1))
+  have hε_pos : 0 < ε := by
+    apply div_pos h_pos_gap; positivity
+  refine ⟨min δ_max ε, lt_min hδ_pos hε_pos, ?_⟩
+  intro δ hδ_p hδ_lt
+  have hδ_lt_max : δ < δ_max := lt_of_lt_of_le hδ_lt (min_le_left _ _)
+  have hδ_lt_ε : δ < ε := lt_of_lt_of_le hδ_lt (min_le_right _ _)
+  have bd := hbd δ hδ_p hδ_lt_max
+  have h_eq : (n + 1 : ℕ) - 1 = n := by omega
+  rw [h_eq] at bd
+  -- bd : |w n - w (n+1) - (c (n+1) - c n) δ| ≤ M δ²
+  -- From upper bound: w n - w (n+1) ≤ (c (n+1) - c n) δ + M δ² = -(c_n - c_{n+1}) δ + M δ².
+  have bd_ub : w (1/2 - δ) n - w (1/2 - δ) (n + 1) ≤
+      (c (n + 1) - c n) * δ + M * δ^2 := by
+    have := abs_le.mp bd; linarith [this.2]
+  have hM_bd : M * δ^2 < (c n - c (n + 1)) / 2 * δ := by
+    have hM_le : M * δ^2 ≤ |M| * δ^2 := by
+      have := le_abs_self M; nlinarith [sq_nonneg δ]
+    have : |M| * δ^2 < (c n - c (n + 1)) / 2 * δ := by
+      have h_abs_nn : 0 ≤ |M| := abs_nonneg M
+      have h_pos : (0 : ℝ) < 2 * (|M| + 1) := by linarith
+      have h1 : |M| * δ^2 ≤ (|M| + 1) * δ * δ := by nlinarith [sq_nonneg δ, hδ_p]
+      have h2 : (|M| + 1) * δ * δ < (|M| + 1) * ε * δ := by
+        apply mul_lt_mul_of_pos_right _ hδ_p
+        apply mul_lt_mul_of_pos_left hδ_lt_ε
+        linarith
+      have h3 : (|M| + 1) * ε * δ = (c n - c (n + 1)) / 2 * δ := by
+        rw [show ε = (c n - c (n + 1)) / (2 * (|M| + 1)) from rfl]
+        field_simp
+      linarith
+    linarith
+  nlinarith [bd_ub, hM_bd, h_pos_gap, hδ_p]
