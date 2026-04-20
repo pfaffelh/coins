@@ -1728,6 +1728,66 @@ private lemma A_lin_nonneg (n : ℕ) : 0 ≤ A_lin n := by
   have hc3 : (0 : ℝ) ≤ c 3 := by rw [c_three]; norm_num
   positivity
 
+/-- `B_lin n > 0` for all `n ≥ 0` (numerator and denominator both positive). -/
+private lemma B_lin_pos (n : ℕ) : 0 < B_lin n := by
+  unfold B_lin
+  have h1 : (0 : ℝ) ≤ (Nat.choose n 2 : ℝ) := by exact_mod_cast Nat.zero_le _
+  have h2 : (0 : ℝ) ≤ (Nat.choose n 3 : ℝ) := by exact_mod_cast Nat.zero_le _
+  have h3 : (0 : ℝ) ≤ (n : ℝ) := by exact_mod_cast Nat.zero_le _
+  have hnum : (0 : ℝ) < (2 + (n : ℝ) + (Nat.choose n 2 : ℝ) + (Nat.choose n 3 : ℝ)) := by
+    linarith
+  positivity
+
+/-- `B_lin n < 1` for `n ≥ 7`: the numerator `2 + n + C(n,2) + C(n,3)` is
+    strictly less than `2^n` because the missing binomial terms
+    `C(n, 4), ..., C(n, n-1)` are strictly positive. -/
+private lemma B_lin_lt_one {n : ℕ} (hn : 7 ≤ n) : B_lin n < 1 := by
+  unfold B_lin
+  rw [div_lt_one (by positivity : (0 : ℝ) < (2 : ℝ) ^ n)]
+  -- Goal: 2 + n + C(n,2) + C(n,3) < 2^n.
+  have h_3 := choose_sum_3_to_pred n (by omega)
+  have h_split : Finset.Ico 3 n = insert 3 (Finset.Ico 4 n) := by
+    ext; simp only [Finset.mem_Ico, Finset.mem_insert]; omega
+  have h_no3 : 3 ∉ Finset.Ico 4 n := by simp [Finset.mem_Ico]
+  rw [h_split, Finset.sum_insert h_no3] at h_3
+  have h_sum_pos : (0 : ℝ) < ∑ j ∈ Finset.Ico 4 n, ((Nat.choose n j : ℕ) : ℝ) := by
+    apply Finset.sum_pos
+    · intro j hj
+      have hj' := Finset.mem_Ico.mp hj
+      have : 0 < Nat.choose n j := Nat.choose_pos (by omega)
+      exact_mod_cast this
+    · exact ⟨4, by simp [Finset.mem_Ico]; omega⟩
+  linarith [h_sum_pos]
+
+/-- For `m ≥ 7`: `0 < 1 - B_lin m` (so the factor in the infinite product is positive). -/
+private lemma one_minus_B_pos {m : ℕ} (hm : 7 ≤ m) : 0 < 1 - B_lin m := by
+  linarith [B_lin_lt_one hm]
+
+/-- For `m ≥ 7`: `1 - B_lin m ≤ 1` (so the factor is ≤ 1). -/
+private lemma one_minus_B_le_one (m : ℕ) : 1 - B_lin m ≤ 1 := by
+  linarith [B_lin_pos m]
+
+/-- Uniform bound on finite partial products: for any `k`, `n` and `n₀`,
+    if `n₀ ≥ 7` and every `m ∈ Ico (k+1) (n+1)` satisfies `m ≥ n₀`, then
+    `0 ≤ ∏ m ∈ Ico (k+1) (n+1), (1 - B_lin m) ≤ 1`. -/
+private lemma prod_Ico_one_minus_B_in_unit_interval (k n : ℕ) (hk : 7 ≤ k + 1) :
+    0 ≤ ∏ m ∈ Finset.Ico (k + 1) (n + 1), ((1 : ℝ) - B_lin m) ∧
+      ∏ m ∈ Finset.Ico (k + 1) (n + 1), ((1 : ℝ) - B_lin m) ≤ 1 := by
+  refine ⟨Finset.prod_nonneg ?_, ?_⟩
+  · intro m hm
+    have hm' := (Finset.mem_Ico.mp hm).1
+    linarith [(one_minus_B_pos (by omega : 7 ≤ m)).le]
+  · -- Product of terms each ≤ 1 and ≥ 0 is ≤ 1.
+    have h_nn : ∀ m ∈ Finset.Ico (k + 1) (n + 1), (0 : ℝ) ≤ 1 - B_lin m := by
+      intro m hm
+      have hm' := (Finset.mem_Ico.mp hm).1
+      linarith [(one_minus_B_pos (by omega : 7 ≤ m)).le]
+    have h_le : ∀ m ∈ Finset.Ico (k + 1) (n + 1), (1 : ℝ) - B_lin m ≤ 1 := by
+      intro m _; exact one_minus_B_le_one m
+    calc ∏ m ∈ Finset.Ico (k + 1) (n + 1), ((1 : ℝ) - B_lin m)
+        ≤ ∏ _ ∈ Finset.Ico (k + 1) (n + 1), (1 : ℝ) := Finset.prod_le_prod h_nn h_le
+      _ = 1 := Finset.prod_const_one
+
 /-- Bound on the first summand `n / 2^(n-1)` of `A_lin`: it equals `2n / 2^n`
     for `n ≥ 1` and `0` at `n = 0`. In both cases it is `≤ 2(n+1) / 2^n`. -/
 private lemma n_div_pow_pred_le (n : ℕ) :
