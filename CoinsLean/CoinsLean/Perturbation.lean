@@ -1719,12 +1719,72 @@ private lemma tendsto_prod_Ico_B (n₀ : ℕ) :
     rw [Finset.prod_Ico_eq_prod_range]
   exact Filter.Tendsto.congr' h_ev.symm h_comp
 
-/-- Sum convergence: as `n → ∞`, the finite double-sum from `c_iterate`
-    converges to the infinite series over the subtype.
+/-- `A_lin n` is non-negative (all four summands are products of non-negative
+    quantities, since `c 1 = 1`, `c 2 = 3/2`, `c 3 = 27/16`). -/
+private lemma A_lin_nonneg (n : ℕ) : 0 ≤ A_lin n := by
+  unfold A_lin
+  have hc1 : (0 : ℝ) ≤ c 1 := by rw [c_one]; norm_num
+  have hc2 : (0 : ℝ) ≤ c 2 := by rw [c_two]; norm_num
+  have hc3 : (0 : ℝ) ≤ c 3 := by rw [c_three]; norm_num
+  positivity
 
-    Status: requires dominated convergence (since each inner product tends
-    to the infinite tprod as `n → ∞`, with uniform bound `≤ 1` for all `n`
-    once `n ≥ n₀ ≥ 7`). Left as a narrow `sorry`. -/
+/-- Bound on the first summand `n / 2^(n-1)` of `A_lin`: it equals `2n / 2^n`
+    for `n ≥ 1` and `0` at `n = 0`. In both cases it is `≤ 2(n+1) / 2^n`. -/
+private lemma n_div_pow_pred_le (n : ℕ) :
+    (n : ℝ) / (2 : ℝ) ^ (n - 1) ≤ 2 * ((n : ℝ) + 1) / (2 : ℝ) ^ n := by
+  match n with
+  | 0 => simp
+  | k + 1 =>
+    rw [show (k + 1 : ℕ) - 1 = k from by omega]
+    rw [show ((2 : ℝ) ^ (k + 1) : ℝ) = (2 : ℝ) ^ k * 2 from pow_succ 2 k]
+    rw [div_le_div_iff₀ (by positivity) (by positivity)]
+    push_cast
+    nlinarith [pow_pos (by norm_num : (0 : ℝ) < 2) k]
+
+/-- Summability of `n · (1/2)^n` on ℕ. -/
+private lemma summable_n_half_pow :
+    Summable (fun n : ℕ => (n : ℝ) * (1 / 2 : ℝ) ^ n) := by
+  have h := summable_pow_mul_geometric_of_norm_lt_one 1
+    (show ‖(1 / 2 : ℝ)‖ < 1 by rw [Real.norm_eq_abs]; norm_num)
+  simpa using h
+
+/-- Summability of `n² · (1/2)^n` on ℕ. -/
+private lemma summable_n_sq_half_pow :
+    Summable (fun n : ℕ => (n : ℝ) ^ 2 * (1 / 2 : ℝ) ^ n) :=
+  summable_pow_mul_geometric_of_norm_lt_one 2
+    (show ‖(1 / 2 : ℝ)‖ < 1 by rw [Real.norm_eq_abs]; norm_num)
+
+/-- Summability of `n³ · (1/2)^n` on ℕ. -/
+private lemma summable_n_cube_half_pow :
+    Summable (fun n : ℕ => (n : ℝ) ^ 3 * (1 / 2 : ℝ) ^ n) :=
+  summable_pow_mul_geometric_of_norm_lt_one 3
+    (show ‖(1 / 2 : ℝ)‖ < 1 by rw [Real.norm_eq_abs]; norm_num)
+
+/-- Summability of `(1/2)^n` on ℕ. -/
+private lemma summable_half_pow :
+    Summable (fun n : ℕ => (1 / 2 : ℝ) ^ n) :=
+  summable_geometric_of_norm_lt_one
+    (show ‖(1 / 2 : ℝ)‖ < 1 by rw [Real.norm_eq_abs]; norm_num)
+
+/-- Summability of `A_lin` on ℕ. Status: the infrastructure lemmas
+    `summable_{n,n_sq,n_cube,half}_half_pow` above are proved. The
+    remaining work is bounding `A_lin n ≤ g n` where `g` is a linear
+    combination of these (a polynomial-times-geometric inequality),
+    then `Summable.of_norm_bounded_eventually_nat`. Left as a focused
+    sub-sorry. -/
+private lemma summable_A_lin : Summable A_lin := by
+  sorry
+
+/-- Summability of `|A_lin|` on ℕ. Since A_lin ≥ 0, this equals `summable_A_lin`. -/
+private lemma summable_A_lin_abs : Summable (fun n : ℕ => |A_lin n|) := by
+  have h := summable_A_lin
+  have h_eq : (fun n : ℕ => |A_lin n|) = A_lin := by
+    ext n; exact abs_of_nonneg (A_lin_nonneg n)
+  rw [h_eq]; exact h
+
+/-- Sum convergence: as `n → ∞`, the finite double-sum from `c_iterate`
+    converges to the infinite series over the subtype. Uses Tannery's theorem
+    (`tendsto_tsum_of_dominated_convergence`). -/
 private lemma tendsto_sum_Ico_A_prod (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
     Filter.Tendsto
       (fun n : ℕ => ∑ k ∈ Finset.Ico n₀ (n + 1),
