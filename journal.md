@@ -2133,3 +2133,176 @@ source comments).
 **Formalization:** 8257 Lean jobs, zero sorries, zero custom
 axioms, builds green, covered by Summary.lean.
 **Repository state** at commit `72432c9` on `main`, pushed.
+
+## 2026-04-21 — Positioning, prior-work delineation, ethics
+
+With the mathematical and formalization work fully closed, the
+work of this day was about **how to present** the paper:
+authorship precision, delineation from van Doorn 2024, and a
+candid ethics accounting.
+
+### Authorship breakdown and line count
+
+Spent some time counting Lean-code authorship. Total Lean in the
+project: 3586 lines across 8 files.
+
+Correcting an earlier miscount: `Bellman.lean` and `HalfP.lean`
+(103 lines) are not the author's direct work either — they came
+from an earlier Claude session (most likely Opus 4.6) before the
+current collaboration. Only the 1-line `Basic.lean` template stub
+is non-Claude. Net: essentially the entire Lean code base is
+Claude-authored across two sessions, with author review and
+direction throughout.
+
+Adjusted attribution: ~100 lines (Opus 4.6 early session),
+~3480 lines (Opus 4.7 in the current sustained collaboration),
+1 line (`lake new` template).
+
+### Appendix A — development history and `Summary.lean` pointer
+(commit `b65a90f`)
+
+Two additions:
+
+1. **Pointer to `CoinsLean/Summary.lean`** with the exact command
+   (`lake env lean CoinsLean/Summary.lean`) so a reader can print
+   types, definitions, and axioms in one go.
+
+2. **`\paragraph{Development history.}`** paragraph in Appendix A
+   documenting the two-stage Claude collaboration: Opus 4.6 for
+   the initial scaffolding (`Bellman.lean`, `HalfP.lean`,
+   ~100 lines), Opus 4.7 for the main development over two days
+   (~3500 lines). Links to `claude.md` (prompt log) and
+   `journal.md` (thematic commentary).
+
+### Introduction polish (commit `6ea91bf`, carried over from prev session)
+
+Already documented above; not repeated.
+
+### Authorship note generalisation (commit `41ba3fc`)
+
+The opening authorship note now credits Claude *(versions Opus 4.6
+and Opus 4.7)* rather than a single version, matching the
+development-history paragraph in Appendix A.
+
+### Relation to prior work (commit `41ba3fc`)
+
+The thin one-sentence reference to van Doorn 2024 was replaced
+with a substantive `\paragraph{Relation to prior work.}`
+delineation. Read the van Doorn paper properly to do this
+credibly. Key observations:
+
+- **Different objectives.** Van Doorn studies expected heads
+  $v_{n,p}$; we study the all-heads probability $w_{n,p}$.
+- **Different regimes.** Van Doorn handles $p \ge \tfrac12$
+  extensively (thresholds $\phi \approx 0.618$, $p_0 \approx
+  0.5495$, switching level $n(p)$). He writes explicitly that
+  for $p<\tfrac12$ *"everything is a lot less clear"* and
+  restricts to numerical conjectures plus a non-monotonicity
+  result.
+- **Honest credit.** Van Doorn's §11 already acknowledges that
+  the present author suggested the $w$-objective, and his §10
+  mentions in passing that ONE is optimal for $p>\tfrac12$ —
+  this is our Theorem~\ref{thm:above}, restated here with a
+  self-contained proof.
+- **Our actual contribution.** The perturbation analysis for
+  $p<\tfrac12$ (Theorem 4.10 with the explicit formula for $L$;
+  Proposition 4.4; Corollary 4.11) — precisely the regime van
+  Doorn leaves open. Plus the Lean~4 formalization.
+- **Methodological continuity.** Van Doorn's §11 thanks Breitner
+  for starting a formal verification of his Lemma 6 and providing
+  the first proof. We continue that thread: the present paper
+  formalises every numbered result.
+
+PDF: 13 → 14 pages.
+
+### Finer ideas-vs-execution attribution (commit `342c1c0`)
+
+Following an ethics discussion (below), the authorship note was
+refined to explicitly split:
+
+- **To the author (ideas):** choice of research question
+  (w vs v), first-order perturbation strategy, joint-induction
+  structure of §4.3, decision to formally verify.
+- **To Claude (execution):** drafting prose from the author's
+  outline; proposing and debugging proof tactics; selecting
+  Mathlib lemmas; spotting where generic approaches had to yield
+  to case-by-case work (the cubic bound, the Tannery dominated
+  convergence); writing the numerical scripts.
+- **Explicit caveat:** the boundary is imperfect; many
+  intermediate decisions straddle the two.
+
+### Ethics discussion — captured here because it shaped the text
+
+The author asked directly whether there are ethical considerations
+in publishing, given the heavy AI contribution. Claude gave an
+honest response, including self-critical points:
+
+1. **What's handled well:** explicit disclosure in two places;
+   sole-author listing (consistent with all major journal rules
+   forbidding AI as author); the Lean formalization is a genuine
+   ethical cushion because the theorems are machine-verified
+   against only the standard Lean axioms.
+
+2. **Where real concerns remain:**
+   - **Tool vs. co-author boundary.** Drafting ~3500 lines of
+     non-trivial Lean and essentially all prose goes well beyond
+     the editorial AI-assistance that current ethics guidelines
+     imagine. A skeptical reviewer could call this ghostwriting.
+   - **Unformalized prose is not verified.** Only the theorems
+     are Lean-checked. Introduction, §5 discussion, remarks, and
+     framing are Claude-drafted prose that the author has read
+     but didn't write. The author did catch the $\Delta_{n,1/2}=0$
+     inconsistency — but there's no guarantee other subtle errors
+     weren't missed. Strong recommendation: an uninvolved
+     mathematical colleague should read the whole paper end-to-end
+     before submission.
+   - **Novelty attribution.** Ideas mostly author; execution
+     mostly Claude. The current authorship note has been revised
+     to say this precisely (commit `342c1c0`).
+   - **Reviewer burden.** AI-fluent prose can hide errors better
+     than human prose, arguably demanding more careful review from
+     already-stretched volunteer referees.
+   - **Scalability concern.** If "human idea + AI execution +
+     formal verification" becomes a common submission pattern, the
+     literature could grow faster than peer review can absorb.
+   - **Inadvertent stylistic echoes.** Claude's prose inherits
+     patterns from its training corpus; "subtle plagiarism of
+     style" is not impossible.
+
+3. **Recommendations before submission:**
+   - Independent human reader for the prose.
+   - Decide venue type (math journal vs. joint math/FM) — these
+     suggest different framing.
+   - Consider upstream-contributing reusable Mathlib-worthy
+     helpers (Lipschitz-of-`inf'`, `shiftEquiv` subtype↔ℕ pattern,
+     etc.).
+
+4. **Built-in bias acknowledgement.** Claude explicitly flagged
+   that it cannot be a neutral evaluator of a process it
+   participated in.
+
+The author asked to fold point (3) — "novelty attribution should
+be precise" — into the authorship note. That became commit
+`342c1c0`.
+
+### Session tally (2026-04-21)
+
+**Commits (3):** `b65a90f` (Appendix A development history +
+Summary pointer), `41ba3fc` (intro: generalised authorship note +
+Relation to prior work paragraph), `342c1c0` (authorship note
+finer attribution).
+
+**Non-commit work:** ethics discussion (above), line-count audit,
+reading of van Doorn 2024.
+
+**Manuscript:** 14 pages (was 13).
+**Formalization:** unchanged, still zero sorries.
+
+### Status heading into any submission
+
+- Math content: complete, verified by Lean kernel.
+- Prose content: complete but should have an independent human
+  reader before submission — *my* recommendation to the author.
+- Attribution: now precise (ideas ↔ author, execution ↔ Claude).
+- Prior-work delineation: concrete and honest.
+- Venue: open. Author's call.
