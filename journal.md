@@ -2033,3 +2033,103 @@ preference, now in memory) and ran everything through it.
 **Total commits today:** 21 since `7d6c248`. Sorry count: 9 → 0.
 §4 and §5 complete. Appendix A complete. Manuscript 8 → 13 pages.
 Formalization zero-sorry and audit-clean.
+
+## 2026-04-20 — Late-night polish
+
+After §5 and Appendix A were in, a few small corrections and a
+summary-entry-point were added.
+
+### Manuscript polish (commit `6ea91bf`)
+
+Four edits, all flagged by the author:
+
+1. **Authorship note**, inserted between §1 and §1.1: the
+   mathematical text, numerical code, and full Lean formalization
+   were produced by Claude Opus 4.7 in conversation with the
+   author, with a hyperlink to
+   [`journal.md`](https://github.com/pfaffelh/coins/blob/main/journal.md).
+2. **Outline extended** to describe §5 (numerical experiments,
+   local maxima) and Appendix A (formal-verification map).
+3. **Forward link to §5** added at the top of §4 alongside the
+   existing van Doorn citation.
+4. **Δ at $n=0$ inconsistency fixed.** Previously the text said
+   "By Theorem 2.1, $\Delta_{n,1/2}=0$ for all $n$" — but
+   Proposition 4.2 gives $\Delta_{0,p}=-\tfrac12$. At $p=1/2,
+   n=0$ these conflict. The correct statement (matching the Lean
+   convention $w_{0,p}:=1$ = "trivial win with no coins") is
+   $\Delta_{n,1/2}=0$ for $n\ge 1$, and $\Delta_{0,p}=-\tfrac12$
+   for every $p$. Added this as a clarifying paragraph after
+   Definition 4.1 with a forward reference to Proposition 4.2.
+
+PDF remains 13 pages.
+
+### `CoinsLean.Summary` — a one-page entry point
+
+At the author's request, created
+`CoinsLean/CoinsLean/Summary.lean` — a file that does nothing but
+display the paper's main objects, using only `#check` (types),
+`#print` (definition bodies), and `#print axioms`.
+
+First cut (commit `5f96ea5`): signatures + axioms only. Output:
+
+```
+w : ℝ → ℕ → ℝ
+deficit : ℝ → ℕ → ℝ
+c : ℕ → ℝ
+c_limit_exists : ∃ L, Filter.Tendsto ... (nhds L)
+c_limit_formula : ∀ n₀, 7 ≤ n₀ → ∃ L, Tendsto ∧ L = c(n₀-1)·∏' + ∑'·∏'
+deficit_first_order : ∀ n, 1 ≤ n → ∃ M δ₀, ...
+w_gap_first_order, w_local_min_at_five, no_first_order_local_max
+'...' depends on axioms: [propext, Classical.choice, Quot.sound]  ×6
+```
+
+Second cut (commit `72432c9`): added the **source** of each
+definition as a block comment above the `#print`. The motivation:
+Lean's `#print` elaborates to `WellFounded.Nat.fix` with an
+`InvImage` comparator, which obscures the pattern-matched structure
+a reader actually wants to see. Showing the original:
+
+```
+noncomputable def w (p : ℝ) : ℕ → ℝ
+  | 0     => 1
+  | n + 1 => p^(n+1) + ∑ j ∈ (Ico 1 (n+1)).attach,
+               C(n+1, j.val) · p^(n+1-j.val) · (1-p)^j.val ·
+                 (Ico j.val (n+1)).attach.sup' _ (fun m => w p m.val)
+```
+
+gives a human-readable picture, while the `#print` underneath
+**proves** (via the Lean kernel) that the source really does
+elaborate to that thing. The Summary file is added to
+`CoinsLean.lean`'s root imports so `lake build` exercises it.
+
+### Design discussion: `UnitInterval` for `p`?
+
+Author asked whether using `Set.UnitInterval` for the probability
+`p` would have simplified the development. Short answer: **no**.
+Longer answer (captured in the conversation):
+
+- Only ~12 lines of hypotheses (`hp_pos`, `hp_lt_one`) would be
+  saved by encoding `p ∈ (0,1)` in the type.
+- Against that: every polynomial manipulation (dozens of uses of
+  `ring`, `nlinarith`, `geom_sum₂_mul`, `add_pow`, `abs_sub`,
+  `pow_le_one`, `Real.multipliable_one_add_of_summable`,
+  `tendsto_tsum_of_dominated_convergence`) is stated over ℝ.
+  `UnitInterval` is not a ring and would require `.val`/`.property`
+  plumbing at every step.
+- Core objects fall outside `[0,1]`: `deficit ≥ 0` only for
+  $p \le 1/2$; `c_n > 1` for $n \ge 2$; `(1/2 + δ)` is used
+  constantly but is not an `UnitInterval` element.
+
+Conclusion: ℝ + hypothesis is the right abstraction here. No
+changes made — the question was informational.
+
+### End-of-late-session tally
+
+**Extra commits (3):** `6ea91bf` (manuscript polish),
+`5f96ea5` (Summary.lean v1), `72432c9` (Summary.lean v2 with
+source comments).
+
+**Manuscript:** still 13 pages.
+**Formalization:** 8257 Lean jobs, zero sorries, zero custom
+axioms, builds green, covered by Summary.lean.
+**Repository state** at commit `72432c9` on `main`, pushed.
