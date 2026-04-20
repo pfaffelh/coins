@@ -71,13 +71,27 @@ The mathematical text, the numerical code
 (\texttt{simulation/}), and the complete Lean~4/Mathlib
 formalization in this paper were produced by Anthropic's Claude
 (versions Opus~4.6 and Opus~4.7), interactively, in conversations
-with the author.  Individual proof steps, design choices, problem
-selection, and the structure of the manuscript were decided
-through back-and-forth dialogue: the author provided mathematical
-guidance and acted as reviewer, while Claude drafted text, proposed
-and revised proofs, debugged Lean errors, and produced the
-numerical scripts.  A full transcript with commit-by-commit
-commentary is available at
+with the author.  To be precise about attribution: the underlying
+mathematical ideas, the selection of the research question
+(alternative objective $w_{n,p}$ vs.\ $v_{n,p}$), the decision to
+carry out a first-order perturbation in $\delta=\tfrac12-p$, the
+structuring of \S\ref{sec:below} as a joint induction, and the
+decision to formally verify the paper are all the author's.
+Claude's role was execution: drafting the exposition from the
+author's outline, proposing and debugging proof tactics in Lean,
+selecting Mathlib lemmas, spotting where a generic approach had to
+be replaced by a case-by-case one (for instance the cubic-bound
+inequality in \S\ref{sec:joint}, or the Tannery-style dominated
+convergence argument in the proof of Theorem~\ref{thm:limit}), and
+producing the numerical scripts.  Individual decisions in both
+categories were settled through back-and-forth dialogue; the
+author reviewed every edit.
+
+This attribution is necessarily imperfect --- many intermediate
+choices (the precise form of an auxiliary lemma, the wording of a
+remark, the numerical examples in \S\ref{sec:numerics}) straddle
+the two roles.  Readers who want the full record can consult a
+prompt-by-prompt transcript at
 \href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}};
 a more granular development history of the formalization appears
 in Appendix~\ref{app:lean}.  Any remaining errors are the author's
