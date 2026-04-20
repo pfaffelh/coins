@@ -2155,6 +2155,44 @@ private lemma binom_weight_perturb (n j : ℕ) (hj1 : 1 ≤ j) (hjn : j ≤ n - 
         (Nat.choose n j : ℝ) / (2 : ℝ) ^ n| ≤ M * δ := by
   sorry
 
+/-- Lipschitz of `Finset.inf'`: if `|f m - g m| ≤ K` pointwise, then
+    `|inf' f - inf' g| ≤ K`. -/
+private lemma finset_inf'_lipschitz {β : Type*} {s : Finset β} (hs : s.Nonempty)
+    (f g : β → ℝ) (K : ℝ) (h : ∀ m ∈ s, |f m - g m| ≤ K) :
+    |s.inf' hs f - s.inf' hs g| ≤ K := by
+  rw [abs_le]
+  refine ⟨?_, ?_⟩
+  · -- -K ≤ inf' f - inf' g, i.e., inf' g - K ≤ inf' f.
+    rw [neg_le, neg_sub]
+    -- Goal: inf' g - inf' f ≤ K, equivalently inf' g ≤ inf' f + K.
+    obtain ⟨m, hm, h_eq⟩ := Finset.exists_mem_eq_inf' hs f
+    have h_bd := h m hm
+    rw [abs_le] at h_bd
+    have h_g_le : s.inf' hs g ≤ g m := Finset.inf'_le _ hm
+    linarith
+  · -- inf' f - inf' g ≤ K.
+    obtain ⟨m, hm, h_eq⟩ := Finset.exists_mem_eq_inf' hs g
+    have h_bd := h m hm
+    rw [abs_le] at h_bd
+    have h_f_le : s.inf' hs f ≤ f m := Finset.inf'_le _ hm
+    linarith
+
+/-- Scalar multiplication and `Finset.inf'`: for `δ > 0`,
+    `(s.inf' H f) * δ = s.inf' H (fun m => f m * δ)`. -/
+private lemma finset_inf'_mul_pos {β : Type*} {s : Finset β} (hs : s.Nonempty)
+    (f : β → ℝ) {δ : ℝ} (hδ : 0 < δ) :
+    s.inf' hs f * δ = s.inf' hs (fun m => f m * δ) := by
+  apply le_antisymm
+  · apply Finset.le_inf'
+    intro m hm
+    have h := Finset.inf'_le f hm
+    exact mul_le_mul_of_nonneg_right h (le_of_lt hδ)
+  · obtain ⟨m₀, hm₀, h_eq⟩ := Finset.exists_mem_eq_inf' hs f
+    -- s.inf' hs f = f m₀.
+    rw [h_eq]
+    -- Goal: s.inf' hs (fun m => f m * δ) ≤ f m₀ * δ.
+    exact Finset.inf'_le (fun m => f m * δ) hm₀
+
 /-- Sub-lemma 3: Suffix-min perturbation under the IH. -/
 private lemma suffMinDelta_first_order (n j : ℕ) (hn : 2 ≤ n) (hj : 1 ≤ j) (hjn : j < n)
     (h_ih : ∀ m, 1 ≤ m → m < n →
@@ -2162,7 +2200,51 @@ private lemma suffMinDelta_first_order (n j : ℕ) (hn : 2 ≤ n) (hj : 1 ≤ j)
         |deficit (1/2 - δ) m - c m * δ| ≤ M * δ ^ 2) :
     ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
       |suffMinDelta (1/2 - δ) j n - suffMin j n * δ| ≤ M * δ ^ 2 := by
-  sorry
+  -- Extract IH data per m ∈ [j, n).
+  have hmem_props : ∀ m, m ∈ Finset.Ico j n → 1 ≤ m ∧ m < n := by
+    intro m hm
+    have := Finset.mem_Ico.mp hm
+    exact ⟨by omega, this.2⟩
+  choose! M_fn δ_fn hM_data using
+    fun m (hm : m ∈ Finset.Ico j n) => h_ih m (hmem_props m hm).1 (hmem_props m hm).2
+  have h_ne : (Finset.Ico j n).Nonempty := ⟨j, Finset.mem_Ico.mpr ⟨le_refl _, hjn⟩⟩
+  have h_ne_att : (Finset.Ico j n).attach.Nonempty := ⟨⟨j, Finset.mem_Ico.mpr ⟨le_refl _, hjn⟩⟩,
+    Finset.mem_attach _ _⟩
+  set M_max : ℝ := (Finset.Ico j n).attach.sup' h_ne_att (fun m => M_fn m.val) with hM_def
+  set δ_min : ℝ := (Finset.Ico j n).attach.inf' h_ne_att (fun m => δ_fn m.val) with hδ_def
+  have hδ_min_pos : 0 < δ_min := by
+    rw [hδ_def]
+    obtain ⟨m₀, _, h_eq⟩ :=
+      Finset.exists_mem_eq_inf' h_ne_att (fun m : {x // x ∈ Finset.Ico j n} => δ_fn m.val)
+    rw [h_eq]
+    exact (hM_data m₀.val m₀.property).1
+  refine ⟨M_max, δ_min, hδ_min_pos, ?_⟩
+  intro δ hδ_pos hδ_lt
+  -- Each m's bound applies for this δ.
+  have h_per_m : ∀ m ∈ (Finset.Ico j n).attach,
+      |deficit (1 / 2 - δ) m.val - c m.val * δ| ≤ M_max * δ ^ 2 := by
+    intro m hm_att
+    have hδ_m : δ < δ_fn m.val := by
+      have h_le : δ_min ≤ δ_fn m.val :=
+        Finset.inf'_le (fun m : {x // x ∈ Finset.Ico j n} => δ_fn m.val) hm_att
+      linarith
+    have h_bound : |deficit (1 / 2 - δ) m.val - c m.val * δ| ≤ M_fn m.val * δ ^ 2 :=
+      (hM_data m.val m.property).2 δ hδ_pos hδ_m
+    have h_M_le : M_fn m.val ≤ M_max := by
+      rw [hM_def]
+      exact Finset.le_sup' (fun m : {x // x ∈ Finset.Ico j n} => M_fn m.val) hm_att
+    have h_δ_sq_nn : (0 : ℝ) ≤ δ ^ 2 := sq_nonneg δ
+    calc |deficit (1 / 2 - δ) m.val - c m.val * δ|
+        ≤ M_fn m.val * δ ^ 2 := h_bound
+      _ ≤ M_max * δ ^ 2 := mul_le_mul_of_nonneg_right h_M_le h_δ_sq_nn
+  -- Unfold the min definitions.
+  unfold suffMinDelta suffMin
+  rw [dif_pos hjn, dif_pos hjn]
+  -- Goal: |inf' (deficit (1/2-δ) m) - inf' (c m) · δ| ≤ M_max · δ².
+  -- Move δ inside inf'.
+  rw [finset_inf'_mul_pos _ _ hδ_pos]
+  -- Goal: |inf' (deficit (1/2-δ) m) - inf' (c m · δ)| ≤ M_max · δ².
+  exact finset_inf'_lipschitz _ _ _ (M_max * δ ^ 2) h_per_m
 
 /-- Proposition 4.4 (first-order coefficient): `c n` is the first-order
     coefficient of `Δ_{n, 1/2 - δ}` as `δ → 0⁺`.
