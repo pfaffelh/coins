@@ -66,6 +66,20 @@
 \section{Introduction}\label{sec:intro}
 %% ====================================================================
 
+\paragraph{A note on authorship.}
+The mathematical text, the numerical code
+(\texttt{simulation/}), and the complete Lean~4/Mathlib
+formalization in this paper were produced by Anthropic's
+Claude~Opus~4.7, interactively, in conversations with the author.
+Individual proof steps, design choices, and the structure of the
+manuscript were decided through back-and-forth dialogue in which
+the author provided guidance and Claude proposed, drafted, and
+revised text and proofs.  A full transcript of the conversation
+(with commit-by-commit commentary) is available at
+\href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}}
+in the repository.  Any errors that remain are the author's
+responsibility.
+
 \subsection{The game}
 
 Fix a probability $p\in(0,1)$ and a positive integer~$n$.  A player
@@ -174,6 +188,14 @@ near~$\tfrac12$: we introduce a first-order perturbation in
 $\delta=\tfrac12-p$, derive a recursion for the leading
 coefficient~$c_n$, prove that it simplifies to a linear recursion for
 $n\ge 7$, and compute the limit $L=\lim c_n$.
+Section~\ref{sec:numerics} complements the first-order analysis with
+numerical experiments that illustrate the shape of
+$n\mapsto w_{n,p}$ away from $p=\tfrac12$, including the emergence
+of local maxima for $p$ bounded away from~$\tfrac12$
+(invisible in the first-order expansion).  Appendix~\ref{app:lean}
+describes the formal verification of all results in Lean~4 and
+provides a line-level map between the manuscript and the
+formalization on GitHub.
 
 %% ====================================================================
 \section{The fair coin: \texorpdfstring{$p=\tfrac12$}{p = 1/2}}
@@ -286,9 +308,10 @@ $n\ge 7$, and compute the limit $L=\lim c_n$.
 %% ====================================================================
 
 For $p<\tfrac12$ the structure of $n\mapsto w_{n,p}$ is far richer:
-numerical experiments show that the sequence develops local minima and
-maxima, and the optimal strategy is neither~\One{} nor~\All{} in
-general; see \cite{vanDoorn2024}, Section~10.
+numerical experiments show that the sequence develops local minima
+and maxima, and the optimal strategy is neither~\One{}
+nor~\All{} in general; see \cite{vanDoorn2024}, Section~10, and
+Section~\ref{sec:numerics} of the present paper for illustrations.
 
 To get analytical traction, we study the regime
 $p=\tfrac12-\delta$ with $\delta>0$ small.
@@ -301,7 +324,10 @@ $p=\tfrac12-\delta$ with $\delta>0$ small.
   $\Delta_{n,p}:=\tfrac12-w_{n,p}$.
 \end{definition}
 
-By Theorem~\ref{thm:half}, $\Delta_{n,1/2}=0$ for all~$n$.
+By Theorem~\ref{thm:half}, $\Delta_{n,1/2}=0$ for every $n\ge 1$.
+At $n=0$ the convention $w_{0,p}:=1$ (``no coins left'' is a
+trivial win) yields $\Delta_{0,p}=-\tfrac12$ for every~$p$; this
+value will reappear in Proposition~\ref{prop:delta-rec}.
 
 \begin{proposition}\label{prop:delta-rec}
   The deficit satisfies
