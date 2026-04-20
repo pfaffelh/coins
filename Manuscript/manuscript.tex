@@ -69,15 +69,18 @@
 \paragraph{A note on authorship.}
 The mathematical text, the numerical code
 (\texttt{simulation/}), and the complete Lean~4/Mathlib
-formalization in this paper were produced by Anthropic's
-Claude~Opus~4.7, interactively, in conversations with the author.
-Individual proof steps, design choices, and the structure of the
-manuscript were decided through back-and-forth dialogue in which
-the author provided guidance and Claude proposed, drafted, and
-revised text and proofs.  A full transcript of the conversation
-(with commit-by-commit commentary) is available at
-\href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}}
-in the repository.  Any errors that remain are the author's
+formalization in this paper were produced by Anthropic's Claude
+(versions Opus~4.6 and Opus~4.7), interactively, in conversations
+with the author.  Individual proof steps, design choices, problem
+selection, and the structure of the manuscript were decided
+through back-and-forth dialogue: the author provided mathematical
+guidance and acted as reviewer, while Claude drafted text, proposed
+and revised proofs, debugged Lean errors, and produced the
+numerical scripts.  A full transcript with commit-by-commit
+commentary is available at
+\href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}};
+a more granular development history of the formalization appears
+in Appendix~\ref{app:lean}.  Any remaining errors are the author's
 responsibility.
 
 \subsection{The game}
@@ -108,11 +111,51 @@ possible for future rounds, betting that the one set-aside coin has
 already ``done its job.''  Strategy~\All{} is greedy: it cashes in
 every success immediately.  Neither is universally optimal.
 
-A variant of this game, in which the objective is to maximise the
-expected number of heads collected rather than the probability of
-collecting all of them, was introduced and studied by van~Doorn
-\cite{vanDoorn2024}.  The all-heads-wins formulation studied here
-leads to a richer structural picture.
+\paragraph{Relation to prior work.}
+A close variant of this game was introduced and studied
+by~van~Doorn~\cite{vanDoorn2024}, who took as objective the
+\emph{expected number of heads} collected, $v_{n,p}$, rather than
+the all-heads-wins probability $w_{n,p}$ studied here.  Van~Doorn's
+analysis is essentially complete for $p\ge\tfrac12$: he proves
+that there exist absolute constants $\phi=(\sqrt5-1)/2\approx
+0.618$ and $p_0\approx 0.5495$ such that the optimal strategy
+follows~\One{} (in his notation, ``A'') for $p\ge\phi$, switches
+between~\One{} and~\All{} at a level $n(p)$ for $p_0<p<\phi$, and
+follows~\All{} (``B'') throughout for $\tfrac12\le p\le p_0$.  For
+$p<\tfrac12$, however, van~Doorn writes that ``everything is a lot
+less clear'' and restricts himself to numerical conjectures and a
+non-monotonicity result.
+
+The present paper makes two changes in emphasis.  First, the
+objective: maximising the all-heads probability $w_{n,p}$ rather
+than the expected count $v_{n,p}$.  This change of objective was
+suggested by the present author to van~Doorn (acknowledged
+in~\cite[\S 11]{vanDoorn2024}); the resulting structure is, in our
+view, more transparent.  In particular, for $p>\tfrac12$ the
+strategy~\One{} is always optimal --- a fact noted in passing
+in~\cite[\S 10]{vanDoorn2024} and proved here in
+Theorem~\ref{thm:above} below with a self-contained joint
+induction.  Second, and more importantly, our focus is the regime
+$p<\tfrac12$ that van~Doorn explicitly leaves open.  We carry out
+a first-order perturbation in $\delta=\tfrac12-p$ and obtain a
+\emph{closed-form description} of the leading behaviour: the
+deficit coefficient $c_n$ satisfies a linear recursion
+(Proposition~\ref{prop:linear}), the limit $L=\lim c_n$ admits an
+explicit formula and a numerical value $L\approx
+1.70347176\dots$ (Theorem~\ref{thm:limit}), and the local-extremum
+structure of $n\mapsto w_{n,p}$ is fully determined to first order
+(Corollary~\ref{cor:shape}).
+
+A third, methodological, change concerns formal verification.
+Van~Doorn already credits Breitner with starting a formal
+verification of \cite[Lemma 6]{vanDoorn2024} and providing the
+first proof.  We take this thread further: every numbered result
+of the present paper --- including the perturbation analysis of
+\S\ref{sec:below} --- has been formally verified in Lean~4 using
+the Mathlib library, with no \texttt{sorry}s, no custom axioms,
+and no \texttt{native\_decide} or \texttt{unsafe} blocks.  A
+line-by-line correspondence between the manuscript and the formal
+proofs is provided in Appendix~\ref{app:lean}.
 
 \subsection{Markov decision processes and the Bellman equation}
 
