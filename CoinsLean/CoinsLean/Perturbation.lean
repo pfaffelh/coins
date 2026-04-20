@@ -1612,6 +1612,37 @@ private lemma c_iterate (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
     rw [h_prod_eq, h_sum_eq, h_rec, ih]
     ring
 
+/-- Summability of B_lin over all of ℕ. -/
+private lemma summable_B_lin : Summable B_lin := by
+  apply summable_of_sum_range_le (c := ∑ k ∈ Finset.range 13, B_lin k + 1/8)
+  · intro i; unfold B_lin; positivity
+  · intro N
+    rcases Nat.lt_or_ge N 13 with hN | hN
+    · -- N ≤ 13: finite sum bounded by the full sum up to 13, plus 1/8.
+      have h_sub : Finset.range N ⊆ Finset.range 13 := by
+        intro x hx
+        simp only [Finset.mem_range] at hx ⊢
+        omega
+      calc ∑ k ∈ Finset.range N, B_lin k
+          ≤ ∑ k ∈ Finset.range 13, B_lin k := by
+            apply Finset.sum_le_sum_of_subset_of_nonneg h_sub
+            intro i _ _; unfold B_lin; positivity
+        _ ≤ ∑ k ∈ Finset.range 13, B_lin k + 1 / 8 := by norm_num
+    · -- N ≥ 13: split at 13, use B_tail_bound on the second piece.
+      have h_split : Finset.range N = Finset.range 13 ∪ Finset.Ico 13 N := by
+        ext x
+        simp only [Finset.mem_range, Finset.mem_Ico, Finset.mem_union]
+        omega
+      have h_disj : Disjoint (Finset.range 13) (Finset.Ico 13 N) := by
+        rw [Finset.disjoint_left]
+        intro a h1 h2
+        simp [Finset.mem_range] at h1
+        simp [Finset.mem_Ico] at h2
+        omega
+      rw [h_split, Finset.sum_union h_disj]
+      have h_tail := B_tail_bound N
+      linarith
+
 /-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
     `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
     (Convergence at geometric rate from `A_n, B_n = O(n³ / 2^n)`.)
@@ -1619,9 +1650,10 @@ private lemma c_iterate (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
     Status: the finite iteration identity (`c_iterate`) is proved. The step to
     the infinite formula requires `Multipliable` of `(1 - B_m)_{m ≥ n₀}` and
     `Summable` of `A_k · ∏_{m>k} (1-B_m)`. Both follow from the summability
-    `∑ B_m < ∞` (from `B_tail_bound`) and `∑ A_m < ∞` (analogous to `B_tail_bound`),
-    but the Mathlib plumbing of `tprod` and `HasProd` is ~150 lines.
-    The existence of the limit is already established by `c_limit_exists`. -/
+    `∑ B_m < ∞` (now established via `summable_B_lin`) and `∑ A_m < ∞`,
+    but the Mathlib plumbing of `tprod` and `HasProd` over subtypes is
+    substantial. The existence of the limit is already established by
+    `c_limit_exists`. -/
 theorem c_limit_formula (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
     ∃ L : ℝ, Filter.Tendsto (fun n => c n) Filter.atTop (nhds L) ∧
       L = c (n₀ - 1) * ∏' m : {m : ℕ // n₀ ≤ m}, (1 - B_lin m) +
