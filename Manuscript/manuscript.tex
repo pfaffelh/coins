@@ -535,12 +535,51 @@ $<n$ supplying exactly what is needed at level~$n$.
 \end{theorem}
 
 \begin{proof}
-  From \eqref{eq:cn-linear}, $c_n=A_n+(1-B_n)c_{n-1}$.  Since
-  $B_n>0$ and $A_n>0$ for all~$n$, and $(c_n)$ is eventually
-  decreasing and bounded below (by Lemma~\ref{lem:lower}), the limit
-  exists.  Iterating the recursion from $n=n_0$ and taking
-  $n\to\infty$ yields~\eqref{eq:L-formula}; the rate follows from
-  $B_n=O(n^3/2^n)$.
+  \emph{Existence.}  By Lemmas~\ref{lem:lower}
+  and~\ref{lem:decreasing}, $(c_n)_{n\ge 5}$ is strictly decreasing
+  and bounded below by $\tfrac{27}{16}$, hence
+  $L:=\lim_{n\to\infty}c_n$ exists.
+
+  \emph{Explicit form.}  Fix $n_0\ge 7$.  Iterating the linear
+  recursion~\eqref{eq:cn-linear} from $n_0$ up to~$n$ yields, for
+  every $n\ge n_0$,
+  \begin{equation}\label{eq:cn-finite-iter}
+    c_n \;=\; c_{n_0-1}\prod_{m=n_0}^n(1-B_m)
+        \;+\; \sum_{k=n_0}^n A_k\prod_{m=k+1}^n(1-B_m).
+  \end{equation}
+  We pass to the limit $n\to\infty$ in each summand.
+
+  \emph{Step 1 (infinite product).}  Since $B_m=O(m^3/2^m)$, the
+  series $\sum_{m\ge n_0}B_m$ converges absolutely.  Because
+  $0<B_m<1$ for all $m\ge 7$ (shown in the proof of
+  Lemma~\ref{lem:lower}), the partial products
+  $\prod_{m=n_0}^n(1-B_m)$ converge as $n\to\infty$ to a strictly
+  positive limit $\prod_{m\ge n_0}(1-B_m)$; cf.\ Knopp
+  \cite[§29]{Knopp1990}.
+
+  \emph{Step 2 (series of products).}  For each fixed $k\ge n_0$
+  the same argument gives
+  $\prod_{m=k+1}^n(1-B_m)\to\prod_{m>k}(1-B_m)$ as $n\to\infty$.
+  Moreover every factor lies in $(0,1)$, so each finite product
+  lies in $(0,1]$, and
+  \begin{equation}\label{eq:series-dominate}
+    \Bigl|A_k\prod_{m=k+1}^n(1-B_m)\Bigr|\;\le\;|A_k|
+    \qquad(n\ge k).
+  \end{equation}
+  Since $A_k=O(k^3/2^k)$, the series $\sum_{k\ge n_0}|A_k|$
+  converges.  The bound~\eqref{eq:series-dominate} therefore supplies
+  a summable dominant, so by Tannery's theorem — the dominated
+  convergence theorem for series, see Knopp~\cite[§41]{Knopp1990} —
+  limit and summation commute:
+  \[
+    \lim_{n\to\infty}\sum_{k=n_0}^n A_k\prod_{m=k+1}^n(1-B_m)
+    \;=\; \sum_{k\ge n_0}A_k\prod_{m>k}(1-B_m).
+  \]
+
+  \emph{Conclusion.}  Taking $n\to\infty$ in~\eqref{eq:cn-finite-iter}
+  and using Steps~1 and~2 gives~\eqref{eq:L-formula}.  Both the
+  product and the series converge at geometric rate
+  since $A_n,B_n=O(n^3/2^n)$.
 \end{proof}
 
 \subsection{Shape of the optimal-value sequence near
@@ -592,6 +631,13 @@ $<n$ supplying exactly what is needed at level~$n$.
     Processes},
   McGraw-Hill, New York, 1965;
   reprinted by Dover, 2014.
+
+\bibitem{Knopp1990}
+  K.~Knopp,
+  \emph{Theory and Application of Infinite Series},
+  2nd English ed.,
+  translated from the 4th German ed.,
+  Dover, New York, 1990.
 
 \bibitem{Puterman1994}
   M.~L.~Puterman,
