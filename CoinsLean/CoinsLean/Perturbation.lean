@@ -2514,16 +2514,295 @@ theorem deficit_first_order (n : ℕ) (hn : 1 ≤ n) :
       rw [heq, abs_zero]
       positivity
     | n + 2, _ =>
-      -- Inductive step: combine the three sub-lemmas.
-      -- The structure of the argument:
-      -- Δ_{n+2, p}  =  ((1/2+δ)^(n+2) - (1/2-δ)^(n+2))/2
-      --            +  ∑_{j=1}^{n+1} C(n+2,j) (1/2-δ)^(n+2-j) (1/2+δ)^j ·
-      --                 suffMinDelta (1/2-δ) j (n+2).
-      -- The first term contributes (n+2)·δ/2^(n+1) + O(δ²) (sub-lemma 1).
-      -- Each summand contributes (C(n+2,j)/2^(n+2)) · suffMin j (n+2) · δ + O(δ²)
-      -- (sub-lemmas 2 and 3 together).
-      -- Sum equals c_{n+2} · δ + O(δ²) by definition (c_succ).
-      sorry
+      -- Apply the three sub-lemmas.
+      have hn2 : 2 ≤ n + 2 := by omega
+      -- Sub-lemma 1: Taylor bound for the constant term.
+      obtain ⟨M₁, δ₁, hδ₁_pos, h₁_bound⟩ := constant_term_taylor (n + 2) (by omega)
+      -- For each j ∈ [1, n+2), combine sub-lemmas 2 and 3 into a per-j O(δ²) bound.
+      have h_per_j : ∀ j, 1 ≤ j → j < n + 2 →
+          ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+            |(Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+                suffMinDelta (1/2 - δ) j (n + 2) -
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ|
+              ≤ M * δ ^ 2 := by
+        intro j hj1 hj_lt
+        obtain ⟨M_b, δ_b, hδ_b_pos, h_b⟩ :=
+          binom_weight_perturb (n + 2) j hj1 (by omega : j ≤ n + 2 - 1)
+        obtain ⟨M_s, δ_s, hδ_s_pos, h_s⟩ :=
+          suffMinDelta_first_order (n + 2) j hn2 hj1 hj_lt
+            (fun m hm1 hmlt => ih m hmlt hm1)
+        -- Bound on |suffMin j (n+2)|: ≤ c j (by inf' ≤ elem).
+        have h_suffMin_bd : |suffMin j (n + 2)| ≤ |c j| := by
+          have h_ne_att : (Finset.Ico j (n + 2)).attach.Nonempty :=
+            ⟨⟨j, Finset.mem_Ico.mpr ⟨le_refl _, hj_lt⟩⟩, Finset.mem_attach _ _⟩
+          unfold suffMin
+          rw [dif_pos hj_lt]
+          -- suffMin ≤ c j
+          have h_le : (Finset.Ico j (n + 2)).attach.inf' h_ne_att
+              (fun m => c m.val) ≤ c j := by
+            exact Finset.inf'_le (fun m : {x // x ∈ Finset.Ico j (n + 2)} => c m.val)
+              (Finset.mem_attach _ ⟨j, Finset.mem_Ico.mpr ⟨le_refl _, hj_lt⟩⟩)
+          -- suffMin ≥ 0 (c ≥ 0 for all m).
+          have h_nn : 0 ≤ (Finset.Ico j (n + 2)).attach.inf' h_ne_att
+              (fun m => c m.val) := by
+            apply Finset.le_inf'
+            intro m _
+            have hmr := Finset.mem_Ico.mp m.property
+            exact c_pos m.val (by omega : 1 ≤ m.val) |>.le
+          rw [abs_of_nonneg h_nn]
+          exact h_le.trans (le_abs_self _)
+        -- Decompose via A·B - C·D = A·(B - D) + (A - C)·D.
+        refine ⟨(Nat.choose (n + 2) j : ℝ) * M_s + M_b * |c j|, min δ_b (min δ_s (1/2)),
+          lt_min hδ_b_pos (lt_min hδ_s_pos (by norm_num)), ?_⟩
+        intro δ hδ_pos hδ_lt
+        have hδ_lt_b : δ < δ_b := lt_of_lt_of_le hδ_lt (min_le_left _ _)
+        have hδ_lt_s : δ < δ_s := lt_of_lt_of_le hδ_lt
+          (le_trans (min_le_right _ _) (min_le_left _ _))
+        have hδ_lt_half : δ < 1/2 := lt_of_lt_of_le hδ_lt
+          (le_trans (min_le_right _ _) (min_le_right _ _))
+        have hb := h_b δ hδ_pos hδ_lt_b
+        have hs := h_s δ hδ_pos hδ_lt_s
+        -- Abbreviate:
+        set A : ℝ := (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j with hA_def
+        set C : ℝ := 1 / (2 : ℝ) ^ (n + 2) with hC_def
+        set B : ℝ := suffMinDelta (1/2 - δ) j (n + 2) with hB_def
+        set D : ℝ := suffMin j (n + 2) * δ with hD_def
+        -- Goal: |C(n+2,j) · A · B - (C(n+2,j) / 2^(n+2)) · suffMin · δ| ≤ M · δ².
+        -- Note: (C(n+2,j) / 2^(n+2)) · suffMin · δ = C(n+2,j) · C · D.
+        have h_goal_form :
+            (Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+                suffMinDelta (1/2 - δ) j (n + 2) -
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ =
+            (Nat.choose (n + 2) j : ℝ) * (A * B - C * D) := by
+          rw [hA_def, hB_def, hC_def, hD_def]; ring
+        rw [h_goal_form]
+        rw [abs_mul]
+        have hC_nj_nn : (0 : ℝ) ≤ (Nat.choose (n + 2) j : ℝ) :=
+          by exact_mod_cast Nat.zero_le _
+        rw [abs_of_nonneg hC_nj_nn]
+        -- Goal: C(n+2,j) · |A·B - C·D| ≤ (C(n+2,j) · M_s + M_b · |c j|) · δ².
+        -- Use A·B - C·D = A·(B - D) + (A - C)·D.
+        have h_decomp : A * B - C * D = A * (B - D) + (A - C) * D := by ring
+        rw [h_decomp]
+        -- Bound:
+        --   C(n+2,j) · |A·(B - D) + (A - C)·D|
+        -- ≤ C(n+2,j) · |A| · |B - D| + C(n+2,j) · |A - C| · |D|.
+        have h_A_bound : |A| ≤ 1 := by
+          rw [hA_def, abs_mul, abs_pow, abs_pow]
+          have h1 : |(1/2 - δ : ℝ)| ≤ 1 := by
+            have h_pos : (0 : ℝ) < 1/2 - δ := by linarith
+            rw [abs_of_pos h_pos]; linarith
+          have h2 : |(1/2 + δ : ℝ)| ≤ 1 := by
+            have h_pos : (0 : ℝ) < 1/2 + δ := by linarith
+            rw [abs_of_pos h_pos]; linarith
+          have h1p : |(1/2 - δ : ℝ)| ^ (n + 2 - j) ≤ 1 :=
+            pow_le_one₀ (abs_nonneg _) h1
+          have h2p : |(1/2 + δ : ℝ)| ^ j ≤ 1 :=
+            pow_le_one₀ (abs_nonneg _) h2
+          have h2p_nn : 0 ≤ |(1/2 + δ : ℝ)| ^ j := pow_nonneg (abs_nonneg _) j
+          exact mul_le_one₀ h1p h2p_nn h2p
+        have h_D_eq : |D| = |suffMin j (n + 2)| * δ := by
+          rw [hD_def, abs_mul, abs_of_pos hδ_pos]
+        have h_A_sub_C : |(Nat.choose (n + 2) j : ℝ)| * |A - C| ≤ M_b * δ := by
+          have h_expand : (Nat.choose (n + 2) j : ℝ) * A - (Nat.choose (n + 2) j : ℝ) * C =
+              (Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j -
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) := by
+            rw [hA_def, hC_def]; ring
+          have := hb
+          rw [← h_expand, ← mul_sub, abs_mul] at this
+          exact this
+        have h_triangle : |A * (B - D) + (A - C) * D| ≤ |A| * |B - D| + |A - C| * |D| := by
+          calc |A * (B - D) + (A - C) * D|
+              ≤ |A * (B - D)| + |(A - C) * D| := abs_add_le _ _
+            _ = |A| * |B - D| + |A - C| * |D| := by simp only [abs_mul]
+        have h_nn_cnj : (0 : ℝ) ≤ (Nat.choose (n + 2) j : ℝ) := hC_nj_nn
+        have h_mul_bound :
+            (Nat.choose (n + 2) j : ℝ) * (|A| * |B - D| + |A - C| * |D|) ≤
+            (Nat.choose (n + 2) j : ℝ) * (1 * (M_s * δ^2)) +
+            M_b * δ * (|suffMin j (n + 2)| * δ) := by
+          have h_A_BD : (Nat.choose (n + 2) j : ℝ) * (|A| * |B - D|) ≤
+              (Nat.choose (n + 2) j : ℝ) * (1 * (M_s * δ^2)) := by
+            apply mul_le_mul_of_nonneg_left _ h_nn_cnj
+            apply mul_le_mul h_A_bound hs (abs_nonneg _) (by norm_num)
+          have h_AC_D : (Nat.choose (n + 2) j : ℝ) * (|A - C| * |D|) ≤
+              M_b * δ * (|suffMin j (n + 2)| * δ) := by
+            rw [h_D_eq, ← mul_assoc]
+            have h_abs_nj : |(Nat.choose (n + 2) j : ℝ)| = (Nat.choose (n + 2) j : ℝ) :=
+              abs_of_nonneg h_nn_cnj
+            calc (Nat.choose (n + 2) j : ℝ) * |A - C| * (|suffMin j (n + 2)| * δ)
+                = (|(Nat.choose (n + 2) j : ℝ)| * |A - C|) * (|suffMin j (n + 2)| * δ) := by
+                  rw [h_abs_nj]
+              _ ≤ (M_b * δ) * (|suffMin j (n + 2)| * δ) := by
+                  apply mul_le_mul_of_nonneg_right h_A_sub_C
+                  exact mul_nonneg (abs_nonneg _) (le_of_lt hδ_pos)
+              _ = M_b * δ * (|suffMin j (n + 2)| * δ) := by ring
+          have h_combine : (Nat.choose (n + 2) j : ℝ) * (|A| * |B - D| + |A - C| * |D|) =
+              (Nat.choose (n + 2) j : ℝ) * (|A| * |B - D|) +
+              (Nat.choose (n + 2) j : ℝ) * (|A - C| * |D|) := by ring
+          rw [h_combine]
+          linarith
+        -- Final bound combining.
+        have h_final : (Nat.choose (n + 2) j : ℝ) * (1 * (M_s * δ ^ 2)) +
+              M_b * δ * (|suffMin j (n + 2)| * δ) ≤
+            ((Nat.choose (n + 2) j : ℝ) * M_s + M_b * |c j|) * δ ^ 2 := by
+          have h_p1 : (Nat.choose (n + 2) j : ℝ) * (1 * (M_s * δ ^ 2)) =
+              (Nat.choose (n + 2) j : ℝ) * M_s * δ ^ 2 := by ring
+          have h_p2 : M_b * δ * (|suffMin j (n + 2)| * δ) =
+              M_b * |suffMin j (n + 2)| * δ ^ 2 := by ring
+          rw [h_p1, h_p2]
+          have h_sfM_le_c : M_b * |suffMin j (n + 2)| * δ ^ 2 ≤ M_b * |c j| * δ ^ 2 := by
+            have h_δ_sq_nn : (0 : ℝ) ≤ δ ^ 2 := sq_nonneg δ
+            -- need M_b ≥ 0: from binom_weight_perturb M_b := C(n+2,j)·(n+2), non-neg.
+            have h_Mb_nn : 0 ≤ M_b := by
+              -- h_b holds for all δ ∈ (0, δ_b), and |...| ≥ 0, so M_b must be ≥ 0.
+              -- Alternative: pick δ small, e.g., δ = δ_b/2.
+              by_contra h_neg
+              push_neg at h_neg
+              have hδ_small : (0 : ℝ) < δ_b / 2 := by linarith
+              have hδ_small_lt : δ_b / 2 < δ_b := by linarith
+              have := h_b (δ_b / 2) hδ_small hδ_small_lt
+              have h_abs_nn : 0 ≤ |(Nat.choose (n + 2) j : ℝ) *
+                  (1/2 - δ_b / 2) ^ (n + 2 - j) * (1/2 + δ_b / 2) ^ j -
+                  (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2)| := abs_nonneg _
+              have : M_b * (δ_b / 2) < 0 := by
+                have : 0 < δ_b / 2 := hδ_small
+                nlinarith [h_neg]
+              linarith
+            have h_base : M_b * |suffMin j (n + 2)| ≤ M_b * |c j| :=
+              mul_le_mul_of_nonneg_left h_suffMin_bd h_Mb_nn
+            exact mul_le_mul_of_nonneg_right h_base h_δ_sq_nn
+          linarith
+        calc (Nat.choose (n + 2) j : ℝ) * |A * (B - D) + (A - C) * D|
+            ≤ (Nat.choose (n + 2) j : ℝ) * (|A| * |B - D| + |A - C| * |D|) :=
+              mul_le_mul_of_nonneg_left h_triangle h_nn_cnj
+          _ ≤ (Nat.choose (n + 2) j : ℝ) * (1 * (M_s * δ ^ 2)) +
+              M_b * δ * (|suffMin j (n + 2)| * δ) := h_mul_bound
+          _ ≤ ((Nat.choose (n + 2) j : ℝ) * M_s + M_b * |c j|) * δ ^ 2 := h_final
+      -- Extract per-j data.
+      choose! M_fn δ_fn hM_data using h_per_j
+      -- Set global M and δ₀.
+      -- Sum over j ∈ [1, n+2) for M, min for δ.
+      set M_sum : ℝ := ∑ j ∈ Finset.Ico 1 (n + 2), M_fn j with hM_sum_def
+      have h_Ico_ne : (Finset.Ico 1 (n + 2)).Nonempty := ⟨1, Finset.mem_Ico.mpr ⟨le_refl _, by omega⟩⟩
+      have h_Ico_attach_ne : (Finset.Ico 1 (n + 2)).attach.Nonempty :=
+        ⟨⟨1, Finset.mem_Ico.mpr ⟨le_refl _, by omega⟩⟩, Finset.mem_attach _ _⟩
+      set δ_j_min : ℝ := (Finset.Ico 1 (n + 2)).attach.inf' h_Ico_attach_ne
+        (fun j => δ_fn j.val) with hδ_j_min_def
+      have hδ_j_min_pos : 0 < δ_j_min := by
+        rw [hδ_j_min_def]
+        obtain ⟨j₀, _, h_eq⟩ :=
+          Finset.exists_mem_eq_inf' h_Ico_attach_ne
+            (fun j : {x // x ∈ Finset.Ico 1 (n + 2)} => δ_fn j.val)
+        rw [h_eq]
+        have hj₀ := Finset.mem_Ico.mp j₀.property
+        exact (hM_data j₀.val hj₀.1 hj₀.2).1
+      refine ⟨M₁ + M_sum, min δ₁ δ_j_min, lt_min hδ₁_pos hδ_j_min_pos, ?_⟩
+      intro δ hδ_pos hδ_lt
+      have hδ_lt₁ : δ < δ₁ := lt_of_lt_of_le hδ_lt (min_le_left _ _)
+      have hδ_lt_j : δ < δ_j_min := lt_of_lt_of_le hδ_lt (min_le_right _ _)
+      -- Apply deficit_succ'.
+      rw [show deficit (1 / 2 - δ) (n + 2) =
+            ((1 - (1/2 - δ)) ^ (n + 2) - (1/2 - δ) ^ (n + 2)) / 2 +
+              ∑ j ∈ Finset.Ico 1 (n + 2),
+                (Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) *
+                  (1 - (1/2 - δ)) ^ j * suffMinDelta (1/2 - δ) j (n + 2) from
+          deficit_succ' (1/2 - δ) (n + 1)]
+      rw [show (1 - (1/2 - δ) : ℝ) = 1/2 + δ from by ring]
+      -- Apply c_succ.
+      rw [show c (n + 2) =
+            ((n + 2 : ℕ) : ℝ) / (2 : ℝ) ^ (n + 1) +
+              (1 / (2 : ℝ) ^ (n + 2)) *
+              ∑ j ∈ Finset.Ico 1 (n + 2),
+                (Nat.choose (n + 2) j : ℝ) * suffMin j (n + 2) from c_succ n]
+      -- Rewrite: (a + ∑ fⱼ) - ((b + c·∑ gⱼ)·δ) = (a - b·δ) + (∑ fⱼ - c·δ·∑ gⱼ)
+      --                                       = (a - b·δ) + ∑ (fⱼ - c·gⱼ·δ).
+      have h_expand_rhs : (((n + 2 : ℕ) : ℝ) / (2 : ℝ) ^ (n + 1) +
+              1 / (2 : ℝ) ^ (n + 2) *
+                ∑ j ∈ Finset.Ico 1 (n + 2),
+                  (Nat.choose (n + 2) j : ℝ) * suffMin j (n + 2)) * δ =
+            ((n + 2 : ℕ) : ℝ) * δ / (2 : ℝ) ^ (n + 1) +
+            ∑ j ∈ Finset.Ico 1 (n + 2),
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) *
+                suffMin j (n + 2) * δ := by
+        have h_factor : (∑ j ∈ Finset.Ico 1 (n + 2),
+            (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ) =
+            δ * (1 / (2 : ℝ) ^ (n + 2) *
+              ∑ j ∈ Finset.Ico 1 (n + 2),
+                (Nat.choose (n + 2) j : ℝ) * suffMin j (n + 2)) := by
+          rw [Finset.mul_sum, Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intros j _
+          ring
+        rw [h_factor]
+        ring
+      rw [h_expand_rhs]
+      -- Now split into the two bounds.
+      have h_diff_eq :
+          ((1/2 + δ : ℝ) ^ (n + 2) - (1/2 - δ) ^ (n + 2)) / 2 +
+              ∑ j ∈ Finset.Ico 1 (n + 2),
+                (Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+                  suffMinDelta (1/2 - δ) j (n + 2) -
+            (((n + 2 : ℕ) : ℝ) * δ / (2 : ℝ) ^ (n + 1) +
+              ∑ j ∈ Finset.Ico 1 (n + 2),
+                (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ) =
+          (((1/2 + δ : ℝ) ^ (n + 2) - (1/2 - δ) ^ (n + 2)) / 2 -
+              ((n + 2 : ℕ) : ℝ) * δ / (2 : ℝ) ^ (n + 1)) +
+          ∑ j ∈ Finset.Ico 1 (n + 2),
+            ((Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+              suffMinDelta (1/2 - δ) j (n + 2) -
+            (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ) := by
+        rw [Finset.sum_sub_distrib]; ring
+      rw [h_diff_eq]
+      -- Apply the two bounds.
+      have h_tri_sum : ∀ j ∈ Finset.Ico 1 (n + 2),
+          |(Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+              suffMinDelta (1/2 - δ) j (n + 2) -
+            (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ|
+          ≤ M_fn j * δ ^ 2 := by
+        intro j hj
+        have hjr := Finset.mem_Ico.mp hj
+        have hδ_lt_j' : δ < δ_fn j := by
+          have h_le : δ_j_min ≤ δ_fn j := by
+            rw [hδ_j_min_def]
+            exact Finset.inf'_le
+              (fun j' : {x // x ∈ Finset.Ico 1 (n + 2)} => δ_fn j'.val)
+              (Finset.mem_attach _ ⟨j, hj⟩)
+          linarith
+        exact (hM_data j hjr.1 hjr.2).2 δ hδ_pos hδ_lt_j'
+      have h_sum_abs : |∑ j ∈ Finset.Ico 1 (n + 2),
+            ((Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+              suffMinDelta (1/2 - δ) j (n + 2) -
+            (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ)|
+          ≤ M_sum * δ ^ 2 := by
+        calc |∑ j ∈ Finset.Ico 1 (n + 2),
+              ((Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+                suffMinDelta (1/2 - δ) j (n + 2) -
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ)|
+            ≤ ∑ j ∈ Finset.Ico 1 (n + 2),
+              |(Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+                suffMinDelta (1/2 - δ) j (n + 2) -
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ| :=
+              Finset.abs_sum_le_sum_abs _ _
+          _ ≤ ∑ j ∈ Finset.Ico 1 (n + 2), M_fn j * δ ^ 2 := Finset.sum_le_sum h_tri_sum
+          _ = M_sum * δ ^ 2 := by
+              rw [hM_sum_def, ← Finset.sum_mul]
+      -- Combine.
+      calc |(((1/2 + δ : ℝ) ^ (n + 2) - (1/2 - δ) ^ (n + 2)) / 2 -
+              ((n + 2 : ℕ) : ℝ) * δ / (2 : ℝ) ^ (n + 1)) +
+            ∑ j ∈ Finset.Ico 1 (n + 2),
+              ((Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+                suffMinDelta (1/2 - δ) j (n + 2) -
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ)|
+          ≤ |((1/2 + δ : ℝ) ^ (n + 2) - (1/2 - δ) ^ (n + 2)) / 2 -
+              ((n + 2 : ℕ) : ℝ) * δ / (2 : ℝ) ^ (n + 1)|
+            + |∑ j ∈ Finset.Ico 1 (n + 2),
+              ((Nat.choose (n + 2) j : ℝ) * (1/2 - δ) ^ (n + 2 - j) * (1/2 + δ) ^ j *
+                suffMinDelta (1/2 - δ) j (n + 2) -
+              (Nat.choose (n + 2) j : ℝ) / (2 : ℝ) ^ (n + 2) * suffMin j (n + 2) * δ)| :=
+            abs_add_le _ _
+        _ ≤ M₁ * δ ^ 2 + M_sum * δ ^ 2 :=
+            add_le_add (h₁_bound δ hδ_pos hδ_lt₁) h_sum_abs
+        _ = (M₁ + M_sum) * δ ^ 2 := by ring
 
 /-- Corollary 4.11 (i): the gap `w(p, n-1) - w(p, n)` has first-order
     coefficient `c_n - c_{n-1}` as `p = 1/2 - δ`, `δ → 0⁺`.
