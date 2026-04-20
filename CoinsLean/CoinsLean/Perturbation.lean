@@ -1508,10 +1508,45 @@ theorem suffMin_collapse_high (n j : ℕ) (hn : 7 ≤ n) (h4 : 4 ≤ j) (hjn : j
     suffMin j n = c (n - 1) :=
   (((joint_step n (by omega)).2.2.2 hn) j (by omega) hjn).2 h4
 
-/-- Theorem 4.10: the limit `L = lim c_n` exists. -/
+/-- Theorem 4.10: the limit `L = lim c_n` exists.
+
+    Proof: shift the sequence by 5 to obtain `f n := c (n + 5)`, which is
+    antitone (by `c_strict_anti_from_five`) and bounded below by `27/16`
+    (by `c_ge_27_16_full`). Mathlib's `Antitone.tendsto_atTop_iInf` gives
+    convergence; transfer back to `c` via eventual equality. -/
 theorem c_limit_exists :
     ∃ L : ℝ, Filter.Tendsto (fun n => c n) Filter.atTop (nhds L) := by
-  sorry
+  let f : ℕ → ℝ := fun n => c (n + 5)
+  -- f is antitone: `c (n+1+5) ≤ c (n+5)` from `c_strict_anti_from_five`.
+  have h_anti : Antitone f := by
+    apply antitone_nat_of_succ_le
+    intro n
+    have h := c_strict_anti_from_five (n + 5) (by omega)
+    show c (n + 1 + 5) ≤ c (n + 5)
+    rw [show n + 1 + 5 = n + 5 + 1 from by omega]
+    exact h.le
+  -- f is bounded below by 27/16.
+  have h_bdd : BddBelow (Set.range f) := by
+    refine ⟨27 / 16, ?_⟩
+    rintro x ⟨n, rfl⟩
+    exact c_ge_27_16_full (n + 5) (by omega)
+  -- Apply Mathlib's antitone-tends-to-infimum.
+  have h_f_tendsto : Filter.Tendsto f Filter.atTop (nhds (⨅ x, f x)) :=
+    tendsto_atTop_ciInf h_anti h_bdd
+  refine ⟨⨅ x, f x, ?_⟩
+  -- `c =ᶠ[atTop] (fun n => f (n - 5))`, and the shift `(· - 5)` is `Tendsto atTop atTop`.
+  have h_shift : Filter.Tendsto (fun n : ℕ => n - 5) Filter.atTop Filter.atTop := by
+    apply Filter.tendsto_atTop_atTop.mpr
+    intro b
+    refine ⟨b + 5, fun a ha => ?_⟩
+    omega
+  have h_comp : Filter.Tendsto (fun n => f (n - 5)) Filter.atTop (nhds (⨅ x, f x)) :=
+    h_f_tendsto.comp h_shift
+  have h_eq : (fun n => c n) =ᶠ[Filter.atTop] (fun n => f (n - 5)) := by
+    filter_upwards [Filter.eventually_ge_atTop 5] with n hn
+    show c n = c (n - 5 + 5)
+    congr 1; omega
+  exact Filter.Tendsto.congr' h_eq.symm h_comp
 
 /-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
     `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
