@@ -1766,14 +1766,90 @@ private lemma summable_half_pow :
   summable_geometric_of_norm_lt_one
     (show ‖(1 / 2 : ℝ)‖ < 1 by rw [Real.norm_eq_abs]; norm_num)
 
-/-- Summability of `A_lin` on ℕ. Status: the infrastructure lemmas
-    `summable_{n,n_sq,n_cube,half}_half_pow` above are proved. The
-    remaining work is bounding `A_lin n ≤ g n` where `g` is a linear
-    combination of these (a polynomial-times-geometric inequality),
-    then `Summable.of_norm_bounded_eventually_nat`. Left as a focused
-    sub-sorry. -/
+/-- The four-term upper bound for `A_lin n` used to show summability.
+    Equivalent to
+    `A_lin n ≤ 2(n+1)·(1/2)^n + c₁·n·(1/2)^n + c₂·n²·(1/2)^n + c₃·n³·(1/2)^n`. -/
+private noncomputable def A_lin_bound (n : ℕ) : ℝ :=
+  2 * ((n : ℝ) + 1) * (1 / 2 : ℝ) ^ n
+    + c 1 * (n : ℝ) * (1 / 2 : ℝ) ^ n
+    + c 2 * ((n : ℝ) ^ 2) * (1 / 2 : ℝ) ^ n
+    + c 3 * ((n : ℝ) ^ 3) * (1 / 2 : ℝ) ^ n
+
+private lemma summable_A_lin_bound : Summable A_lin_bound := by
+  unfold A_lin_bound
+  have h1 : Summable (fun n : ℕ => 2 * ((n : ℝ) + 1) * (1 / 2 : ℝ) ^ n) := by
+    have : (fun n : ℕ => 2 * ((n : ℝ) + 1) * (1 / 2 : ℝ) ^ n) =
+        fun n : ℕ => 2 * ((n : ℝ) * (1 / 2) ^ n) + 2 * ((1 / 2 : ℝ) ^ n) := by
+      ext n; ring
+    rw [this]
+    exact (summable_n_half_pow.mul_left 2).add (summable_half_pow.mul_left 2)
+  have h2 : Summable (fun n : ℕ => c 1 * (n : ℝ) * (1 / 2 : ℝ) ^ n) := by
+    have : (fun n : ℕ => c 1 * (n : ℝ) * (1 / 2 : ℝ) ^ n) =
+        fun n : ℕ => c 1 * ((n : ℝ) * (1 / 2) ^ n) := by ext; ring
+    rw [this]; exact summable_n_half_pow.mul_left _
+  have h3 : Summable (fun n : ℕ => c 2 * ((n : ℝ) ^ 2) * (1 / 2 : ℝ) ^ n) := by
+    have : (fun n : ℕ => c 2 * ((n : ℝ) ^ 2) * (1 / 2 : ℝ) ^ n) =
+        fun n : ℕ => c 2 * ((n : ℝ) ^ 2 * (1 / 2) ^ n) := by ext; ring
+    rw [this]; exact summable_n_sq_half_pow.mul_left _
+  have h4 : Summable (fun n : ℕ => c 3 * ((n : ℝ) ^ 3) * (1 / 2 : ℝ) ^ n) := by
+    have : (fun n : ℕ => c 3 * ((n : ℝ) ^ 3) * (1 / 2 : ℝ) ^ n) =
+        fun n : ℕ => c 3 * ((n : ℝ) ^ 3 * (1 / 2) ^ n) := by ext; ring
+    rw [this]; exact summable_n_cube_half_pow.mul_left _
+  exact ((h1.add h2).add h3).add h4
+
+/-- Pointwise bound `A_lin n ≤ A_lin_bound n` for all n. Broken into per-term
+    sub-bounds to avoid cubic nlinarith timeouts. -/
+private lemma A_lin_le_bound (n : ℕ) : A_lin n ≤ A_lin_bound n := by
+  unfold A_lin A_lin_bound
+  rw [Nat.cast_choose_two ℝ, cast_choose_three n]
+  have hp_pos : (0 : ℝ) < (2 : ℝ) ^ n := by positivity
+  have hn_nn : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+  have hc1 : (0 : ℝ) ≤ c 1 := by rw [c_one]; norm_num
+  have hc2 : (0 : ℝ) ≤ c 2 := by rw [c_two]; norm_num
+  have hc3 : (0 : ℝ) ≤ c 3 := by rw [c_three]; norm_num
+  have h_pow : (1 / 2 : ℝ) ^ n = 1 / (2 : ℝ) ^ n := by rw [div_pow, one_pow]
+  rw [h_pow]
+  -- Term 1: n / 2^(n-1) ≤ 2(n+1) · 1/2^n.
+  have hT1 : (n : ℝ) / (2 : ℝ) ^ (n - 1) ≤ 2 * ((n : ℝ) + 1) * (1 / (2 : ℝ) ^ n) := by
+    have := n_div_pow_pred_le n
+    rwa [mul_one_div]
+  -- Term 2: n · c 1 / 2^n ≤ c 1 · n · 1/2^n.
+  have hT2 : (n : ℝ) * c 1 / (2 : ℝ) ^ n ≤ c 1 * (n : ℝ) * (1 / (2 : ℝ) ^ n) := by
+    have h_eq : (n : ℝ) * c 1 / (2 : ℝ) ^ n = c 1 * (n : ℝ) * (1 / (2 : ℝ) ^ n) := by
+      rw [mul_one_div]; ring
+    linarith [h_eq]
+  -- Term 3: n(n-1)/2 · c 2 / 2^n ≤ c 2 · n² · 1/2^n, from n(n-1) ≤ n² (for n ≥ 0).
+  have hT3 : (n : ℝ) * ((n : ℝ) - 1) / 2 * c 2 / (2 : ℝ) ^ n
+      ≤ c 2 * ((n : ℝ) ^ 2) * (1 / (2 : ℝ) ^ n) := by
+    rw [mul_one_div, div_le_div_iff_of_pos_right hp_pos]
+    -- n(n-1) ≤ n² (since n ≥ 0).
+    have h_quad : (n : ℝ) * ((n : ℝ) - 1) ≤ (n : ℝ) ^ 2 := by nlinarith [hn_nn]
+    nlinarith [h_quad, hc2, hn_nn, sq_nonneg (n : ℝ)]
+  -- Term 4: n(n-1)(n-2)/6 · c 3 / 2^n ≤ c 3 · n³ · 1/2^n.
+  have hT4 : (n : ℝ) * ((n : ℝ) - 1) * ((n : ℝ) - 2) / 6 * c 3 / (2 : ℝ) ^ n
+      ≤ c 3 * ((n : ℝ) ^ 3) * (1 / (2 : ℝ) ^ n) := by
+    rw [mul_one_div, div_le_div_iff_of_pos_right hp_pos]
+    -- n(n-1)(n-2) ≤ n³ for n ≥ 0 : follows from n³ - n(n-1)(n-2) = 3n² - 2n ≥ 0.
+    have h_cube : (n : ℝ) * ((n : ℝ) - 1) * ((n : ℝ) - 2) ≤ (n : ℝ) ^ 3 := by
+      have h_id : (n : ℝ) ^ 3 - (n : ℝ) * ((n : ℝ) - 1) * ((n : ℝ) - 2) =
+          3 * (n : ℝ) ^ 2 - 2 * (n : ℝ) := by ring
+      suffices h_pos : 0 ≤ 3 * (n : ℝ) ^ 2 - 2 * (n : ℝ) by linarith
+      rcases Nat.eq_zero_or_pos n with hn | hn
+      · subst hn; norm_num
+      · have : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+        nlinarith [this]
+    nlinarith [h_cube, hc3, mul_nonneg hn_nn hn_nn,
+               mul_nonneg (mul_nonneg hn_nn hn_nn) hn_nn]
+  -- Put it together: A_lin n = n/2^(n-1) + (n·c1 + n(n-1)/2·c2 + n(n-1)(n-2)/6·c3)/2^n.
+  rw [add_div, add_div]
+  linarith [hT1, hT2, hT3, hT4]
+
+/-- Summability of `A_lin` on ℕ. Uses the bound `A_lin n ≤ A_lin_bound n`. -/
 private lemma summable_A_lin : Summable A_lin := by
-  sorry
+  apply summable_A_lin_bound.of_norm_bounded_eventually_nat
+  filter_upwards with n
+  rw [Real.norm_eq_abs, abs_of_nonneg (A_lin_nonneg n)]
+  exact A_lin_le_bound n
 
 /-- Summability of `|A_lin|` on ℕ. Since A_lin ≥ 0, this equals `summable_A_lin`. -/
 private lemma summable_A_lin_abs : Summable (fun n : ℕ => |A_lin n|) := by
