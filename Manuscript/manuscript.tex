@@ -612,6 +612,94 @@ $<n$ supplying exactly what is needed at level~$n$.
 %\section*{Acknowledgements}
 %% ====================================================================
 
+\appendix
+
+\section{Formal verification in Lean~4}\label{app:lean}
+
+All results of this paper have been formally verified in
+Lean~4 using the Mathlib library.  The formalization is publicly
+available at
+\begin{center}
+  \url{https://github.com/pfaffelh/coins}
+\end{center}
+and builds successfully against Mathlib with no open goals.  The
+proofs use only the three standard Lean foundational axioms
+(\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound});
+no additional axioms, \texttt{sorry}s, \texttt{native\_decide},
+\texttt{unsafe} blocks, or \texttt{opaque} definitions appear.
+
+Table~\ref{tab:lean-map} lists every numbered theorem,
+proposition, lemma, and corollary stated in the main text together
+with its corresponding Lean theorem.  Each hyperlink points to the
+exact line of the current pinned revision
+(commit~\href{https://github.com/pfaffelh/coins/tree/b98f5ba}{\texttt{b98f5ba}}).
+
+\renewcommand{\arraystretch}{1.15}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lll@{}}
+\hline
+\textbf{Manuscript} & \textbf{Lean theorem} & \textbf{Location} \\
+\hline
+Theorem~\ref{thm:half} &
+  \texttt{w\_half} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Optimal.lean\#L102}{Optimal.lean:102} \\
+Theorem~\ref{thm:above} (joint) &
+  \texttt{above\_half} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Above.lean\#L108}{Above.lean:108} \\
+Proposition~\ref{prop:delta-rec} &
+  \texttt{deficit\_succ} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L301}{Perturbation.lean:301} \\
+Proposition~\ref{prop:cn} &
+  \texttt{deficit\_first\_order} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2503}{Perturbation.lean:2503} \\
+Lemma~\ref{lem:collapse} (low) &
+  \texttt{suffMin\_collapse\_low} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1501}{Perturbation.lean:1501} \\
+Lemma~\ref{lem:collapse} (high) &
+  \texttt{suffMin\_collapse\_high} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1507}{Perturbation.lean:1507} \\
+Lemma~\ref{lem:lower} &
+  \texttt{c\_ge\_27\_16\_full} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1483}{Perturbation.lean:1483} \\
+Lemma~\ref{lem:decreasing} &
+  \texttt{c\_strict\_anti\_from\_five} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1488}{Perturbation.lean:1488} \\
+Proposition~\ref{prop:linear} &
+  \texttt{c\_linear\_rec} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1495}{Perturbation.lean:1495} \\
+Theorem~\ref{thm:limit} (existence) &
+  \texttt{c\_limit\_exists} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1517}{Perturbation.lean:1517} \\
+Theorem~\ref{thm:limit} (formula) &
+  \texttt{c\_limit\_formula} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2065}{Perturbation.lean:2065} \\
+Corollary~\ref{cor:shape}~(i) &
+  \texttt{w\_gap\_first\_order} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2811}{Perturbation.lean:2811} \\
+Corollary~\ref{cor:shape}~(ii) &
+  \texttt{w\_local\_min\_at\_five} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2847}{Perturbation.lean:2847} \\
+Corollary~\ref{cor:shape}~(iii) &
+  \texttt{no\_first\_order\_local\_max} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2948}{Perturbation.lean:2948} \\
+\hline
+\end{tabular}
+\caption{Correspondence between manuscript results and their Lean
+  formalization.  Links point to the exact line of
+  commit~\texttt{b98f5ba} on the repository's
+  \texttt{main} branch.}\label{tab:lean-map}
+\end{table}
+
+The dominated-convergence step in the proof of
+Theorem~\ref{thm:limit} (Step~2) is discharged in Lean by
+Mathlib's \href{https://leanprover-community.github.io/mathlib4_docs/Mathlib/Analysis/Normed/Group/Tannery.html}{\texttt{tendsto\_tsum\_of\_dominated\_convergence}}
+(Tannery's theorem), and the infinite-product convergence in
+Step~1 uses
+\href{https://leanprover-community.github.io/mathlib4_docs/Mathlib/Analysis/SpecificLimits/Normed.html}{\texttt{Real.multipliable\_one\_add\_of\_summable}}.
+These are exactly the two analytic ingredients cited in the proof
+of Theorem~\ref{thm:limit}.
+
 \begin{thebibliography}{99}
 
 \bibitem{Bertsekas2017}
