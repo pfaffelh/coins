@@ -1343,3 +1343,69 @@ https://github.com/pfaffelh/coins. Build green.
 > Final update of journal.md and claude.md for today.
 
 This update — Prompts 100-104.
+
+## 2026-04-20 — Session 3
+
+### Prompt 105
+> Side question: Would you be able to do the formalization in a
+> different proof assistant?
+
+Offered a brief comparison: Coq (older, more mature tactics but
+less automation), Isabelle/HOL (strongest automation, classical
+default), Lean 4 / Mathlib (chosen here — active community, best
+library for coin games / probability / combinatorics). Rocq
+(Coq's rebrand) would work but lacks Mathlib's formal reach.
+
+### Prompt 106
+> Let us continue with the formalization. Where did we end yesternday?
+
+Recap: 9 sorries remain in §4.4 (items 1–9 of the status list).
+Recommended picking up with either items 5/6 (Theorem 4.10 — limit
+of `c_n`) or items 1–4 (Δ → c bridge — real-analysis chain).
+
+### Prompt 107
+> B
+
+Interpreted as option B = Theorem 4.10 (limit of `c_n`).
+
+### Prompt 108
+> Please attempt this first!
+
+Proved `c_limit_exists` (Theorem 4.10 existence form) via shift
+`f n := c (n+5)`, which is antitone (from `c_strict_anti_from_five`)
+and bounded below by `27/16` (from `c_ge_27_16_full`), using
+`tendsto_atTop_ciInf`. Committed as `7ffd55a`.
+
+Next: proved `c_iterate` — the finite iteration of the linear
+recursion `c_n = c_{n₀-1}·∏(1-B_m) + ∑ A_k·∏(1-B_m)` by
+induction on `n`. Committed as `aff03c3`.
+
+### Prompt 109 (multiple messages)
+> a / "No, please try a"
+
+User chose option (a) = explicit form of Theorem 4.10
+(`c_limit_formula`). Pushed through the tower of helper lemmas:
+
+1. `summable_B_lin` (ℕ-indexed, via split at 13 + `B_tail_bound`) —
+   `0a1ab5b`.
+2. `multipliable_one_minus_B` (subtype, via
+   `Real.multipliable_one_add_of_summable`) — `2cd8ef9`.
+3. `shiftEquiv : ℕ ≃ {m // n₀ ≤ m}`, `multipliable_one_minus_B_shifted`
+   (ℕ-indexed shifted form), `tprod_subtype_eq_tprod_shifted`
+   (reindex subtype tprod to ℕ tprod), `tendsto_prod_Ico_B`
+   (finite `∏ m ∈ Ico n₀ (n+1)` converges to subtype tprod) —
+   `0157050`.
+4. `c_limit_formula` (structure complete) — passes finite
+   identity `c_iterate` through `Tendsto`, combines product and
+   sum convergence via uniqueness of limits.
+   One narrow sub-sorry remains: `tendsto_sum_Ico_A_prod`
+   (sum convergence — requires Tannery's theorem / dominated
+   convergence, `Summable A_lin`, and pointwise convergence of
+   inner products). — `ba8c703`.
+
+**End-of-session status (2026-04-20):**
+- `c_limit_exists` and `c_iterate`: proved.
+- `c_limit_formula`: proved modulo one narrow sub-sorry.
+- Sorry count: 9 → 8 (net -1, but really 2 items resolved with 1
+  new focused sub-gap introduced).
+- Build green throughout. All commits pushed to GitHub.

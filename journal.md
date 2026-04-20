@@ -1713,3 +1713,101 @@ Theorem 4.10 limit (Filter.Tendsto), Cor 4.11 shape claims.
 Estimated ~600 lines total. Items 1–3 (real-analysis sub-lemmas)
 and 5–6 (limit theorem) can proceed in parallel; items 4 and 7–9
 follow.
+
+## 2026-04-20 — Theorem 4.10 (existence + explicit form)
+
+### `c_limit_exists` — Theorem 4.10 existence
+
+Shifted the sequence by 5 (to guarantee antitonicity):
+`f n := c (n + 5)`. Then `f` is antitone
+(`c_strict_anti_from_five`) and bounded below by `27/16`
+(`c_ge_27_16_full`). Mathlib's `tendsto_atTop_ciInf h_anti h_bdd`
+gives `Tendsto f atTop (nhds (⨅ x, f x))`. Transferred back to
+`c` via `Filter.Tendsto.congr'` using `c n = c (n - 5 + 5)`
+eventually (for `n ≥ 5`). Commit `7ffd55a`.
+
+### `c_iterate` — finite iteration of the linear recursion
+
+For `n₀ ≥ 7` and `n ≥ n₀`:
+```
+c n = c (n₀ - 1) · ∏_{m=n₀}^n (1 - B_m)
+     + ∑_{k=n₀}^n A_k · ∏_{m=k+1}^n (1 - B_m).
+```
+Proved by `Nat.le_induction`:
+- Base case (`n = n₀`): unfold `c_linear_rec n₀`,
+  use singleton Ico.
+- Step (`n = m → n = m+1`): split `Ico n₀ (m+2)` as
+  `insert (m+1) (Ico n₀ (m+1))`, factor `(1-B_{m+1})` out of
+  each inner product, use IH + `c_linear_rec (m+1)`. Commit
+  `aff03c3`.
+
+### `summable_B_lin` — global summability of `B_n`
+
+`Summable B_lin` on all of ℕ, by splitting at `N = 13`:
+finite prefix plus `B_tail_bound` (already proved,
+`∑ B_m over [13, N] ≤ 1/8`). Commit `0a1ab5b`.
+
+### `multipliable_one_minus_B` — infinite-product multipliability
+
+Subtype version:
+`Multipliable (fun m : {m // n₀ ≤ m} => 1 - B_lin m.val)`.
+Uses `summable_B_lin.comp_injective Subtype.val_injective` →
+`Summable (-B_lin)` on subtype → `Real.multipliable_one_add_of_summable`
+→ done via `simpa [sub_eq_add_neg]`. Commit `2cd8ef9`.
+
+### `c_limit_formula` — Theorem 4.10 explicit form
+
+**Product convergence helper (`tendsto_prod_Ico_B`):**
+Defined `shiftEquiv n₀ : ℕ ≃ {m // n₀ ≤ m}` via `j ↦ n₀ + j`.
+Shifted `g j := 1 - B_lin (n₀ + j)` is multipliable by
+`Equiv.multipliable_iff`. Then `Multipliable.hasProd.tendsto_prod_nat`
+gives `∏ j ∈ range N, g j → ∏' j, g j`. Composed with the index
+shift `n ↦ n + 1 - n₀` (which `Tendsto atTop atTop`) and the
+identity `∏ m ∈ Ico n₀ (n+1), (1-B_m) = ∏ j ∈ range (n+1-n₀), g j`
+via `Finset.prod_Ico_eq_prod_range`. Target subtype-tprod
+connected via `Equiv.tprod_eq`. Commit `0157050`.
+
+**Main structure (`c_limit_formula`):**
+Obtain `L` from `c_limit_exists`. The finite identity from
+`c_iterate` plus product convergence plus a new sub-sorry
+`tendsto_sum_Ico_A_prod` (sum convergence) give:
+```
+Tendsto (c (n₀-1) · P_n + S_n) atTop (nhds (c (n₀-1) · P + S))
+```
+where `P = ∏' m : subtype, (1-B_m)` and `S = ∑' k : subtype, A_k · ∏' m>k, (1-B_m)`.
+Since `c n` equals `c (n₀-1) · P_n + S_n` eventually (for `n ≥ n₀`),
+`Filter.Tendsto.congr'` transfers, and `tendsto_nhds_unique hL`
+yields `L = c (n₀-1) · P + S`. Commit `ba8c703`.
+
+**Open gap:** `tendsto_sum_Ico_A_prod` — sum convergence of
+`∑ k ∈ Ico n₀ (n+1), A_k · ∏ m ∈ Ico (k+1) (n+1), (1-B_m)`
+to the infinite `∑'`. The cleanest route is Mathlib's
+`tendsto_tsum_of_dominated_convergence` (Tannery's theorem)
+applied to the shifted ℕ form, needing:
+1. `Summable |A_lin|` (provable via decomposition into four
+   `n^k / 2^n` terms, each summable by `summable_pow_mul_geometric_of_norm_lt_one`).
+2. Pointwise convergence for each `k` of the inner finite product
+   (via the same `shiftEquiv`-style argument as `tendsto_prod_Ico_B`,
+   but parameterised on `k`).
+3. Uniform bound `|inner product| ≤ 1` (since `1 - B_m ∈ (0, 1)`
+   for `m ≥ 7`).
+
+### Session totals for 2026-04-20
+
+**Commits (6):** `7ffd55a` (c_limit_exists), `aff03c3`
+(c_iterate), `0a1ab5b` (summable_B_lin), `2cd8ef9`
+(multipliable_one_minus_B), `0157050` (product helper),
+`ba8c703` (c_limit_formula structure).
+
+**Sorry count:** 9 → 8. Net resolved: `c_limit_exists` and
+`c_limit_formula` both closed modulo a single narrow
+`tendsto_sum_Ico_A_prod` sub-sorry (new).
+
+**Remaining sorries (8):**
+- §4.4 Δ → c bridge: `constant_term_taylor`,
+  `binom_weight_perturb`, `suffMinDelta_first_order`,
+  `deficit_first_order` (inductive step).
+- §4.4 Theorem 4.10: `tendsto_sum_Ico_A_prod`
+  (new, narrow — dominated convergence).
+- §4.4 Cor 4.11: `w_gap_first_order`, `w_local_min_at_five`,
+  `no_first_order_local_max`.
