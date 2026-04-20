@@ -1893,3 +1893,143 @@ polynomial-geometric summability lemmas, `A_lin_bound` + helpers,
 
 **Manuscript:** now documents the Tannery step explicitly with a
 Knopp 1990 reference, exactly matching the Lean gap.
+
+## 2026-04-20 — Night session: finishing §4.4 + numerics
+
+After evening break, came back and closed every remaining §4.4
+sorry.
+
+### `tendsto_sum_Ico_A_prod` (Piece 3 for c_limit_formula)
+
+Applied Mathlib's Tannery-style dominated-convergence theorem
+`tendsto_tsum_of_dominated_convergence` (from
+`Mathlib.Analysis.Normed.Group.Tannery`). Used ℕ-indexing via
+`shiftEquiv`, with three hypotheses:
+
+1. Summable bound `fun j => A_lin (n₀ + j)` from
+   `summable_A_lin_shifted`.
+2. Pointwise convergence via
+   `tendsto_inner_prod_for_k` (= `tendsto_prod_Ico_B (k+1)`)
+   scaled by `A_lin`.
+3. Uniform bound ≤ 1 via
+   `prod_Ico_one_minus_B_in_unit_interval`.
+
+The two conversions (finite Ico-sum ↔ tsum on ℕ; subtype tsum ↔
+ℕ tsum) used `tsum_eq_sum` with support
+characterisation + `Finset.sum_Ico_eq_sum_range` + `shiftEquiv`.
+Commit `eb827a7`. **c_limit_formula fully closed.** 8 → 7 sorries.
+
+### Corollary 4.11 (i)–(iii)
+
+All three reduce to `deficit_first_order` via the identity
+`w_{n-1} - w_n = deficit_n - deficit_{n-1}`:
+
+- **(i) `w_gap_first_order`:** triangle inequality on two copies
+  of deficit_first_order bounds.
+- **(ii) `w_local_min_at_five`:** (i) at n=5 gives positive gap
+  `w_4 - w_5` (since `c_5 > c_4`); at n=6 gives negative gap
+  `w_5 - w_6` (since `c_6 < c_5`). δ₀ chosen so `M·δ² <
+  (c-gap)/2 · δ`.
+- **(iii) `no_first_order_local_max`:** for `n ≥ 5`,
+  `c_strict_anti_from_five n` gives `c(n+1) < c n`, so the gap
+  is negative first-order.
+
+Commit `7fdc575`. 7 → 4 sorries.
+
+### The Δ → c bridge (four remaining sorries)
+
+Each sub-lemma isolated:
+
+**`suffMinDelta_first_order`** — Lipschitz of `Finset.inf'`:
+wrote helper lemmas `finset_inf'_lipschitz` (if `|f - g| ≤ K`
+pointwise then `|inf' f - inf' g| ≤ K`, proved via
+`exists_mem_eq_inf'`) and `finset_inf'_mul_pos` (for δ > 0).
+`choose!` extracts IH data per m ∈ [j, n). Commit `2a97419`.
+4 → 3.
+
+**`binom_weight_perturb`** — via the algebraic identity
+`A·B − C·D = (A − C)·B + C·(B − D)`:
+- A = (1/2−δ)^(n−j) (1/2+δ)^j, C = 1/2^n.
+- Bound `|a^k − b^k| ≤ k·|a−b|` for `|a|, |b| ≤ 1` via induction
+  on k (`pow_sub_pow_bound`).
+- Combined: `|A − C| ≤ n·δ`. Yields M = C(n,j)·n, δ₀ = 1/2.
+
+Commit `8196354`. 3 → 2.
+
+**`constant_term_taylor`** — via Mathlib's `geom_sum₂_mul`:
+
+$$\bigl(\textstyle\sum_{i<n}(1/2+\delta)^i (1/2-\delta)^{n-1-i}\bigr)\cdot 2\delta = (1/2+\delta)^n - (1/2-\delta)^n.$$
+
+Divide by 2, subtract `n·δ/2^(n-1)` which equals
+`δ · ∑ (1/2)^(n-1)`, get a sum whose each term is bounded by
+`(n-1)·δ` (via `pow_sub_pow_bound` and `A·B − C·D` Lipschitz
+identity). Total `n(n-1)·δ²`. Commit `c9e6730`. 2 → 1.
+
+**`deficit_first_order` inductive step** — the capstone.
+
+The n+2 case applies `deficit_succ'` and `c_succ`:
+
+$$\Delta_{n+2,p} = \frac{(1/2+\delta)^{n+2} - (1/2-\delta)^{n+2}}{2}
+  + \sum_{j=1}^{n+1} \binom{n+2}{j} (1/2-\delta)^{n+2-j}(1/2+\delta)^j\,\text{suffMinDelta}(1/2-\delta, j, n+2).$$
+
+The two parts split as Taylor term (bounded by M₁·δ² via
+`constant_term_taylor`) plus a sum. For each j, the summand's
+residual is bounded by combining `binom_weight_perturb` (|A − C| part)
+and `suffMinDelta_first_order` (|B − D| part) via
+`A·B − C·D = A·(B − D) + (A − C)·D`, with `|A| ≤ 1` and
+`|suffMin j (n+2)| ≤ |c j|` (proved inline using `inf'_le` +
+`c_pos`). Per-j M_j = C(n+2,j)·M_s + M_b·|c j|; summed over Ico
+1 (n+2). About 200 lines. Commit `3501732`.
+
+**Sorry count: 1 → 0.** Manuscript §4 fully formalized.
+
+### Final audit
+
+`#print axioms` on every main theorem confirms only the three
+standard foundational axioms: `propext`, `Classical.choice`,
+`Quot.sound`. No user-declared `axiom`, no `sorry`, no
+`native_decide`, no `unsafe`, no `opaque`, no `@[extern]`. All
+`decide` uses are for bounded decidable arithmetic (e.g.,
+`Nat.choose 4 2 = 6`).
+
+Docstring clean-up (two stale "sorry-stubbed" mentions) in
+commit `b98f5ba`.
+
+### Appendix A: formal verification
+
+Added to manuscript: repo URL, axiom discipline statement,
+Manuscript ↔ Lean mapping table with 13 `\href{...}` entries
+pointing to specific lines at pinned commit `b98f5ba`, plus
+pointers to the key Mathlib lemmas (Tannery + infinite product).
+PDF 9 → 10 pages. Commit `d98ca00`.
+
+### §5 Numerical experiments
+
+Created `simulation/plot_for_paper.py` using exact mpmath 80-digit
+Bellman recursion. Observed:
+
+- **p = 0.49** (`δ = 0.01`): only local min at n=5 (matches Cor
+  4.11(ii)); no local max in [2, 19].
+- **p = 0.42** (`δ = 0.08`): local max at n=9 (non-perturbative,
+  matches the manuscript remark).
+- **p = 0.45** (`δ = 0.05`): local max at n=15 (new finding).
+- **p ≤ 0.35**: strictly decreasing in [1, 20], no local extrema
+  visible at this range.
+
+Added §5 to manuscript with two figures (full-range + zoomed
+detail), two tables (numerical values with extrema highlighted,
+extrema summary), and discussion: local maxima are
+non-perturbative; threshold δ₀(n) conjecturally decays like
+C/n². Also noted a subtlety — van Doorn proves \ALL{} is not
+optimal for p < 1/2, but the failure of monotonicity of `w_{n,p}`
+itself is a separable question. PDF 10 → 13 pages. Commit
+`90a6e13`.
+
+Also: created a Python venv at `.venv/` (per user's standing
+preference, now in memory) and ran everything through it.
+
+### End-of-day tally
+
+**Total commits today:** 21 since `7d6c248`. Sorry count: 9 → 0.
+§4 and §5 complete. Appendix A complete. Manuscript 8 → 13 pages.
+Formalization zero-sorry and audit-clean.

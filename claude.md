@@ -1470,3 +1470,130 @@ subtype tsum with zero-extension — moderate but fiddly.
 - `tendsto_sum_Ico_A_prod` (Piece 3): still sorry. The manuscript
   now documents the Tannery step explicitly with a reference, so
   the formal/informal gap aligns.
+
+### Prompt 113
+> Are you currently working on something?
+
+Gave idle status; awaiting direction.
+
+### Prompt 114
+> Continue with piece 3
+
+Applied Tannery's theorem
+(`tendsto_tsum_of_dominated_convergence`) with ℕ indexing via
+`shiftEquiv`. Three hypotheses:
+1. `Summable bound` from `summable_A_lin_shifted`.
+2. Pointwise convergence for each j (via `tendsto_inner_prod_for_k`).
+3. Uniform bound via `prod_Ico_one_minus_B_in_unit_interval`.
+
+Conversion LHS: finite sum → tsum on ℕ with indicator, then reindex
+`Finset.range (n+1-n₀) ↔ Ico n₀ (n+1)` via
+`Finset.sum_Ico_eq_sum_range`. Conversion RHS: subtype tsum via
+`shiftEquiv.tsum_eq`. Commit `eb827a7`. **c_limit_formula fully
+proved.** Sorry count: 8 → 7.
+
+### Prompt 115
+> Can Cor 4.11 be formalized, or do we need prerequisites?
+
+Recommended formalizing now, transitively depending on
+deficit_first_order.
+
+### Prompt 116
+> yes
+
+Proved Cor 4.11 (i), (ii), (iii):
+- (i) `w_gap_first_order`: `w_{n-1}-w_n = deficit_n - deficit_{n-1}`,
+  apply `deficit_first_order` to `n` and `n-1`, triangle inequality.
+- (ii) `w_local_min_at_five`: apply (i) at n=5 and n=6, bound via
+  `c_four_lt_five` and `c_strict_anti_from_five 5`.
+- (iii) `no_first_order_local_max`: N = 5, `c_strict_anti_from_five`
+  gives `c(n+1) < c n`. Commit `7fdc575`. Sorry count: 7 → 4.
+
+### Prompt 117
+> Great. Now proceed with the bridge.
+
+Worked through the four remaining sorries:
+1. `suffMinDelta_first_order` via Lipschitz-of-inf. Wrote helpers
+   `finset_inf'_lipschitz` and `finset_inf'_mul_pos`, then combined
+   via `choose!` over m ∈ [j, n). Commit `2a97419`. Sorries: 4 → 3.
+2. `binom_weight_perturb` via `pow_sub_pow_bound`: the identity
+   `A·B − C·D = (A-C)·B + C·(B-D)` with Lipschitz `|a^k - b^k| ≤
+   k|a-b|` for `|a|, |b| ≤ 1`. M = C(n,j) · n, δ₀ = 1/2.
+   Commit `8196354`. Sorries: 3 → 2.
+3. `constant_term_taylor` via `geom_sum₂_mul`:
+   `(∑ (1/2+δ)^i (1/2-δ)^(n-1-i)) · 2δ = (1/2+δ)^n - (1/2-δ)^n`,
+   divide by 2 and subtract `n·δ/2^(n-1)`, bound each summand by
+   `(n-1)·δ`. M = n(n-1), δ₀ = 1/2. Commit `c9e6730`.
+   Sorries: 2 → 1.
+4. `deficit_first_order` inductive step: combine `deficit_succ'`,
+   `c_succ`, and the three sub-lemmas. For each j, bound using
+   `A·B − C·D = A·(B−D) + (A−C)·D` with `|A| ≤ 1`,
+   `|B − D| ≤ M_s δ²`, `|C(n+2,j)(A−C)| ≤ M_b δ`, and
+   `|suffMin j (n+2)| ≤ |c j|`. Per-j bound M_j = C(n+2,j)·M_s +
+   M_b·|c j|, summed over Ico 1 (n+2). **Final sorry closed.**
+   Commit `3501732`. Sorry count: 1 → 0.
+
+### Prompt 118
+> Sounds like a success, then! Please make a final check if (i) the
+> manuscript and the formalization match and (ii) you did not
+> include any new axiom or another forbidden thing in the
+> formalization.
+
+Final audit:
+- **Axioms:** `#print axioms` on every main theorem shows only
+  `[propext, Classical.choice, Quot.sound]`.
+- **Forbidden constructs:** no `sorry`, no `axiom`, no
+  `native_decide`, no `unsafe`, no `opaque`, no `@[extern]`.
+  30+ `decide` uses, all for decidable facts like `Nat.choose 4 2
+  = 6`.
+- **Manuscript ↔ Lean map:** 12-row table covering Thm 2.1, 3.1,
+  4.10, Prop 4.2, 4.4, 4.9, Lem 4.6 (low+high), 4.7, 4.8, Cor 4.11
+  (i, ii, iii) — all match. Docstring clean-up commit `b98f5ba`.
+
+### Prompt 119
+> Please add an appendix to the manuscript about the formalization.
+> In particular, put the last table there. If possible, make hrefs
+> to the github for the specific results.
+
+Added Appendix A "Formal verification in Lean~4" to manuscript,
+including the Manuscript↔Lean mapping table with 13 `\href{...}`
+entries to `github.com/pfaffelh/coins/blob/b98f5ba/...#L<N>` (pinned
+at commit `b98f5ba`). Also linked the two key Mathlib lemmas
+(Tannery's theorem and `Real.multipliable_one_add_of_summable`).
+PDF: 9 → 10 pages. Commit `d98ca00`.
+
+### Prompt 120
+> Now, after the mathematics, but before the appendix, add a
+> simulation chapter. This should contain some figures, in
+> particular, it should show the possibility of local maxima
+> (maybe add numerical values), since these are not seen in the
+> final result for p < 1/2.
+
+Created `simulation/plot_for_paper.py` computing `w_{n,p}` via the
+exact Bellman recursion in 80-digit mpmath arithmetic, then
+generating three PDFs: `w_vs_n.pdf`, `gap_vs_n.pdf`,
+`local_max_detail.pdf`. Found numerically:
+- p=0.49: only local min at n=5 (matches Cor 4.11(ii)).
+- p=0.42: local max at n=9 (matches manuscript's existing remark).
+- p=0.45: local max at n=15.
+- p=0.35, 0.25: no local extrema within n ≤ 20.
+
+Added §5 "Numerical experiments" to the manuscript with:
+- Fig 5.1 (w_vs_n), Fig 5.2 (local_max_detail) zoomed view.
+- Table 5.1 (numerical values, extrema highlighted).
+- Table 5.2 (extrema by p).
+- Discussion: (a) local maxima are non-perturbative; (b) first-
+  order range of validity shrinks with n.
+PDF: 10 → 13 pages. Commit `90a6e13`.
+
+### Prompt 120a (correction)
+> Please create a venv first before installing python packages!
+
+Set up `.venv/` and installed matplotlib/mpmath/numpy into it.
+Added feedback memory: always create a venv before `pip install`,
+never install system-wide or `--user`.
+
+### Prompt 121
+> Update journal.md and claude.md
+
+This update.
