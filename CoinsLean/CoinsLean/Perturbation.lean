@@ -1654,6 +1654,71 @@ private lemma multipliable_one_minus_B (n₀ : ℕ) :
   -- h : Multipliable (fun i => 1 + -B_lin i.val)
   simpa [sub_eq_add_neg] using h
 
+/-- Equivalence between `ℕ` and the subtype `{m // n₀ ≤ m}` via the shift
+    `j ↦ n₀ + j`. -/
+private def shiftEquiv (n₀ : ℕ) : ℕ ≃ {m : ℕ // n₀ ≤ m} where
+  toFun j := ⟨n₀ + j, Nat.le_add_right _ _⟩
+  invFun m := m.val - n₀
+  left_inv j := by simp
+  right_inv m := by
+    obtain ⟨m, hm⟩ := m
+    ext
+    dsimp
+    omega
+
+/-- The shifted sequence `g j := 1 - B_lin (n₀ + j)` is multipliable on ℕ. -/
+private lemma multipliable_one_minus_B_shifted (n₀ : ℕ) :
+    Multipliable (fun j : ℕ => (1 : ℝ) - B_lin (n₀ + j)) := by
+  have h_sub := multipliable_one_minus_B n₀
+  -- Transfer along the equivalence `shiftEquiv n₀ : ℕ ≃ {m // n₀ ≤ m}`.
+  have h_iff := (shiftEquiv n₀).multipliable_iff
+    (f := fun m : {m // n₀ ≤ m} => (1 : ℝ) - B_lin m.val)
+  -- h_iff : Multipliable ((fun m => 1 - B_lin m.val) ∘ shiftEquiv n₀) ↔
+  --         Multipliable (fun m => 1 - B_lin m.val)
+  exact h_iff.mpr h_sub
+
+/-- The tprod over the subtype equals the tprod over ℕ via the shift. -/
+private lemma tprod_subtype_eq_tprod_shifted (n₀ : ℕ) :
+    ∏' m : {m : ℕ // n₀ ≤ m}, ((1 : ℝ) - B_lin m.val) =
+      ∏' j : ℕ, (1 - B_lin (n₀ + j)) := by
+  have := (shiftEquiv n₀).tprod_eq (fun m : {m // n₀ ≤ m} => (1 : ℝ) - B_lin m.val)
+  -- this : ∏' j, (1 - B_lin (shiftEquiv n₀ j).val) = ∏' m, (1 - B_lin m.val)
+  exact this.symm
+
+/-- Product convergence: as `n → ∞`, the finite product over `Ico n₀ (n+1)`
+    tends to the tprod over `{m // n₀ ≤ m}`. -/
+private lemma tendsto_prod_Ico_B (n₀ : ℕ) :
+    Filter.Tendsto
+      (fun n : ℕ => ∏ m ∈ Finset.Ico n₀ (n + 1), ((1 : ℝ) - B_lin m))
+      Filter.atTop
+      (nhds (∏' m : {m : ℕ // n₀ ≤ m}, (1 - B_lin m.val))) := by
+  set g : ℕ → ℝ := fun j => 1 - B_lin (n₀ + j) with hg_def
+  -- Rewrite target using shift.
+  rw [tprod_subtype_eq_tprod_shifted n₀]
+  -- Now target is nhds (∏' j, g j).
+  -- Multipliable g implies tendsto of partial products.
+  have h_mul_g : Multipliable g := multipliable_one_minus_B_shifted n₀
+  have h_tendsto_range : Filter.Tendsto (fun N : ℕ => ∏ j ∈ Finset.range N, g j)
+      Filter.atTop (nhds (∏' j : ℕ, g j)) :=
+    h_mul_g.hasProd.tendsto_prod_nat
+  -- Shift n ↦ n + 1 - n₀ tends to atTop.
+  have h_shift : Filter.Tendsto (fun n : ℕ => n + 1 - n₀) Filter.atTop Filter.atTop := by
+    apply Filter.tendsto_atTop_atTop.mpr
+    intro b
+    refine ⟨b + n₀, ?_⟩
+    intro a ha
+    omega
+  have h_comp : Filter.Tendsto (fun n : ℕ => ∏ j ∈ Finset.range (n + 1 - n₀), g j)
+      Filter.atTop (nhds (∏' j : ℕ, g j)) :=
+    h_tendsto_range.comp h_shift
+  have h_ev : (fun n : ℕ => ∏ m ∈ Finset.Ico n₀ (n + 1), ((1 : ℝ) - B_lin m)) =ᶠ[Filter.atTop]
+      (fun n : ℕ => ∏ j ∈ Finset.range (n + 1 - n₀), g j) := by
+    filter_upwards [Filter.eventually_ge_atTop n₀] with n hn
+    show ∏ m ∈ Finset.Ico n₀ (n + 1), ((1 : ℝ) - B_lin m) =
+         ∏ j ∈ Finset.range (n + 1 - n₀), g j
+    rw [Finset.prod_Ico_eq_prod_range]
+  exact Filter.Tendsto.congr' h_ev.symm h_comp
+
 /-- Theorem 4.10 (explicit form): for any `n₀ ≥ 7`, the limit is given by
     `L = c_{n₀-1} · ∏_{m ≥ n₀} (1 - B_m) + ∑_{k ≥ n₀} A_k · ∏_{m > k} (1 - B_m)`.
     (Convergence at geometric rate from `A_n, B_n = O(n³ / 2^n)`.)
