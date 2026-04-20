@@ -2124,7 +2124,7 @@ theorem deficit_first_order_one (δ : ℝ) : deficit (1/2 - δ) 1 = c 1 * δ := 
   rw [w_one, c_one]
   ring
 
-/-! Sub-lemmas needed for the inductive step (left as `sorry`):
+/-! Sub-lemmas needed for the inductive step (all proved below):
 
   1. **Taylor bound for the constant term.** For each `n ≥ 1`, there exist
      `M₁ δ₁ > 0` such that for `δ ∈ (0, δ₁)`:
@@ -2497,8 +2497,9 @@ private lemma suffMinDelta_first_order (n j : ℕ) (hn : 2 ≤ n) (hj : 1 ≤ j)
 
 /-- Proposition 4.4 (first-order coefficient): `c n` is the first-order
     coefficient of `Δ_{n, 1/2 - δ}` as `δ → 0⁺`.
-    Base case `n = 1` is `deficit_first_order_one`; the inductive step is
-    `sorry`-stubbed pending the three sub-lemmas above. -/
+    Base case `n = 1` is `deficit_first_order_one`; the inductive step
+    combines `constant_term_taylor`, `binom_weight_perturb`, and
+    `suffMinDelta_first_order`. -/
 theorem deficit_first_order (n : ℕ) (hn : 1 ≤ n) :
     ∃ M δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
       |deficit (1/2 - δ) n - c n * δ| ≤ M * δ ^ 2 := by
