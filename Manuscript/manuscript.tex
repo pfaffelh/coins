@@ -879,6 +879,42 @@ Step~1 uses
 These are exactly the two analytic ingredients cited in the proof
 of Theorem~\ref{thm:limit}.
 
+A self-contained one-page summary of the headline objects, with
+their source-level definitions, full types, and axiom dependencies,
+is provided by the file
+\href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/Summary.lean}}.
+Running
+\begin{center}
+  \texttt{lake env lean CoinsLean/Summary.lean}
+\end{center}
+from within the \texttt{CoinsLean/} directory prints the types of
+\texttt{w}, \texttt{deficit}, \texttt{c}, the six main theorems,
+and the axiom list --- verifying, via Lean's kernel, that the
+formalization type-checks as claimed.
+
+\paragraph{Development history.}
+The formalization was produced in two stages of interactive work
+with Anthropic's Claude.  An earlier session using Claude~Opus~4.6
+established the initial scaffolding of the project --- the
+Mathlib integration, the strategy-\All{} file
+\texttt{Bellman.lean}, and the fair-coin computation in
+\texttt{HalfP.lean} (totalling about 100 lines).  The present
+paper's formalization --- the optimal-value definition
+\texttt{Optimal.lean}, the strategies module, the full proof of
+Theorem~\ref{thm:above} in \texttt{Above.lean}, and the entire
+\S4 perturbation module \texttt{Perturbation.lean} (about
+$3{,}500$ lines of Lean) --- was produced in a subsequent sustained
+session with Claude~Opus~4.7, interactively with the author, over
+roughly two calendar days.  Each step was decided through
+back-and-forth: the author selected which result to tackle next
+and acted as reviewer; Claude proposed, drafted, debugged, and
+revised proofs until they closed with \texttt{lake build} green and
+no \texttt{sorry}.  A full prompt-by-prompt log of the second
+session is preserved in
+\href{https://github.com/pfaffelh/coins/blob/main/claude.md}{\texttt{claude.md}},
+and a thematic commentary tied to each commit is in
+\href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}}.
+
 \begin{thebibliography}{99}
 
 \bibitem{Bertsekas2017}
