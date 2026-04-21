@@ -1,0 +1,25 @@
+coins — optimal strategies in the all-heads coin game
+
+Copyright 2026 Peter Pfaffelhuber
+
+This product includes software developed by Peter Pfaffelhuber,
+with proofs and code drafted by Anthropic's Claude (versions
+Opus 4.6 and Opus 4.7) under the author's direction and review.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied. See the License for the specific language governing
+permissions and limitations under the License.
+
+---
+
+The Lean formalization in CoinsLean/ imports and depends on
+Mathlib (https://github.com/leanprover-community/mathlib4), which
+is also distributed under the Apache License, Version 2.0.
