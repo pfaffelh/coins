@@ -31,17 +31,18 @@ tree:
 
 (2) Research manuscript and figures (the contents of Manuscript/),
     including the LaTeX source, compiled PDFs, and figures: licensed
-    under the Creative Commons Attribution 4.0 International License
-    (see Manuscript/LICENSE).
+    under the arXiv.org perpetual, non-exclusive license 1.0 (see
+    Manuscript/LICENSE).  All rights not granted by that license are
+    reserved by the author.
 
     Covered directories and files:
       Manuscript/*.tex              — LaTeX source of the paper
       Manuscript/*.pdf              — compiled PDFs
       Manuscript/figures/*          — figures for the paper
 
-    Licensed under CC BY 4.0. You may obtain a copy of the License at
+    The full text of the arXiv license is at
 
-        https://creativecommons.org/licenses/by/4.0/
+        https://info.arxiv.org/licenses/nonexclusive-distrib/1.0/license.html
 
 ================================================================
 Dependencies

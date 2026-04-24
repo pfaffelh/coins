@@ -243,4 +243,5 @@ the Lean code without running it.
 The Lean code in this directory is released under the Apache License,
 Version 2.0 (see `../LICENSE`).  Mathlib, a dependency, is also
 Apache 2.0.  The research manuscript is separately licensed under
-CC BY 4.0 (see `../Manuscript/LICENSE`).
+the arXiv.org perpetual, non-exclusive license (see
+`../Manuscript/LICENSE`).

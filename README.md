@@ -64,9 +64,9 @@ This repository uses two licenses for different parts of the tree:
   files) is released under the
   [Apache License, Version 2.0](LICENSE). The Mathlib dependency
   is also Apache 2.0.
-- **Research manuscript and figures** (`Manuscript/`) are released
+- **Research manuscript and figures** (`Manuscript/`) are distributed
   under the
-  [Creative Commons Attribution 4.0 International License](Manuscript/LICENSE)
-  (CC BY 4.0).
+  [arXiv.org perpetual, non-exclusive license 1.0](Manuscript/LICENSE);
+  all rights not granted by that license are reserved by the author.
 
 See [`NOTICE`](NOTICE) for the full split and attribution details.
