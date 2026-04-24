@@ -2570,3 +2570,66 @@ builds green. Pinned at `c60bcd3`.
   to `c_limit_formula`).
 - Section ordering and content now stable; manuscript ready for
   another close human reading before submission.
+
+## 2026-04-24 — Session 3: authorship-note polish, dual license, arXiv prep
+
+### `Summary.lean` linked from the authorship note (commit `ffa2157`)
+
+The opening "A note on authorship" paragraph previously pointed
+only to `journal.md` and Appendix~A; on the author's request, it
+now also links `CoinsLean/Summary.lean` directly, with the
+explicit command to run it
+(`lake env lean CoinsLean/Summary.lean`). The reader has three
+entry points to the formalization directly from the intro:
+Summary.lean (quick tour), journal.md (full prompt log),
+Appendix~A (line-by-line map).
+
+### Dual-license split (commit `7afe9a2`)
+
+Motivation: discussion about journal-publication issues with a
+single Apache 2.0 license on the entire repo. Some publishers'
+copyright-transfer forms are phrased in ways that could clash
+with an Apache-covered manuscript text. CC BY 4.0 is the
+academic-publishing standard for text + figures, so I split the
+licensing cleanly:
+
+- **Apache 2.0** (unchanged root `LICENSE`): `CoinsLean/`,
+  `simulation/`, top-level build files — the source code.
+- **CC BY 4.0** (new `Manuscript/LICENSE`): the LaTeX source,
+  compiled PDFs, and figures in `Manuscript/` — the research
+  manuscript.
+
+`NOTICE` rewritten to document the split with explicit directory
+mappings and links to both license texts. `README.md` license
+section updated. Copyright holder (Peter Pfaffelhuber) unchanged;
+both licenses are permissive and grant compatible rights.
+
+### arXiv licensing discussion (no commit)
+
+Author asked whether CC BY 4.0 on the repo needs to be
+explicitly mentioned when submitting to arXiv. Answer:
+
+- At arXiv submission time, select **CC BY 4.0** from the license
+  dropdown (matches the repo's Manuscript/ license).
+- The license is attached to the arXiv entry automatically; the
+  manuscript text itself does not have to repeat the license.
+- Optional: a title-page footnote citing CC BY 4.0 + the repo URL
+  makes the license travel with the PDF outside arXiv. Offered
+  to add, pending author decision.
+
+### Publication-readiness checklist as of end of day
+
+- Manuscript: 18 pages, compiles green, no undefined refs, all
+  GitHub line-level hyperlinks verified, consistent notation and
+  indexing.
+- Formalization: zero sorries, zero custom axioms, build green,
+  pinned at commit `c60bcd3`, entry point `Summary.lean`.
+- Licenses: dual-license documented and permissive for both
+  arXiv and journal submission paths.
+- Disclosure: explicit AI-contribution note in §1, granular
+  development history in Appendix~A, full transcript in
+  `claude.md` / `journal.md`.
+- Acknowledgements present and correctly attributed.
+- Still needed before submission: a human (not the author, not
+  Claude) reading the prose end-to-end, per the 2026-04-21
+  ethics recommendation.
