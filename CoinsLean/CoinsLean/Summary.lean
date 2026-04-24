@@ -80,6 +80,10 @@ import CoinsLean.Perturbation
 --    `deficit (1/2 − δ) n` as δ → 0⁺.
 #check @deficit_first_order
 
+-- ## Numerical buffer for the cumulative argument (§4.3, n ≥ 13):
+--    `c 12 − 27/16 ≥ 1/60`.
+#check @c_twelve_buffer
+
 -- ## Corollary 4.11 (i). The gap `w_{n−1,p} − w_{n,p}` has first-order
 --    coefficient `c_n − c_{n−1}` as `p = 1/2 − δ`, `δ → 0⁺`.
 #check @w_gap_first_order
