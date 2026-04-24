@@ -13,6 +13,7 @@
 -/
 
 import CoinsLean.Perturbation
+import CoinsLean.AboveLimit
 
 -- ======================================================================
 -- # Definitions
@@ -75,6 +76,17 @@ import CoinsLean.Perturbation
 -- ## Theorem 4.10 (explicit formula). For any `n₀ ≥ 7`,
 --    L = c_{n₀−1} · ∏_{m ≥ n₀} (1 − B_m) + Σ_{k ≥ n₀} A_k · ∏_{m > k} (1 − B_m).
 #check @c_limit_formula
+
+-- ## §3.1 Corollary: linear recursion above 1/2.
+--   For `p > 1/2` and `n ≥ 1`:
+--   `w p n = p^n + (1 - p^n - (1-p)^n) · w p (n-1)`.
+#check @above_linear_rec
+
+-- ## §3.1 Theorem (existence of W(p)).
+#check @above_limit_exists
+
+-- ## §3.1 Theorem (lower bound W(p) ≥ p).
+#check @above_limit_ge
 
 -- ## Proposition 4.4. `c n · δ` is the first-order term of
 --    `deficit (1/2 − δ) n` as δ → 0⁺.
