@@ -543,6 +543,8 @@ $<n$ supplying exactly what is needed at level~$n$.
   The identity~\eqref{eq:alg-id} is a direct algebraic computation
   from~\eqref{eq:AB} using $\binom{n}{2}=\tfrac{n(n-1)}{2}$ and
   $\binom{n}{3}=\tfrac{n(n-1)(n-2)}{6}$; we use it freely below.
+  Formally, it is verified in Lean as the lemma \texttt{alg\_id};
+  see Appendix~\ref{app:lean}, Table~\ref{tab:lean-map}.
 
   Let $P(n)$ denote the conjunction of the following
   four claims (each understood vacuously when its index range is
@@ -585,7 +587,10 @@ $<n$ supplying exactly what is needed at level~$n$.
 
   \emph{(d) Linear recursion.}  Substituting the collapse~(a)
   just proved into~\eqref{eq:cn-rec} and splitting the sum at $j=3$
-  yields~\eqref{eq:cn-linear}--\eqref{eq:AB}.
+  yields~\eqref{eq:cn-linear}--\eqref{eq:AB}.  Formally, this
+  substitution is verified in Lean as the theorem
+  \texttt{c\_linear\_rec}; see Appendix~\ref{app:lean},
+  Table~\ref{tab:lean-map}.
 
   \emph{(b) Lower bound.}  From~(d) and~\eqref{eq:alg-id},
   \[
@@ -948,6 +953,9 @@ Lemma~\ref{lem:decreasing} &
 Proposition~\ref{prop:linear} &
   \texttt{c\_linear\_rec} &
   \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1495}{Perturbation.lean:1495} \\
+Identity~\eqref{eq:alg-id} &
+  \texttt{alg\_id} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L932}{Perturbation.lean:932} \\
 Theorem~\ref{thm:limit} (existence) &
   \texttt{c\_limit\_exists} &
   \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1517}{Perturbation.lean:1517} \\
