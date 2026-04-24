@@ -1,14 +1,14 @@
 /-
-  Bellman.lean — Definition of the strategy B value b(p, n)
+  Bellman.lean — Definition of the strategy ALL value b(p, n)
   for the all-heads-wins coin game, and proof that b(1/2, n) = 1/2.
 -/
 import Mathlib
 
 open Finset BigOperators Nat
 
-/-! ### Strategy B value -/
+/-! ### Strategy ALL value -/
 
-/-- Winning probability under strategy B (set aside all heads each round). -/
+/-- Winning probability under strategy ALL (set aside all heads each round). -/
 noncomputable def b (p : ℝ) : ℕ → ℝ
   | 0 => 1
   | n + 1 =>

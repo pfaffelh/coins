@@ -1,5 +1,5 @@
 /-
-  Strategies.lean — Strategy One value a(p,n) and proof that a(1/2,n) = 1/2.
+  Strategies.lean — Strategy ONE value a(p,n) and proof that a(1/2,n) = 1/2.
 
   The recursion (eq:a-rec in the manuscript) is
       a(p, 0)     = 1,
@@ -9,7 +9,7 @@ import Mathlib
 
 open Finset BigOperators Nat
 
-/-- Winning probability under strategy One (set aside exactly one head when
+/-- Winning probability under strategy ONE (set aside exactly one head when
     `1 ≤ k ≤ n-1`, all `n` heads when `k = n`). -/
 noncomputable def a (p : ℝ) : ℕ → ℝ
   | 0     => 1

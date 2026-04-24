@@ -2,7 +2,7 @@
   Perturbation.lean — Section 4 of the manuscript: deficit Δ_{n,p} := 1/2 - w_{n,p}.
   We give the basic definition and its consequences derived from earlier results
   (Δ = 0 at p = 1/2, Δ < 0 for p > 1/2). The full perturbation expansion in
-  δ = 1/2 - p (Propositions 4.4–4.9, Theorem 4.10) is left for future work.
+  δ = 1/2 - p (Propositions 4.3–4.9, Theorem 4.10) is left for future work.
 -/
 import Mathlib
 import CoinsLean.Optimal
@@ -51,7 +51,7 @@ theorem deficit_neg_of_above (p : ℝ) (hp : (1 : ℝ) / 2 < p) (hp1 : p < 1) :
     linarith
 
 /-- Convention: c_n is the leading coefficient of Δ_{n, 1/2 - δ} as δ → 0⁺.
-    We define c_n directly via the (finite) recursion of Proposition 4.4:
+    We define c_n directly via the (finite) recursion of Proposition 4.3:
         c_1 = 1,
         c_n = n / 2^{n-1} + (1 / 2^n) * ∑_{j=1}^{n-1} C(n,j) * (min_{j ≤ m ≤ n-1} c_m). -/
 noncomputable def c : ℕ → ℝ
@@ -115,7 +115,7 @@ theorem c_succ (n : ℕ) :
   unfold suffMin
   rw [dif_pos hjlt]
 
-/-- Example 4.5, first value: c_2 = 3/2. -/
+/-- Example 4.4, first value: c_2 = 3/2. -/
 theorem c_two : c 2 = 3/2 := by
   change c (0 + 2) = 3/2
   rw [c_succ]
@@ -165,7 +165,7 @@ theorem suffMin_pair (n : ℕ) : suffMin n (n + 2) = min (c n) (c (n + 1)) := by
     · rw [h]; exact min_le_left _ _
     · rw [h]; exact min_le_right _ _
 
-/-- Example 4.5, second value: c_3 = 27/16. -/
+/-- Example 4.4, second value: c_3 = 27/16. -/
 theorem c_three : c 3 = 27/16 := by
   change c (1 + 2) = 27/16
   rw [c_succ]
@@ -182,7 +182,7 @@ theorem c_three : c 3 = 27/16 := by
   rw [hs1, hs2]
   norm_num
 
-/-- Example 4.5, third value: c_4 = 111/64. -/
+/-- Example 4.4, third value: c_4 = 111/64. -/
 theorem c_four : c 4 = 111/64 := by
   change c (2 + 2) = 111/64
   rw [c_succ]
@@ -207,7 +207,7 @@ theorem c_four : c 4 = 111/64 := by
   rw [hc2]
   norm_num
 
-/-- Example 4.5, fourth value: c_5 = 3555/2048. -/
+/-- Example 4.4, fourth value: c_5 = 3555/2048. -/
 theorem c_five : c 5 = 3555/2048 := by
   change c (3 + 2) = 3555/2048
   rw [c_succ]
@@ -239,7 +239,7 @@ theorem c_five : c 5 = 3555/2048 := by
   rw [hc52, hc53]
   norm_num
 
-/-- Example 4.5, fifth value (added base case for the §4.3 joint induction):
+/-- Example 4.4, fifth value (added base case for the §4.3 joint induction):
     `c_6 = 113337/65536`. -/
 theorem c_six : c 6 = 113337/65536 := by
   change c (4 + 2) = 113337/65536
@@ -279,16 +279,16 @@ theorem c_six : c 6 = 113337/65536 := by
   rw [hc62, hc63, hc64]
   norm_num
 
-/-! ### Lemma 4.7: lower bound c_m ≥ 27/16 for m ≥ 4
+/-! ### Lemma 4.6: lower bound c_m ≥ 27/16 for m ≥ 4
 
   The full lemma in the manuscript holds for every m ≥ 4. The proof uses the
-  linear recursion (Prop 4.9), which itself relies on the collapse lemma (4.6),
-  which in turn relies on Lemma 4.7 — the circle is broken in the manuscript by
+  linear recursion (Prop 4.8), which itself relies on the collapse lemma (4.6),
+  which in turn relies on Lemma 4.6 — the circle is broken in the manuscript by
   proving the polynomial bound  A_m − (27/16)·B_m  ≥ 0 directly for m ∈ {3,…,12}
   and treating m ≥ 13 with a contraction argument.
 
   Below we prove the two cases that follow trivially from the values computed in
-  Example 4.5; the inductive bound for m ∈ {6,…,12} and the asymptotic case
+  Example 4.4; the inductive bound for m ∈ {6,…,12} and the asymptotic case
   m ≥ 13 are left for future work. -/
 
 /-! ### Proposition 4.2: deficit recursion
@@ -408,7 +408,7 @@ theorem c_four_ge : c 4 ≥ 27/16 := by rw [c_four]; norm_num
 
 theorem c_five_ge : c 5 ≥ 27/16 := by rw [c_five]; norm_num
 
-/-! Strict monotonicity of `c` on `{1, …, 5}` (Example 4.5). -/
+/-! Strict monotonicity of `c` on `{1, …, 5}` (Example 4.4). -/
 
 theorem c_one_lt_two   : c 1 < c 2 := by rw [c_one,   c_two];   norm_num
 theorem c_two_lt_three : c 2 < c 3 := by rw [c_two,   c_three]; norm_num
@@ -693,7 +693,7 @@ private lemma c_ind_step (n : ℕ) (h4 : 4 ≤ n) (h12 : n ≤ 12)
   nlinarith [hge_sum, hpoly, hQp_pos, hN_nn, hC2_nn,
              mul_pos hQp_pos hQp_pos, sq_nonneg Qp]
 
-/-- Lemma 4.7 for `n ∈ {4, …, 12}`. -/
+/-- Lemma 4.6 for `n ∈ {4, …, 12}`. -/
 theorem c_ge_27_16_le_12 : ∀ n : ℕ, 4 ≤ n → n ≤ 12 → c n ≥ 27/16 := by
   intro n h4 h12
   induction n using Nat.strongRecOn with
@@ -709,24 +709,24 @@ theorem c_ge_27_16_le_12 : ∀ n : ℕ, 4 ≤ n → n ≤ 12 → c n ≥ 27/16 :
   involving the constants `A_lin`, `B_lin` defined below.
 
   Dependency sketch:
-    - `c_ge_27_16_full` (Lemma 4.7) — uses `c_linear_rec` for `m ≥ 13` and
+    - `c_ge_27_16_full` (Lemma 4.6) — uses `c_linear_rec` for `m ≥ 13` and
       direct computation for `m ∈ {4, …, 12}` (already done in
       `c_ge_27_16_le_12`).
-    - `c_strict_anti_from_five` (Lemma 4.8) — uses `c_linear_rec` and
+    - `c_strict_anti_from_five` (Lemma 4.7) — uses `c_linear_rec` and
       `c_ge_27_16_full`.
-    - `suffMin_collapse_*` (Lemma 4.6) — uses Lemmas 4.7 and 4.8.
-    - `c_linear_rec` (Prop 4.9) — uses Lemma 4.6 (collapse).
-    - `c_limit_exists` (Thm 4.10) — uses Prop 4.9.
-    - `deficit_first_order` (Prop 4.4) — independent (asymptotic claim).
-    - `w_*` (Cor 4.11) — uses Prop 4.4 + properties of `c`. -/
+    - `suffMin_collapse_*` (Lemma 4.5) — uses Lemmas 4.6 and 4.7.
+    - `c_linear_rec` (Prop 4.8) — uses Lemma 4.5 (collapse).
+    - `c_limit_exists` (Thm 4.10) — uses Prop 4.8.
+    - `deficit_first_order` (Prop 4.3) — independent (asymptotic claim).
+    - `w_*` (Cor 4.11) — uses Prop 4.3 + properties of `c`. -/
 
-/-- The constant `A_n` from the linear recursion (Prop 4.9, eq:AB). -/
+/-- The constant `A_n` from the linear recursion (Prop 4.8, eq:AB). -/
 noncomputable def A_lin (n : ℕ) : ℝ :=
   (n : ℝ) / (2 : ℝ) ^ (n - 1) +
     ((n : ℝ) * c 1 + (Nat.choose n 2 : ℝ) * c 2 + (Nat.choose n 3 : ℝ) * c 3) /
       (2 : ℝ) ^ n
 
-/-- The constant `B_n` from the linear recursion (Prop 4.9, eq:AB). -/
+/-- The constant `B_n` from the linear recursion (Prop 4.8, eq:AB). -/
 noncomputable def B_lin (n : ℕ) : ℝ :=
   (2 + (n : ℝ) + (Nat.choose n 2 : ℝ) + (Nat.choose n 3 : ℝ)) / (2 : ℝ) ^ n
 
@@ -922,7 +922,7 @@ private lemma delta_tail_bound (N : ℕ) :
       rw [h_value13, h_value14]; norm_num
     linarith
 
-/-- The algebraic identity from Proposition 4.9 (eq:alg-id):
+/-- The algebraic identity from Proposition 4.8 (eq:alg-id):
     `A_n − (27/16) · B_n = −3·(n²−15n+36) / (32·2^n)`.
 
     This identity is independent of the linear recursion itself: it follows
@@ -1032,7 +1032,7 @@ private lemma cum_eps_bound : ∀ m, 12 ≤ m →
 
 /-! ### §4.3 joint inductive structure
 
-  Lemmas 4.6, 4.7, 4.8 and Proposition 4.9 are proved together by a single
+  Lemmas 4.5, 4.6, 4.7 and Proposition 4.8 are proved together by a single
   strong induction on `n` (see the manuscript's joint proof in §4.3):
 
   ```
@@ -1071,13 +1071,13 @@ private lemma c_anti_chain (m n : ℕ) (hm : 5 ≤ m) (hmn : m ≤ n)
 
 /-- Joint statement: for `n ≥ 4`, the four manuscript claims at level `n`. -/
 theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
-    -- (b) lower bound (Lemma 4.7 at n)
+    -- (b) lower bound (Lemma 4.6 at n)
     c n ≥ 27 / 16 ∧
-    -- (c) strict decrease (Lemma 4.8 at n, valid when n ≥ 6)
+    -- (c) strict decrease (Lemma 4.7 at n, valid when n ≥ 6)
     (6 ≤ n → c n < c (n - 1)) ∧
-    -- (d) linear recursion (Prop 4.9 at n, valid when n ≥ 7)
+    -- (d) linear recursion (Prop 4.8 at n, valid when n ≥ 7)
     (7 ≤ n → c n = A_lin n + (1 - B_lin n) * c (n - 1)) ∧
-    -- (a) collapse (Lemma 4.6 at n, valid when n ≥ 7)
+    -- (a) collapse (Lemma 4.5 at n, valid when n ≥ 7)
     (7 ≤ n → ∀ j, 1 ≤ j → j < n →
       (j ≤ 3 → suffMin j n = c j) ∧
       (4 ≤ j → suffMin j n = c (n - 1))) := by
@@ -1478,31 +1478,31 @@ theorem joint_step (n : ℕ) (hn : 4 ≤ n) :
           nlinarith [h_alg_neg, hcn1, hB_pos]
       exact ⟨h_b, fun _ => h_c, fun _ => h_d, fun _ => h_a⟩
 
-/-- Lemma 4.7 (full): `c m ≥ 27/16` for every `m ≥ 4`.
+/-- Lemma 4.6 (full): `c m ≥ 27/16` for every `m ≥ 4`.
     Corollary of `joint_step.1`. -/
 theorem c_ge_27_16_full : ∀ m : ℕ, 4 ≤ m → c m ≥ 27 / 16 :=
   fun m hm => (joint_step m hm).1
 
-/-- Lemma 4.8: the sequence `(c n)_{n ≥ 5}` is strictly decreasing.
+/-- Lemma 4.7: the sequence `(c n)_{n ≥ 5}` is strictly decreasing.
     Corollary of `joint_step.2.1`. -/
 theorem c_strict_anti_from_five : ∀ n : ℕ, 5 ≤ n → c (n + 1) < c n := by
   intro n hn
   have h := (joint_step (n + 1) (by omega)).2.1 (by omega)
   rwa [show (n + 1) - 1 = n from by omega] at h
 
-/-- Proposition 4.9: the linear recursion for `n ≥ 7`.
+/-- Proposition 4.8: the linear recursion for `n ≥ 7`.
     Corollary of `joint_step.2.2.1`. -/
 theorem c_linear_rec (n : ℕ) (h : 7 ≤ n) :
     c n = A_lin n + (1 - B_lin n) * c (n - 1) :=
   (joint_step n (by omega)).2.2.1 h
 
-/-- Lemma 4.6 (collapse) — low part: for `n ≥ 7` and `j ∈ {1, 2, 3}`,
+/-- Lemma 4.5 (collapse) — low part: for `n ≥ 7` and `j ∈ {1, 2, 3}`,
     `suffMin j n = c j`. Corollary of `joint_step.2.2.2`. -/
 theorem suffMin_collapse_low (n j : ℕ) (hn : 7 ≤ n) (h1 : 1 ≤ j) (h3 : j ≤ 3) :
     suffMin j n = c j :=
   (((joint_step n (by omega)).2.2.2 hn) j h1 (by omega)).1 h3
 
-/-- Lemma 4.6 (collapse) — high part: for `n ≥ 7` and `j ∈ {4, …, n−1}`,
+/-- Lemma 4.5 (collapse) — high part: for `n ≥ 7` and `j ∈ {4, …, n−1}`,
     `suffMin j n = c (n − 1)`. Corollary of `joint_step.2.2.2`. -/
 theorem suffMin_collapse_high (n j : ℕ) (hn : 7 ≤ n) (h4 : 4 ≤ j) (hjn : j < n) :
     suffMin j n = c (n - 1) :=
@@ -2103,7 +2103,7 @@ theorem c_limit_formula (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
   have h_lim := Filter.Tendsto.congr' h_ev.symm h_comb_tendsto
   exact tendsto_nhds_unique hL h_lim
 
-/-! ### Bridge from `Δ` to `c` (Proposition 4.4)
+/-! ### Bridge from `Δ` to `c` (Proposition 4.3)
 
   We need to show that `c n` is the first-order coefficient of
   `Δ_{n, 1/2 − δ}` as `δ → 0⁺`. This bridges the standalone
@@ -2117,7 +2117,7 @@ theorem c_limit_formula (n₀ : ℕ) (hn₀ : 7 ≤ n₀) :
   the general case is sketched with sub-sorries identifying the
   remaining real-analysis lemmas. -/
 
-/-- Base case n = 1 of Proposition 4.4: `Δ_{1, 1/2 − δ} = c_1 · δ` (exactly,
+/-- Base case n = 1 of Proposition 4.3: `Δ_{1, 1/2 − δ} = c_1 · δ` (exactly,
     not just to first order). Indeed `w(1/2 − δ, 1) = 1/2 − δ` and `c_1 = 1`. -/
 theorem deficit_first_order_one (δ : ℝ) : deficit (1/2 - δ) 1 = c 1 * δ := by
   unfold deficit
@@ -2495,7 +2495,7 @@ private lemma suffMinDelta_first_order (n j : ℕ) (hn : 2 ≤ n) (hj : 1 ≤ j)
   -- Goal: |inf' (deficit (1/2-δ) m) - inf' (c m · δ)| ≤ M_max · δ².
   exact finset_inf'_lipschitz _ _ _ (M_max * δ ^ 2) h_per_m
 
-/-- Proposition 4.4 (first-order coefficient): `c n` is the first-order
+/-- Proposition 4.3 (first-order coefficient): `c n` is the first-order
     coefficient of `Δ_{n, 1/2 - δ}` as `δ → 0⁺`.
     Base case `n = 1` is `deficit_first_order_one`; the inductive step
     combines `constant_term_taylor`, `binom_weight_perturb`, and

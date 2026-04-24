@@ -3,7 +3,7 @@
 
   For p > 1/2 we prove:
   - the Bellman recursion for w collapses to a linear recursion
-    (Corollary 3.4 of the manuscript):
+    (Corollary 3.2 of the manuscript):
         w(p, n) = p^n + (1 - p^n - q^n) · w(p, n-1),   q := 1 - p,
     valid for every n ≥ 1;
   - the limit W(p) := lim w(p, n) exists (Weierstrass);
@@ -65,7 +65,7 @@ private lemma a_le_one (p : ℝ) (hp_nn : 0 ≤ p) (hp_le : p ≤ 1) :
         = 1 - (1 - p) ^ (k + 1) := by ring
     linarith
 
-/-- **Corollary 3.4** (Linear recursion above 1/2).
+/-- **Corollary 3.2** (Linear recursion above 1/2).
     For `p > 1/2` and every `n ≥ 1`:
     `w p n = p^n + (1 - p^n - (1-p)^n) * w p (n-1)`. -/
 theorem above_linear_rec (p : ℝ) (hp : (1 : ℝ) / 2 < p) (hp_lt : p < 1)
@@ -84,7 +84,7 @@ theorem above_linear_rec (p : ℝ) (hp : (1 : ℝ) / 2 < p) (hp_lt : p < 1)
       · exact (above_half p hp hp_lt m h).2.2
     rw [h_wa_succ, a_succ, h_wa]
 
-/-- **Theorem 3.5** (existence of `W(p)`): for `p > 1/2`, the limit
+/-- **Theorem 3.3** (existence of `W(p)`): for `p > 1/2`, the limit
     `W(p) := lim w(p, n)` exists. -/
 theorem above_limit_exists (p : ℝ) (hp : (1 : ℝ) / 2 < p) (hp_lt : p < 1) :
     ∃ W : ℝ, Filter.Tendsto (fun n => w p n) Filter.atTop (nhds W) := by
@@ -128,7 +128,7 @@ theorem above_limit_exists (p : ℝ) (hp : (1 : ℝ) / 2 < p) (hp_lt : p < 1) :
     congr 1; omega
   exact Filter.Tendsto.congr' h_eq.symm h_comp
 
-/-- **Theorem 3.5 (lower bound)**: for `p > 1/2`, the limit `W(p) ≥ p`,
+/-- **Theorem 3.3 (lower bound)**: for `p > 1/2`, the limit `W(p) ≥ p`,
     hence `W(p) > 1/2`. -/
 theorem above_limit_ge (p : ℝ) (hp : (1 : ℝ) / 2 < p) (hp_lt : p < 1) :
     ∀ W : ℝ, Filter.Tendsto (fun n => w p n) Filter.atTop (nhds W) →

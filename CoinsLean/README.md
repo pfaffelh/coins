@@ -204,7 +204,6 @@ CoinsLean/
 ├── lake-manifest.json        pinned Mathlib version (v4.29.1)
 ├── CoinsLean.lean            root module (imports everything)
 └── CoinsLean/
-    ├── Basic.lean            template stub — ignore
     ├── Bellman.lean          strategy-ALL value b(p,n)
     ├── HalfP.lean            b(1/2, n) = 1/2 for all n
     ├── Strategies.lean       strategy-ONE value a(p,n)

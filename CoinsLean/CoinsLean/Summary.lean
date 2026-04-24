@@ -45,7 +45,7 @@ import CoinsLean.AboveLimit
 
 -- ## `c n` — the first-order coefficient of `deficit (1/2 − δ) n` in δ.
 --            Defined directly by the Bellman-like recursion from
---            Proposition 4.4:
+--            Proposition 4.3:
 /-
   noncomputable def c : ℕ → ℝ
     | 0     => 0          -- not used; the recursion starts at n = 1
@@ -63,7 +63,7 @@ import CoinsLean.AboveLimit
 #print c
 
 -- (The coefficients `A_lin n` and `B_lin n` of the linear recursion
--- `c_n = A_n + (1 − B_n)·c_{n-1}` for `n ≥ 7` (Proposition 4.9) are
+-- `c_n = A_n + (1 − B_n)·c_{n-1}` for `n ≥ 7` (Proposition 4.8) are
 -- `private` in `Perturbation.lean` and therefore not accessible here.)
 
 -- ======================================================================
@@ -88,7 +88,7 @@ import CoinsLean.AboveLimit
 -- ## §3.1 Theorem (lower bound W(p) ≥ p).
 #check @above_limit_ge
 
--- ## Proposition 4.4. `c n · δ` is the first-order term of
+-- ## Proposition 4.3. `c n · δ` is the first-order term of
 --    `deficit (1/2 − δ) n` as δ → 0⁺.
 #check @deficit_first_order
 
