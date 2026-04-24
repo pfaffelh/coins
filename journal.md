@@ -2448,3 +2448,125 @@ zero sorries, still builds green.
 **Reading-pass momentum:** the author is now in detailed-review
 mode — exactly the "second pair of eyes" pass that the ethics
 discussion of 2026-04-21 recommended before submission.
+
+## 2026-04-24 — Session 2: $W(p)$ for $p > \tfrac12$, §5/§6 reorg, bug fixes
+
+### The $p > 1/2$ limit — observation and derivation
+
+The author observed that since the Bellman suffix-max collapses
+for $p > \tfrac12$ (which is Theorem~\ref{thm:above} (i)), the
+Bellman equation reduces to the *linear* recursion
+$w_{n,p} = p^n + (1 - p^n - q^n) w_{n-1,p}$ for every $n \ge 1$
+— analogous to the $c_n$ linear recursion from §4, but holding
+from $n = 1$ (no preliminary structural work), and with explicit
+polynomial coefficients in $p$.  As a consequence, the limit
+$W(p) := \lim_n w_{n,p}$ exists by Weierstrass and admits a
+closed-form series representation.  Added new §3.1 containing:
+
+- Corollary~\ref{cor:above-lin}: the linear recursion for $p > 1/2$.
+- Theorem~\ref{thm:above-limit}: existence, $p \le W(p) < 1$, and
+  closed-form $W(p) = \sum_{k \ge 1} p^k \prod_{j > k}(1 - p^j - q^j)$.
+- Figure~\ref{fig:W-above}: $W(p)$ vs $p$ with markers at
+  $W(0.55) \approx 0.6288$, $W(0.6) \approx 0.7482$,
+  $W(0.7) \approx 0.9255$, $W(0.9) \approx 0.99998$.
+- Remark~\ref{rem:above-vs-below}: notes that
+  \eqref{eq:W-finite-iter} and \eqref{eq:cn-finite-iter} below
+  share the same Tannery-style iteration pattern, differing only
+  in coefficients.
+
+### Bug spotted along the way
+
+My first draft of the closed-form formula was
+$\prod_{k \ge 1}(1 - p^k - q^k) + \sum \ldots$, but the $k=1$
+factor is $1 - p - q = 0$, so the product vanishes identically.
+Corrected to the sum-only form.
+
+### $W(p) < 1$ strictly (another author question)
+
+Proved via the companion recursion
+$u_n = q^n + (1 - p^n - q^n) u_{n-1}$ for $u_n := 1 - w_{n,p}$,
+whose iterated form is
+$U(p) = \sum_{k \ge 1} q^k \prod_{j > k}(1 - p^j - q^j) > 0$
+(every term strictly positive for $p \in (1/2, 1)$).
+
+### Lean formalization (§3.1)
+
+New file `AboveLimit.lean` (158 lines) contains:
+- `pow_plus_one_sub_pow_le_one` (helper: $p^n + q^n \le 1$).
+- `a_le_one` (helper: $a(p, n) \le 1$).
+- `above_linear_rec` (Corollary 3.4): proved via `above_half` +
+  `a_succ`.
+- `above_limit_exists` (Theorem 3.5, existence): monotone
+  convergence via `tendsto_atTop_ciSup` on the shift.
+- `above_limit_ge` (Theorem 3.5, lower bound): $W(p) \ge p$ from
+  monotonicity.
+Not (yet) formalized: the closed-form series and $W(p) < 1$
+strictly. Pinned in Appendix A at commit `c60bcd3`.
+
+### §5 / §6 reorganization
+
+The author asked to:
+- Rename §5 to "Numerical experiments for $p < 1/2$".
+- Drop the subsection "Optimal winning probability for $p < 1/2$"
+  (redundant with the new section title).
+- Promote §5.2 "Discussion" to a full section §6, with two new
+  opening sentences contrasting $p > 1/2$ (clean closed-form
+  $W(p)$) with $p < 1/2$ (the bulk of the paper).
+
+### Consistency pass
+
+Full read-through of the manuscript to find stale items after
+all the recent edits.  Identified and auto-fixed:
+- Two typos in §1.3 "Relation to prior work" ("collabortion",
+  "halluzinations").
+- Outline in §1.4 did not mention §3.1 or §6 — now extended.
+- Appendix A table: added three rows for the new §3.1 Lean
+  theorems; repinned all commit hashes from `536c6b5` to
+  `c60bcd3`; updated "six main theorems" phrasing; Development
+  history now mentions `AboveLimit.lean` and total $\approx 3700$
+  Lean lines.
+- All 28 `\href{...#L<N>}` GitHub line-level references verified
+  to point to the expected theorem at the pinned commit.
+
+Identified and reported, then acted on by author decision:
+- **(1)** Removed duplicate `rem:above-below-asymm` at end of
+  §3.1 — its content was fully covered by the opening of §6.
+- **(2)** Added one-line $W(p)$ mention to the abstract.
+- **(3, 4)** left as-is by author request.
+- **(5)** Half-line spelling out the derivation
+  $u_n = q^n + (1-p^n-q^n) u_{n-1}$ in Thm 3.5 proof.
+- **(6)** All approximate text references to $L$ now use the
+  same "$L \approx 1.7035$" (formerly a mix of $1.70347$,
+  $1.70347176\ldots$, etc.); the displayed `eq:L-value` keeps
+  the full 20-digit precision.
+
+### Lean refactor: `c_twelve_buffer`
+
+The inline buffer calculation $c_{12} - \tfrac{27}{16} \ge
+\tfrac{1}{60}$ was extracted as a public theorem
+`c_twelve_buffer` at the end of `Perturbation.lean`, leaving
+earlier line numbers unchanged.  Allows the manuscript link for
+the $\varepsilon_{12}$ starting value to use the same
+`\href{...}{\texttt{c\_twelve\_buffer}}` pattern as the other
+inline references.
+
+### End-of-day tally (2026-04-24 extended)
+
+**Commits (many; partial list):** `fa31390`, `c824fa4`,
+`8363989`, `6adbe27`, `7000c6b`, `78e9add`, `536c6b5` (extract
+`c_twelve_buffer`), `6137a84` (repin), `e43490b` (ε-iteration
+explicit), `9da3925` (Lean refs for (c)), `04e8f4c` (§3.1, §6,
+Mathlib version), `d7ab9e9` (demote existence of L),
+`a453415` (fix W(p) formula + figure), `c60bcd3` (Lean §3.1),
+`2afebf4` (Appendix A refresh), `c76cfde` (outline + typos),
+`0716a1b` (abstract + §3.1 polish).
+
+**Manuscript:** 15 → 18 pages over the day.
+**Formalization:** $\approx 3700$ Lean lines, zero sorries,
+builds green. Pinned at `c60bcd3`.
+**Open items:**
+- Closed-form series for $W(p)$ and $W(p) < 1$ not yet formalized
+  in Lean (informal proofs in manuscript, Tannery-style parallel
+  to `c_limit_formula`).
+- Section ordering and content now stable; manuscript ready for
+  another close human reading before submission.
