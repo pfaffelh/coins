@@ -49,11 +49,13 @@
   determine the optimal winning probability~$w_{n,p}$ as a function
   of~$n$ and~$p$.
 
-  For $p=\tfrac12$ every strategy 
+  For $p=\tfrac12$ every strategy
   % that accepts the immediate win
   achieves $w_{n,1/2}=\tfrac12$.  For $p>\tfrac12$ the
   strategy~\One{} is optimal and $n\mapsto w_{n,p}$ is strictly
-  increasing.  For $p<\tfrac12$ near~$\tfrac12$ we carry out a
+  increasing; as a consequence the limit $W(p):=\lim_n w_{n,p}$
+  admits an explicit series representation and satisfies
+  $p\le W(p)<1$.  For $p<\tfrac12$ near~$\tfrac12$ we carry out a
   first-order perturbation expansion in $\delta:=\tfrac12-p$ and prove
   that the deficit is 
   $\tfrac12-w_{n,\tfrac 12 - \delta} \approx \delta c_n$ in first order in $\delta$, 
@@ -156,7 +158,7 @@ a first-order perturbation in $\delta=\tfrac12-p$ and obtain a
 deficit coefficient $c_n$ satisfies a linear recursion
 (Proposition~\ref{prop:linear}), the limit $L=\lim c_n$ admits an
 explicit formula and a numerical value $L\approx
-1.70347176\dots$ (Theorem~\ref{thm:limit}), and the local-extremum
+1.7035$ (Theorem~\ref{thm:limit}), and the local-extremum
 structure of $n\mapsto w_{n,p}$ is fully determined to first order
 (Corollary~\ref{cor:shape}).
 
@@ -434,10 +436,12 @@ trivially by the Weierstrass criterion.
   (cf.~Knopp~\cite[\S 41]{Knopp1990}) with dominator $p^k$, limit
   and summation commute, giving~\eqref{eq:above-W-formula}.
 
-  It remains to show $W(p)<1$.  Set $U(p):=1-W(p)$; the recursion
-  for $u_n:=1-w_{n,p}$ is $u_n=q^n+(1-p^n-q^n)u_{n-1}$, $u_0=0$,
-  and iterating identically to~\eqref{eq:W-finite-iter}
-  gives the analogue
+  It remains to show $W(p)<1$.  Set $U(p):=1-W(p)$ and
+  $u_n:=1-w_{n,p}$; subtracting~\eqref{eq:above-lin} from~$1$ and
+  using $p^n+q^n+(1-p^n-q^n)=1$ gives the companion recursion
+  $u_n=q^n+(1-p^n-q^n)u_{n-1}$ with $u_0=0$.
+  Iterating identically to~\eqref{eq:W-finite-iter} gives the
+  analogue
   \[
     U(p) \;=\; \sum_{k=1}^\infty q^k\Pi_k,
   \]
@@ -477,19 +481,6 @@ trivially by the Weierstrass criterion.
   \label{fig:W-above}
 \end{figure}
 
-\begin{remark}\label{rem:above-below-asymm}
-  The two limit theorems we obtain --- $W(p)$ for $p>\tfrac12$
-  (Theorem~\ref{thm:above-limit}) and the perturbative limit $L$
-  for the deficit coefficient $c_n$ as $\delta=\tfrac12-p\to
-  0^+$ (Theorem~\ref{thm:limit} below) --- exhibit a striking
-  asymmetry across $p=\tfrac12$.  Above the fair coin, the
-  optimal-value sequence $w_{n,p}$ itself converges to a closed
-  form; below, the convergence is at the level of a
-  perturbative coefficient, and the structural recursion only
-  becomes linear from $n\ge 7$ onwards.  The asymmetry reflects
-  the fact that strategy~\One{} is optimal for $p\ge\tfrac12$
-  but strategy is non-trivial below.
-\end{remark}
 
 %% ====================================================================
 \section{Below the fair coin: perturbation in
@@ -599,7 +590,7 @@ Thus $\Delta_{n,p}=O(\delta)$.
   links to the source.
   Figure~\ref{fig:cn-sequence} plots the sequence up to $n=25$,
   together with the limit $L=\lim_{n\to\infty}c_n\approx
-  1.70347$ and the uniform lower bound $\tfrac{27}{16}=1.6875$
+  1.7035$ and the uniform lower bound $\tfrac{27}{16}=1.6875$
   established in Lemma~\ref{lem:lower}.
 
   \begin{figure}[h]
@@ -611,7 +602,7 @@ Thus $\Delta_{n,p}=O(\delta)$.
       arithmetic.  The sequence increases on
       $\{1,\dots,5\}$ (with maximum at $n=5$, marked by a star),
       strictly decreases for $n\ge 5$, and converges from above
-      to $L\approx 1.70347$.  The lower bound $\tfrac{27}{16}$
+      to $L\approx 1.7035$.  The lower bound $\tfrac{27}{16}$
       from Lemma~\ref{lem:lower} is shown as a dotted line.}
     \label{fig:cn-sequence}
   \end{figure}
@@ -1232,7 +1223,7 @@ and a thematic commentary tied to each commit is in
 %% ====================================================================
 
 The author thanks Joachim Breitner for introducing him to the
-game as well as help in Lean~4, Wouter van~Doorn for valuable discussion, 
+game as well as for help in Lean~4, Wouter van~Doorn for valuable discussion, 
 and Harald Binder for suggesting this new kind of doing mathematics.
 This research was supported by the DFG Project-ID 499552394–SFB 1597.
 
