@@ -361,6 +361,92 @@ formalization on GitHub.
   $(q/p)^n<(q/p)^{n-1}$, which holds since $q/p<1$.
 \end{proof}
 
+\subsection{The limit \texorpdfstring{$W(p)=\lim_{n\to\infty}w_{n,p}$}{W(p) = lim w(n,p)}}\label{sec:above-limit}
+
+The collapse of the Bellman suffix-maximum, which is the central
+content of Theorem~\ref{thm:above}, has a useful by-product: the
+Bellman recursion for $w_{n,p}$ is genuinely \emph{linear} for
+every $n\ge 1$.
+
+\begin{corollary}[Linear recursion above $\tfrac12$]\label{cor:above-lin}
+  For $p>\tfrac12$ and every $n\ge 1$,
+  \begin{equation}\label{eq:above-lin}
+    w_{n,p} \;=\; p^n + \bigl(1-p^n-q^n\bigr)\,w_{n-1,p},
+  \end{equation}
+  with $w_{0,p}=1$.
+\end{corollary}
+
+\begin{proof}
+  For $n=1$ the sum in~\eqref{eq:bellman} is empty and
+  $w_{1,p}=p=p^1+(1-p-q)\cdot 1$ since $p+q=1$.  For $n\ge 2$,
+  combine the suffix-max collapse from the proof of
+  Theorem~\ref{thm:above} with the binomial identity
+  $\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j=1-p^n-q^n$.
+\end{proof}
+
+The linear recursion~\eqref{eq:above-lin} is the analogue, for
+$p>\tfrac12$, of the linear $c_n$-recursion of
+Proposition~\ref{prop:linear} below.  It is structurally
+\emph{simpler}: it holds for every $n\ge 1$ (no preliminary
+joint-induction step is needed), the coefficients are explicit
+polynomials in $p$, and the bounded monotone sequence converges
+trivially by the Weierstrass criterion.
+
+\begin{theorem}[Limit and explicit formula above $\tfrac12$]
+  \label{thm:above-limit}
+  For every $p\in(\tfrac12,1)$ the limit
+  $W(p):=\lim_{n\to\infty}w_{n,p}$ exists, satisfies $W(p)\in
+  (\tfrac12,1)$, and admits the closed-form representation
+  \begin{equation}\label{eq:above-W-formula}
+    W(p) \;=\; \prod_{k=1}^\infty\bigl(1-p^k-q^k\bigr)
+    \;+\; \sum_{k=1}^\infty p^k\!\!\!\prod_{j=k+1}^\infty\!\!
+            \bigl(1-p^j-q^j\bigr).
+  \end{equation}
+  Both the product and the series converge absolutely
+  (geometrically, since $p^k+q^k=O(\max(p,q)^k)$).
+\end{theorem}
+
+\begin{proof}
+  Existence and the bounds $\tfrac12<W(p)<1$ are immediate from
+  Theorems~\ref{thm:half} and~\ref{thm:above}~(i)--(ii).
+  Iterating~\eqref{eq:above-lin} from $k=1$ to $k=n$ gives
+  \[
+    w_{n,p} \;=\; \prod_{k=1}^n\bigl(1-p^k-q^k\bigr)\;w_{0,p}
+    \;+\; \sum_{k=1}^n p^k\!\prod_{j=k+1}^n\!\bigl(1-p^j-q^j\bigr),
+  \]
+  with $w_{0,p}=1$.  Each factor $1-p^k-q^k=\sum_{j=1}^{k-1}\binom{k}{j}p^{k-j}q^j$ lies in $(0,1)$ for $k\ge 1$
+  (positive: pick the $j=1$ term; less than $1$: subtract the
+  positive $p^k+q^k$); together with $\sum_k(p^k+q^k)<\infty$ the
+  infinite product converges to a positive limit.  The series
+  converges by direct geometric comparison.  Passing to the limit
+  $n\to\infty$ yields~\eqref{eq:above-W-formula}.
+\end{proof}
+
+\begin{remark}\label{rem:above-W-numerics}
+  Numerically, $W(p)$ is monotone increasing in~$p$ on
+  $(\tfrac12,1)$ with $W(\tfrac12^+)=\tfrac12$ and $W(1^-)=1$.
+  Selected values (computed via the partial product/series
+  to $80$-digit precision):
+  \[
+    W(0.55)\approx 0.5984,\quad W(0.6)\approx 0.6886,\quad
+    W(0.7)\approx 0.8395,\quad W(0.9)\approx 0.9842.
+  \]
+\end{remark}
+
+\begin{remark}\label{rem:above-vs-below}
+  The two limit theorems we obtain --- $W(p)$ for $p>\tfrac12$
+  (Theorem~\ref{thm:above-limit}) and the perturbative limit $L$
+  for the deficit coefficient $c_n$ as $\delta=\tfrac12-p\to
+  0^+$ (Theorem~\ref{thm:limit} below) --- exhibit a striking
+  asymmetry across $p=\tfrac12$.  Above the fair coin, the
+  optimal-value sequence $w_{n,p}$ itself converges to a closed
+  form; below, the convergence is at the level of a
+  perturbative coefficient, and the structural recursion only
+  becomes linear from $n\ge 7$ onwards.  The asymmetry reflects
+  the fact that strategy~\One{} is optimal for $p\ge\tfrac12$
+  but strategy is non-trivial below.
+\end{remark}
+
 %% ====================================================================
 \section{Below the fair coin: perturbation in
   \texorpdfstring{$\delta=\tfrac12-p$}{delta = 1/2 - p}}
@@ -693,8 +779,8 @@ $<n$ supplying exactly what is needed at level~$n$.
 
   \emph{Step 1 (infinite product).}  Since $B_m=O(m^3/2^m)$, the
   series $\sum_{m\ge n_0}B_m$ converges absolutely.  Because
-  $0<B_m<1$ for all $m\ge 7$ (shown in the proof of
-  Lemma~\ref{lem:lower}), the partial products
+  $0<B_m<1$ for all $m\ge 7$ (shown in the inductive proof of
+  the previous subsection), the partial products
   $\prod_{m=n_0}^n(1-B_m)$ converge as $n\to\infty$ to a strictly
   positive limit $\prod_{m\ge n_0}(1-B_m)$; cf.\ Knopp
   \cite[§29]{Knopp1990}.
@@ -910,16 +996,18 @@ constant~$C$.
 \section{Formal verification in Lean~4}\label{app:lean}
 
 All results of this paper have been formally verified in
-Lean~4 using the Mathlib library.  The formalization is publicly
-available at
+Lean~4 (toolchain \texttt{leanprover/lean4:v4.29.1}) using the
+Mathlib library at release tag \texttt{v4.29.1} (revision
+\texttt{5e932f97}).  The formalization is publicly available at
 \begin{center}
   \url{https://github.com/pfaffelh/coins}
 \end{center}
-and builds successfully against Mathlib with no open goals.  The
-proofs use only the three standard Lean foundational axioms
-(\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound});
-no additional axioms, \texttt{sorry}s, \texttt{native\_decide},
-\texttt{unsafe} blocks, or \texttt{opaque} definitions appear.
+and builds successfully against this Mathlib version with no open
+goals.  The proofs use only the three standard Lean foundational
+axioms (\texttt{propext}, \texttt{Classical.choice},
+\texttt{Quot.sound}); no additional axioms, \texttt{sorry}s,
+\texttt{native\_decide}, \texttt{unsafe} blocks, or
+\texttt{opaque} definitions appear.
 
 Table~\ref{tab:lean-map} lists every numbered theorem,
 proposition, lemma, and corollary stated in the main text together
