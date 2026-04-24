@@ -2306,3 +2306,145 @@ reading of van Doorn 2024.
 - Attribution: now precise (ideas ↔ author, execution ↔ Claude).
 - Prior-work delineation: concrete and honest.
 - Venue: open. Author's call.
+
+### Same-day follow-ups: licensing and acknowledgements
+
+After the ethics discussion identified the missing repository
+license as a real (and easy-to-fix) gap, three files were added:
+
+- `LICENSE` — Apache License 2.0 (standard text, identical to the
+  Mathlib dependency).
+- `NOTICE` — Apache-convention attribution: copyright holder
+  Peter Pfaffelhuber, Claude as drafter under the author's
+  direction, Mathlib acknowledged.
+- `README.md` — short overview of repository contents pointing
+  to manuscript / `Summary.lean` / simulation scripts /
+  `journal.md` / `claude.md`, with explicit authorship and
+  license sections.
+
+Apache 2.0 is the natural choice: compatible with the Mathlib
+dependency (also Apache 2.0), standard in the formal-methods
+community, and consistent with Anthropic's terms for Claude
+outputs. Commit `4121f35`.
+
+Per author request, also added an Acknowledgements section before
+the bibliography: thanks to Joachim Breitner (introduced the
+author to the game), Wouter van Doorn (discussion), and DFG
+CRC 1597 "Small Data" (funding). Commit `346a195`.
+
+## 2026-04-24 — Reading-pass polish
+
+The author started reading the manuscript carefully and pushed a
+sequence of small but meaningful improvements: a new figure, a
+mathematical-expository fix, several Lean-source cross-references
+made clickable, and an index-consistency cleanup.
+
+### Figure $n \mapsto c_n$ in Example 4.5 (commit `fa31390`)
+
+Created `simulation/plot_cn.py`, computing $c_n$ via the
+Bellman-style recursion of Proposition 4.4 in 80-digit `mpmath`
+precision. The plot covers $n = 1, \ldots, 25$ and includes a
+star at the maximum $n=5$, a horizontal dashed line at the
+limit $L \approx 1.70347$, and a dotted line at the lower bound
+$\tfrac{27}{16} = 1.6875$ (Lemma 4.7).
+
+Inserted as `Figure 5.1 (cn-sequence)` inside Example 4.5, with a
+descriptive caption. Numerical values up to $c_{25}$ confirmed
+against the manuscript's stated values (e.g., $c_4 = 1.7343\ldots$,
+$c_5 = 1.7358\ldots$, $c_6 = 1.7293\ldots$) and against the limit
+$L = 1.7034743589\ldots$.
+
+While editing the example display, the author also added
+"$c_3 = \tfrac{27}{16} = 1.6875$" inline, which created a
+$50$pt-wide overfull `\hbox`. Fixed by switching the display from
+a single `\[ \]` (display-math) to a two-line `\begin{gather*}`,
+which centers each row independently.
+
+PDF: 14 → 15 pages.
+
+### Lean-source links from the body of §4 (commits `c824fa4`, `6adbe27`, `7000c6b`, `78e9add`)
+
+A coherent set of cross-references between manuscript and Lean
+formalization, motivated by the author's reading-pass:
+
+1. **Concrete $c_n$ values** (`c824fa4`). The six identities
+   $c_1=1, \ldots, c_6 = \tfrac{113337}{65536}$ in
+   Example 4.5 are individually proved as Lean theorems
+   `c_one`, …, `c_six`. Six new rows added to the
+   Appendix A table (lines 76, 119, 169, 186, 211, 244 in
+   `Perturbation.lean` at the pinned commit `b98f5ba`); a
+   sentence in Example 4.5 says "Each of the six identities
+   above is formally verified in Lean (`c_one`, …, `c_six`); see
+   Appendix A, Table 1, for direct links to the source."
+
+2. **Algebraic identity and linear recursion** (`6adbe27`). The
+   joint proof's opening lines (where eq:alg-id is established
+   by direct algebraic computation) and part (d) (where
+   eq:cn-linear is derived from collapse (a)) each got a Lean
+   reference: `alg_id` and `c_linear_rec` respectively. New row
+   for `alg_id` in the Appendix table.
+
+3. **Make in-text lemma names clickable** (`7000c6b`). The four
+   in-text mentions added in steps (1) and (2) — `c_one`,
+   `c_six`, `alg_id`, `c_linear_rec` — were upgraded from bare
+   `\texttt{...}` to `\href{...}{\texttt{...}}` constructions
+   pointing to the exact GitHub line, matching the format of the
+   right column of Appendix A's table.
+
+4. **Cumulative $\varepsilon$-argument** (`78e9add`). For the
+   $n \ge 13$ part of the joint proof, three Lean references were
+   added inline using the same `\href{...}{\texttt{...}}` style:
+   - `delta_tail_bound` for $\sum_{n \ge 13} \delta_n \le 1/200$;
+   - `B_tail_bound` for $\sum_{n \ge 13} B_n < 1/8$ (used for
+     $\prod (1 - B_n) > 7/8$);
+   - `cum_eps_bound` for the cumulative recursive step itself.
+   Three matching new rows in the Appendix table.
+
+### Mathematical-expository fix in §4.3 (commit `8363989`)
+
+The author asked: in the proof of part (a) (collapse), why does
+$c_6 \ge c_{n-1}$? The previous wording attributed it to "(IH(c))"
+as if a single application sufficed; in fact it is the back end
+of the iterated chain $c_5 > c_6 > \ldots > c_{n-1}$ already
+established two lines above. Reworded to make the iteration
+explicit: "iterating IH(c) gives the chain ...; using the segment
+$c_6 \ge c_{n-1}$ of the same chain ..."
+
+No mathematical change, just an honest exposition.
+
+### Index unification in §4.3 (`78e9add`, second part)
+
+Same commit also unified the indices in the cumulative argument
+for $n \ge 13$. Previously the text mixed $\varepsilon_m$,
+$\delta_k$, $\sum_{k \ge 13}$, $\sum_{m \ge 13}$ — confusing for
+a careful reader. After the change, everything uses $n$
+consistently:
+- $\varepsilon_n := c_n - \tfrac{27}{16}$;
+- $\delta_n := 3(n^2 - 15n + 36)/(32 \cdot 2^n)$;
+- recursion $\varepsilon_n = (1 - B_n)\varepsilon_{n-1} - \delta_n$;
+- bounds $\sum_{n \ge 13} \delta_n$, $\sum_{n \ge 13} B_n$,
+  $\prod_{n \ge 13} (1 - B_n)$.
+
+### End-of-day status (2026-04-24)
+
+**Commits today (6):** `fa31390`, `c824fa4`, `8363989`, `6adbe27`,
+`7000c6b`, `78e9add`. Plus two from the previous day already
+documented above (`4121f35`, `346a195`).
+
+**Manuscript:** 15 pages (was 14 going into the day).
+
+**Cross-reference status:** every concrete numerical or algebraic
+calculation in §4 — $c_1, \ldots, c_6$, $\eqref{eq:alg-id}$,
+$\eqref{eq:cn-linear}$, the cumulative $\varepsilon$-argument,
+the tail bounds for $\delta_n$ and $B_n$ — is now individually
+linked to its Lean implementation, both inline (clickable lemma
+names) and in the Appendix A table.
+
+**No mathematical content changed today** — all edits are
+expository (figures, links, index consistency, clearer wording
+of an iterated implication). Lean formalization untouched, still
+zero sorries, still builds green.
+
+**Reading-pass momentum:** the author is now in detailed-review
+mode — exactly the "second pair of eyes" pass that the ethics
+discussion of 2026-04-21 recommended before submission.
