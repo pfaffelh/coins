@@ -609,25 +609,29 @@ $<n$ supplying exactly what is needed at level~$n$.
   quadratic $n^2-15n+36$ is non-positive on $\{3,\dots,12\}$
   (its roots are $3$ and $12$), so $A_n-\tfrac{27}{16}B_n\ge 0$
   by~\eqref{eq:alg-id}, and~(b) follows.  For $n\ge 13$ we argue
-  cumulatively: define $\varepsilon_m:=c_m-\tfrac{27}{16}$ and
-  $\delta_k:=3(k^2-15k+36)/(32\cdot 2^k)$,
-  so~(d) gives $\varepsilon_m=(1-B_m)\varepsilon_{m-1}-\delta_m$.
+  cumulatively: define $\varepsilon_n:=c_n-\tfrac{27}{16}$ and
+  $\delta_n:=3(n^2-15n+36)/(32\cdot 2^n)$,
+  so~(d) gives $\varepsilon_n=(1-B_n)\varepsilon_{n-1}-\delta_n$.
   The starting value $\varepsilon_{12}>\tfrac{1}{60}$ is verified by
   exact rational computation; the cumulative negative contribution
-  is bounded by $\sum_{k\ge 13}\delta_k
+  is bounded by $\sum_{n\ge 13}\delta_n
   \le\tfrac{297}{65536}<\tfrac{1}{200}$ (using
-  $\sum_{k\ge 13}k^2/2^k=\tfrac{99}{2048}$); meanwhile
-  $\prod_{m\ge 13}(1-B_m)>\tfrac{7}{8}$ (using
-  $\sum_{m\ge 13}B_m<\tfrac{1}{8}$).  So
-  $\varepsilon_n>\tfrac{1}{60}\cdot\tfrac{7}{8}-\tfrac{1}{200}
-  =\tfrac{23}{2400}>0$ for $n\ge 13$.
+  $\sum_{n\ge 13}n^2/2^n=\tfrac{99}{2048}$; formally:
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L889}{\texttt{delta\_tail\_bound}});
+  meanwhile $\prod_{n\ge 13}(1-B_n)>\tfrac{7}{8}$ (using
+  $\sum_{n\ge 13}B_n<\tfrac{1}{8}$; formally:
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L864}{\texttt{B\_tail\_bound}}).
+  So $\varepsilon_n>\tfrac{1}{60}\cdot\tfrac{7}{8}-\tfrac{1}{200}
+  =\tfrac{23}{2400}>0$ for $n\ge 13$.  The cumulative recursive
+  step itself is formally verified as
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L949}{\texttt{cum\_eps\_bound}}.
 
   (\emph{Note for an inductive treatment:} the sequence
-  $(\delta_k)_{k\ge 13}$ is not monotone — one computes
+  $(\delta_n)_{n\ge 13}$ is not monotone — one computes
   $\delta_{14}/\delta_{13}=\tfrac{11}{10}$ — but its ratio
-  decreases through~$1$ at~$k=14$ and tends to~$\tfrac12$.  An
-  iterated proof of the bound on $\sum_{k\ge 13}\delta_k$ should
-  therefore split at~$k=14$; the closed-form route above sidesteps
+  decreases through~$1$ at~$n=14$ and tends to~$\tfrac12$.  An
+  iterated proof of the bound on $\sum_{n\ge 13}\delta_n$ should
+  therefore split at~$n=14$; the closed-form route above sidesteps
   this subtlety.)
 
   \emph{(c) Strict decrease.}  By~(d), $c_n-c_{n-1}=A_n-B_nc_{n-1}$.
@@ -959,6 +963,15 @@ Proposition~\ref{prop:linear} &
 Identity~\eqref{eq:alg-id} &
   \texttt{alg\_id} &
   \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L932}{Perturbation.lean:932} \\
+$\sum_{n\ge 13}B_n<\tfrac{1}{8}$ (\S\ref{sec:joint}) &
+  \texttt{B\_tail\_bound} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L864}{Perturbation.lean:864} \\
+$\sum_{n\ge 13}\delta_n\le\tfrac{1}{200}$ (\S\ref{sec:joint}) &
+  \texttt{delta\_tail\_bound} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L889}{Perturbation.lean:889} \\
+Cumulative $\varepsilon$-bound (\S\ref{sec:joint}) &
+  \texttt{cum\_eps\_bound} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L949}{Perturbation.lean:949} \\
 Theorem~\ref{thm:limit} (existence) &
   \texttt{c\_limit\_exists} &
   \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1517}{Perturbation.lean:1517} \\
