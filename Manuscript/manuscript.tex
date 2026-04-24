@@ -749,33 +749,47 @@ $<n$ supplying exactly what is needed at level~$n$.
 
 \subsection{The limit}
 
-\begin{theorem}[Existence and value of the limit]\label{thm:limit}
-  The limit $L:=\lim_{n\to\infty}c_n$ exists, and for any $n_0\ge 7$:
+Since $(c_n)_{n\ge 5}$ is strictly decreasing
+(Lemma~\ref{lem:decreasing}) and bounded below by $\tfrac{27}{16}$
+(Lemma~\ref{lem:lower}), the Weierstra\ss{} monotone-convergence
+criterion gives at once:
+
+\begin{corollary}[Existence of the limit]\label{cor:L-exists}
+  The limit $L:=\lim_{n\to\infty}c_n$ exists and satisfies
+  $\tfrac{27}{16}\le L\le c_5=\tfrac{3555}{2048}$.
+\end{corollary}
+
+\noindent
+Formally verified as
+\href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1517}{\texttt{c\_limit\_exists}}.
+The actual mathematical content of this subsection is the
+\emph{explicit} formula for~$L$:
+
+\begin{theorem}[Explicit formula for the limit]\label{thm:limit}
+  For any $n_0\ge 7$,
   \begin{equation}\label{eq:L-formula}
     L \;=\; c_{n_0-1}\prod_{m\ge n_0}(1-B_m)
     \;+\; \sum_{k\ge n_0}A_k\prod_{m>k}(1-B_m).
   \end{equation}
-  Both the infinite product and the series converge at geometric rate
-  since $A_n,B_n=O(n^3/2^n)$.  Numerically,
+  Both the infinite product and the series converge at geometric
+  rate since $A_n,B_n=O(n^3/2^n)$.  Numerically,
   \begin{equation}\label{eq:L-value}
     L \;=\; 1.70347176087173673645\ldots
   \end{equation}
 \end{theorem}
 
 \begin{proof}
-  \emph{Existence.}  By Lemmas~\ref{lem:lower}
-  and~\ref{lem:decreasing}, $(c_n)_{n\ge 5}$ is strictly decreasing
-  and bounded below by $\tfrac{27}{16}$, hence
-  $L:=\lim_{n\to\infty}c_n$ exists.
-
-  \emph{Explicit form.}  Fix $n_0\ge 7$.  Iterating the linear
+  Fix $n_0\ge 7$.  Iterating the linear
   recursion~\eqref{eq:cn-linear} from $n_0$ up to~$n$ yields, for
   every $n\ge n_0$,
   \begin{equation}\label{eq:cn-finite-iter}
     c_n \;=\; c_{n_0-1}\prod_{m=n_0}^n(1-B_m)
         \;+\; \sum_{k=n_0}^n A_k\prod_{m=k+1}^n(1-B_m).
   \end{equation}
-  We pass to the limit $n\to\infty$ in each summand.
+  By Corollary~\ref{cor:L-exists} we already know that the
+  left-hand side converges to~$L$; the content of the theorem is
+  that the right-hand side converges to the asserted explicit
+  expression.  We pass to the limit $n\to\infty$ in each summand.
 
   \emph{Step 1 (infinite product).}  Since $B_m=O(m^3/2^m)$, the
   series $\sum_{m\ge n_0}B_m$ converges absolutely.  Because
@@ -1082,10 +1096,10 @@ $\sum_{n\ge 13}\delta_n\le\tfrac{1}{200}$ (\S\ref{sec:joint}) &
 Cumulative $\varepsilon$-bound (\S\ref{sec:joint}) &
   \texttt{cum\_eps\_bound} &
   \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L949}{Perturbation.lean:949} \\
-Theorem~\ref{thm:limit} (existence) &
+Corollary~\ref{cor:L-exists} &
   \texttt{c\_limit\_exists} &
   \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1517}{Perturbation.lean:1517} \\
-Theorem~\ref{thm:limit} (formula) &
+Theorem~\ref{thm:limit} &
   \texttt{c\_limit\_formula} &
   \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2065}{Perturbation.lean:2065} \\
 Corollary~\ref{cor:shape}~(i) &
