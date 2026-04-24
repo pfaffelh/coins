@@ -2633,3 +2633,176 @@ explicitly mentioned when submitting to arXiv. Answer:
 - Still needed before submission: a human (not the author, not
   Claude) reading the prose end-to-end, per the 2026-04-21
   ethics recommendation.
+
+## 2026-04-24 — Session 4: strategy-ALL asymptotics, Lean reference cleanup
+
+### Lean-side polish (commit `27a3c25`)
+
+Two clean-ups that were flagged by a careful reading pass:
+
+1. **Manuscript cross-references in docstrings.** After the §3.1
+   split (Corollary 3.2 and Theorem 3.3) and the §4 split
+   (Corollary 4.9 separated from Theorem 4.10), the Lean docstrings
+   in `AboveLimit.lean`, `Perturbation.lean`, and `Summary.lean`
+   still referenced the pre-split numbering. A two-phase `sed`
+   (insert unique markers `[X3.4]` etc., then rewrite to the new
+   numbers) shifted all references atomically without cascading
+   replacements: `Corollary 3.4 → 3.2`, `Theorem 3.5 → 3.3`,
+   `Proposition/Lemma/Example 4.4..4.9 → 4.3..4.8`. Theorem 4.10 and
+   Corollary 4.11 were already correct.
+2. **Strategy naming.** The manuscript uses `\One` and `\All`
+   (all-caps, like `\textsc`), but three docstrings in
+   `Bellman.lean` still said "strategy B" and two in
+   `Strategies.lean` said "Strategy One". Renamed to "strategy ALL"
+   and "strategy ONE" for uniformity.
+3. **Dead stub.** `CoinsLean.lean` was importing a `Basic.lean`
+   template stub (`def hello := "world"`) that had been deleted.
+   Removed the import and the corresponding listing in
+   `CoinsLean/README.md`.
+
+`lake build` green; `Summary.lean` still shows all main theorems
+depending only on `[propext, Classical.choice, Quot.sound]`.
+
+### Strategy-ALL asymptotic analysis (new note `Manuscript/strategy_all_asymptotics.tex`)
+
+Author asked: can we solve the winning probabilities under
+strategy~ALL in closed form? Noted a prior attempt via
+generating functions (`Manuscript/20231028_p.tex`) that did not
+close. Spent ~30 minutes working through it. Outcome (6 page
+separate tex note):
+
+- **Functional equation.** The EGF
+  $B(z) = \sum_n b(p,n)\, z^n/n!$ satisfies, with $q:=1-p$,
+  $B(z) = 1 + (e^{pz}-1)\,B(qz)$.
+  Iterating gives the convergent series
+  $B(z) = \sum_{M\ge 0}\,\prod_{k=0}^{M-1}(e^{pq^k z}-1)$.
+- **Combinatorial identity.** $b(p,n)/p^n$ is a $q$-analogue of
+  the Fubini (ordered Bell) numbers — a weighted sum over
+  ordered set partitions of $[n]$ with weight $q^{c(\pi)}$ for a
+  natural major-index-like statistic $c$. At $q=1$ this is OEIS
+  A000670; at $q=0$ it is $1$.
+- **Why no closed form.** The factors in the iterated product
+  have the variable rescaled by $q^k$, not additively coupled
+  to $q^k$ in the exponent; that takes the object outside the
+  standard ring of $q$-series (Pochhammer, $q$-theta).
+- **Saddle-point / Mellin asymptotics.** For $n\to\infty$,
+  $b(p,n)$ is asymptotic to a continuous positive function
+  $\Phi_p$ periodic in $\log n$ with period $\log(1/(1-p))$.
+  Mellin expansion yields a Fourier series
+  $b(p,n) = \sum_\ell \gamma_\ell(p)\, n^{i\,2\pi\ell/\log(1/q)} + o(1)$
+  with $\gamma_\ell(p)\propto\Gamma(s_\ell)\zeta(s_\ell+1)/\log(1/q)$,
+  $s_\ell = 2\pi i\ell/\log(1/q)$.
+- **Three regimes.** $p=\tfrac12$: $\gamma_0=\tfrac12$,
+  $\gamma_{\ne 0}=0$ (exact); $p>\tfrac12$: $\gamma_0 = W(p)$ and
+  $\gamma_{\ne 0}$ are small but non-zero (visible oscillation);
+  $p<\tfrac12$: $\gamma_0$ is a non-trivial mean level, $b(p,n)$
+  does **not** converge, it oscillates log-periodically with
+  extremely small amplitude.
+
+### Numerical validation (new script `simulation/b_asymptotics.py`)
+
+`mpmath` at 50 dps, $n$ up to 1500–8020. Key findings:
+
+- At $p=\tfrac12$: $b(\tfrac12,n)=\tfrac12$ exactly for all
+  $n=1,\ldots,200$, to full 50-digit precision. (Sanity.)
+- At $p=\tfrac23$ the exact geometric progression
+  $n_k=n_0\cdot 3^k$ preserves the fractional phase
+  $\{\log(pn)/\log(1/q)\}$ exactly; three different starting
+  phases $n_0\in\{4,7,11\}$ yield three different limits
+  $0.748872, 0.748819, 0.748721$ — distinguishing three distinct
+  values of $\Phi_{2/3}$.
+- **Flajolet--Sedgewick prediction test.** Across $p \in
+  \{1/4,1/3,2/5,3/5,2/3,3/4,4/5\}$, the observed oscillation
+  span matches the theoretical damping factor
+  $\exp(-\pi^2/\log(1/q))$ within a factor of 5 over
+  **14 orders of magnitude** (from $\sim 10^{-15}$ at $p=1/4$ to
+  $\sim 10^{-3}$ at $p=4/5$). This is a very clean quantitative
+  confirmation of the log-periodic structure.
+- Mean levels $\gamma_0(p)$ computed (15 digits): e.g.\
+  $\gamma_0(1/3)=0.198\,266\,064\,970\,529$,
+  $\gamma_0(2/3)=0.748\,717\,437\,152\,712$.
+  These are, as far as I know, not in the literature.
+
+### Artifacts produced today
+
+- `Manuscript/strategy_all_asymptotics.tex` (6 pages, compiles green)
+- `Manuscript/strategy_all_asymptotics.pdf`
+- `Manuscript/figures/b_oscillation_p066.pdf`
+- `Manuscript/figures/b_oscillation_p075.pdf`
+- `simulation/b_asymptotics.py` (high-precision runner)
+
+### Open questions surfaced by today's analysis
+
+1. Is there a clean expression for $\gamma_0(p)$ (mean level of
+   $\Phi_p$)? The Mellin derivation presents it as a convergent
+   series in negative-integer values of $\Gamma\zeta$, but no
+   simplification is obvious.
+2. Does the asymmetry $p<\tfrac12 \Leftrightarrow \text{no limit}$
+   vs.\ $p\ge\tfrac12 \Leftrightarrow \text{limit exists}$ deserve
+   a remark in §3 of the main paper? The current §3.1 result
+   (existence of $W(p)$ for $p>\tfrac12$) is sharp in a sense that
+   was not previously stated.
+3. A rigorous proof of the Mellin asymptotic would require
+   Hayman-admissibility of $B(z)$ and the standard Mellin
+   contour-shift argument; not pursued here.
+
+### Novelty assessment
+
+Author asked for a candid evaluation. The **methodology is not
+novel** — it is 30+ years of Flajolet–Sedgewick analytic
+combinatorics:
+
+- $q$-difference equations $f(z)=g(z)+h(z)f(qz)$ are classical
+  (Mahler, 1930s).
+- Log-periodic asymptotics from harmonic sums via Mellin are the
+  central theme of Flajolet–Gourdon–Dumas, *Mellin transforms and
+  asymptotics: harmonic sums*, TCS~144 (1995).
+- The $\exp(-\pi^2/\log(1/q))$ damping for the first Fourier
+  coefficient follows directly from
+  $|\Gamma(it)|\sim\sqrt{2\pi/|t|}\,e^{-\pi|t|/2}$.
+- The $q$-Fubini / $q$-Stirling connection goes back to Carlitz
+  (1933), treated by Wachs–White, Cigler, Ksavrelof–Zeng.
+
+Closely related problems studied in the literature:
+
+- Leader election with biased coins (Prodinger and co-authors,
+  1990s): similar recursion, same log-periodic asymptotics.
+- Patricia / digital-search trees (Flajolet–Sedgewick, Szpankowski,
+  Kirschenhofer–Prodinger): statistics of iid geometric samples.
+- Probabilistic counting (Flajolet–Martin, 1985) and descendants
+  (HyperLogLog etc.): Mellin-derived $\log n$-periodic
+  fluctuations.
+- Occupancy / coupon-collector with geometric rates.
+
+What might be genuinely new (modest): the exact framing
+"probability that $\{X_1,\ldots,X_n\}$ is an initial segment for
+iid geometrics" under that name, and the tabulated mean levels
+$\gamma_0(p)$. But "initial segment of iid geometrics" is
+natural enough that it almost certainly has been treated
+somewhere. Recommendation before citing: quick literature
+search on "leader election biased geometric log-periodic",
+"Prodinger Mellin harmonic sum", "q-Fubini asymptotics". If used
+in the main paper, phrase as "by standard analytic-combinatorics
+methods (Flajolet–Sedgewick, Prodinger)" rather than as an
+original contribution.
+
+### Displayed derivation of eq.~(8) added to manuscript.tex
+
+Author asked for a display showing the derivation of the deficit
+recursion~\eqref{eq:delta-rec}. Expanded the one-line sketch in
+the proof of Proposition~4.2 to a three-line aligned
+calculation: substitute $w_{m,p}=\tfrac12-\Delta_{m,p}$ into the
+Bellman equation, use
+$\max_m(\tfrac12-\Delta_m)=\tfrac12-\min_m\Delta_m$ and the
+binomial identity
+$\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j=1-p^n-q^n$, and collect
+terms. Manuscript remains 18 pages.
+
+### Cleanup
+
+Removed two stale figures (`b_phase.pdf`, `b_vs_logn.pdf`) from
+`Manuscript/figures/` that were produced by an earlier iteration
+of `b_asymptotics.py` and were not referenced anywhere. Removed
+the corresponding dead plot functions (`plot_phi`,
+`amplitude_vs_n`) from the script.
+

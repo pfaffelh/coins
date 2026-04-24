@@ -262,10 +262,11 @@ perturbation in $\delta=\tfrac12-p$, derive a recursion for the
 leading coefficient~$c_n$, prove that it simplifies to a linear
 recursion for $n\ge 7$, and compute the limit $L=\lim c_n$.
 Section~\ref{sec:numerics} complements the first-order analysis
-with numerical experiments that illustrate the shape of
-$n\mapsto w_{n,p}$ away from $p=\tfrac12$, including the emergence
-of local maxima for $p$ bounded away from~$\tfrac12$ (invisible in
-the first-order expansion), and Section~\ref{sec:discussion}
+(and so restricts to $p<\tfrac12$) with numerical experiments that
+illustrate the shape of $n\mapsto w_{n,p}$ away from $p=\tfrac12$,
+including the emergence of local maxima for $p$ bounded away
+from~$\tfrac12$ (invisible in the first-order expansion), and
+Section~\ref{sec:discussion}
 collects concluding observations and open questions.
 Appendix~\ref{app:lean}
 describes the formal verification of all results in Lean~4 and
@@ -539,11 +540,20 @@ value will reappear in Proposition~\ref{prop:delta-rec}.
 
 \begin{proof}
   Substitute $w_{m,p}=\tfrac12-\Delta_{m,p}$ into the
-  Bellman equation~\eqref{eq:bellman}.  The $\max$ on
-  $w_m$ becomes a $\min$ on~$\Delta_m$.  The constant terms
-  $\tfrac12\cdot\bigl[\text{binomial weights}\bigr]$ cancel by the
-  identity $p^n+\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j\cdot\tfrac12
-  = \tfrac12 - \tfrac12(q^n-p^n)$, leaving~\eqref{eq:delta-rec}.
+  Bellman equation~\eqref{eq:bellman}.  Using
+  $\max_m(\tfrac12-\Delta_m) = \tfrac12 - \min_m\Delta_m$ and the
+  binomial identity $\sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j
+  = (p+q)^n - p^n - q^n = 1 - p^n - q^n$:
+  \begin{align*}
+    \tfrac12 - \Delta_{n,p}
+    &= p^n + \sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j
+       \Bigl(\tfrac12 - \min_{j\le m\le n-1}\Delta_{m,p}\Bigr) \\
+    &= p^n + \tfrac12\bigl(1 - p^n - q^n\bigr)
+       - \sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j\min_{j\le m\le n-1}\Delta_{m,p} \\
+    &= \tfrac12 + \tfrac{p^n - q^n}{2}
+       - \sum_{j=1}^{n-1}\binom{n}{j}p^{n-j}q^j\min_{j\le m\le n-1}\Delta_{m,p},
+  \end{align*}
+  and rearranging gives~\eqref{eq:delta-rec}.
   The sign claims follow by induction using $q^n-p^n>0$ (resp.\ $<0$)
   and the positivity (resp.\ negativity) of the $\min$ terms.
 \end{proof}
