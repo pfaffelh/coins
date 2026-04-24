@@ -49,13 +49,15 @@
   determine the optimal winning probability~$w_{n,p}$ as a function
   of~$n$ and~$p$.
 
-  For $p=\tfrac12$ every strategy that accepts the immediate win
+  For $p=\tfrac12$ every strategy 
+  % that accepts the immediate win
   achieves $w_{n,1/2}=\tfrac12$.  For $p>\tfrac12$ the
   strategy~\One{} is optimal and $n\mapsto w_{n,p}$ is strictly
   increasing.  For $p<\tfrac12$ near~$\tfrac12$ we carry out a
   first-order perturbation expansion in $\delta:=\tfrac12-p$ and prove
-  that the leading coefficient~$c_n$ of the deficit
-  $\tfrac12-w_{n,p}$ satisfies a linear recursion for $n\ge 7$, with
+  that the deficit is 
+  $\tfrac12-w_{n,\tfrac 12 - \delta} \approx \delta c_n$ in first order in $\delta$, 
+  where $c_n$ satisfies a linear recursion for $n\ge 7$, with
   a limit $L=\lim c_n\approx 1.7035$.  As a consequence the optimal
   value sequence has, to first order in~$\delta$, a strict local
   minimum at $n=5$ and no local maximum --- local maxima are a
@@ -87,15 +89,16 @@ producing the numerical scripts.  Individual decisions in both
 categories were settled through back-and-forth dialogue; the
 author reviewed every edit.
 
-This attribution is necessarily imperfect --- many intermediate
-choices (the precise form of an auxiliary lemma, the wording of a
-remark, the numerical examples in \S\ref{sec:numerics}) straddle
-the two roles.  Readers who want the full record can consult a
+%This attribution is necessarily imperfect --- many intermediate
+%choices (the precise form of an auxiliary lemma, the wording of a
+%remark, the numerical examples in \S\ref{sec:numerics}) straddle
+%the two roles.  
+Readers who want the full record can consult a
 prompt-by-prompt transcript at
 \href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}};
 a more granular development history of the formalization appears
-in Appendix~\ref{app:lean}.  Any remaining errors are the author's
-responsibility.
+in Appendix~\ref{app:lean}.  
+% Any remaining errors are the author's responsibility.
 
 \subsection{The game}
 
@@ -126,7 +129,7 @@ already ``done its job.''  Strategy~\All{} is greedy: it cashes in
 every success immediately.  Neither is universally optimal.
 
 \paragraph{Relation to prior work.}
-A close variant of this game was introduced and studied
+\sloppy A close variant of this game was introduced and studied
 by~van~Doorn~\cite{vanDoorn2024}, who took as objective the
 \emph{expected number of heads} collected, $v_{n,p}$, rather than
 the all-heads-wins probability $w_{n,p}$ studied here.  Van~Doorn's
@@ -142,14 +145,11 @@ non-monotonicity result.
 
 The present paper makes two changes in emphasis.  First, the
 objective: maximising the all-heads probability $w_{n,p}$ rather
-than the expected count $v_{n,p}$.  This change of objective was
-suggested by the present author to van~Doorn (acknowledged
-in~\cite[\S 11]{vanDoorn2024}); the resulting structure is, in our
-view, more transparent.  In particular, for $p>\tfrac12$ the
-strategy~\One{} is always optimal --- a fact noted in passing
+than the expected count $v_{n,p}$. As a consequence, the $p>\tfrac12$ case becomes simpler: 
+the strategy~\One{} is always optimal --- a fact noted in passing
 in~\cite[\S 10]{vanDoorn2024} and proved here in
 Theorem~\ref{thm:above} below with a self-contained joint
-induction.  Second, and more importantly, our focus is the regime
+induction. Second, and more importantly, our focus is the regime
 $p<\tfrac12$ that van~Doorn explicitly leaves open.  We carry out
 a first-order perturbation in $\delta=\tfrac12-p$ and obtain a
 \emph{closed-form description} of the leading behaviour: the
@@ -160,10 +160,13 @@ explicit formula and a numerical value $L\approx
 structure of $n\mapsto w_{n,p}$ is fully determined to first order
 (Corollary~\ref{cor:shape}).
 
-A third, methodological, change concerns formal verification.
-Van~Doorn already credits Breitner with starting a formal
-verification of \cite[Lemma 6]{vanDoorn2024} and providing the
-first proof.  We take this thread further: every numbered result
+A third, methodological, change concerns formal verification. 
+Since the results of the present paper were generated in collabortion with AI, 
+we want to avoid halluzinations: the reader does not have to be a specialist in Lean~4, 
+the corresponding proof assistant, but has to acknowledge the fact that (i) the recursive definition
+for $w_{n,p}$ from \eqref{eq:bellman} is correctly implemented and (ii) the results as they stand 
+compile without error, meaning that Lean~4 has checked every proof. 
+More precisely, every numbered result
 of the present paper --- including the perturbation analysis of
 \S\ref{sec:below} --- has been formally verified in Lean~4 using
 the Mathlib library, with no \texttt{sorry}s, no custom axioms,
@@ -326,14 +329,14 @@ formalization on GitHub.
 \end{theorem}
 
 \begin{proof}
+  Note that $n\mapsto \dfrac{p^n}{p^n+q^n} = \dfrac{1}{1+(q/p)^n}$ is increasing for $p \in (\tfrac 12, 1)$. 
   We prove (i) and (ii) simultaneously by strong induction on~$n$.
 
   \emph{Base case $n=2$.}
   One computes $w_{1,p}=p$ and
   $w_{2,p}=p^2+(1-p^2-q^2)p = 3p^2-2p^3$.  Then
-  $w_{2,p}-w_{1,p}=p(1-p)(2p-1)>0$ since $p>\tfrac12$.
-  Also $w_{1,p}=p<p^2/(p^2+q^2)$ iff $p^2+q^2>p$, which holds for
-  $p\in(\tfrac12,1)$.
+  $w_{2,p}-w_{1,p}=p(1-p)(2p-1)>0$ since $p = >\tfrac12$.
+  Also $w_{1,p}=p = p/(p + q) < p^2/(p^2+q^2)$.
 
   \emph{Inductive step.}  Assume (i) and (ii) hold for all indices up
   to~$n-1$.  Since $n\mapsto w_{n,p}$ is increasing on
@@ -449,22 +452,40 @@ Thus $\Delta_{n,p}=O(\delta)$.
 
 \begin{example}\label{ex:cn-small}
   The first few values of~$c_n$:
-  \[
-    c_1=1,\quad c_2=\tfrac{3}{2},\quad c_3=\tfrac{27}{16},\quad
-    c_4=\tfrac{111}{64},\quad
+  \begin{gather*}
+    c_1=1,\quad c_2=\tfrac{3}{2},\quad
+    c_3=\tfrac{27}{16}=1.6875,\quad
+    c_4=\tfrac{111}{64}\approx 1.7343, \\
     c_5=\tfrac{3555}{2048}\approx 1.7358,\quad
     c_6=\tfrac{113337}{65536}\approx 1.7293.
-  \]
-  The sequence increases on $\{1,\dots,5\}$ and decreases for
-  $n\ge 6$.  In particular $c_4=\tfrac{111}{64}>c_6$ and
-  $c_5>c_6$, both of which we use below as base cases.
+  \end{gather*}
+  The sequence increases on $\{1,\dots,5\}$ and decreases on $\{5,6,7,...\}$ (as we will prove below).  
+  In particular $c_5>c_4, c_6$, both of which we use below as base cases.
+  Figure~\ref{fig:cn-sequence} plots the sequence up to $n=25$,
+  together with the limit $L=\lim_{n\to\infty}c_n\approx
+  1.70347$ and the uniform lower bound $\tfrac{27}{16}=1.6875$
+  established in Lemma~\ref{lem:lower}.
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.78\linewidth]{figures/cn_sequence.pdf}
+    \caption{The sequence $n\mapsto c_n$ for $1\le n\le 25$.
+      Computed via the recursion of
+      Proposition~\ref{prop:cn} in $80$-digit rational
+      arithmetic.  The sequence increases on
+      $\{1,\dots,5\}$ (with maximum at $n=5$, marked by a star),
+      strictly decreases for $n\ge 5$, and converges from above
+      to $L\approx 1.70347$.  The lower bound $\tfrac{27}{16}$
+      from Lemma~\ref{lem:lower} is shown as a dotted line.}
+    \label{fig:cn-sequence}
+  \end{figure}
 \end{example}
 
 \subsection{Collapse, lower bound, and linear recursion}\label{sec:joint}
 
 The four results below — the asymptotic collapse of the $\min$
 in~\eqref{eq:cn-rec}~(Lemma~\ref{lem:collapse}), the uniform lower
-bound~$c_m\ge\tfrac{27}{16}$~(Lemma~\ref{lem:lower}), the strict
+bound~$c_n\ge\tfrac{27}{16}$ for $n\geq 4$~(Lemma~\ref{lem:lower}), the strict
 decrease of $(c_n)_{n\ge 5}$~(Lemma~\ref{lem:decreasing}), and the
 linear recursion for $n\ge 7$~(Proposition~\ref{prop:linear}) — are
 mutually entangled: each, taken alone, depends on parts of the
@@ -486,7 +507,7 @@ $<n$ supplying exactly what is needed at level~$n$.
 \end{lemma}
 
 \begin{lemma}\label{lem:lower}
-  $c_m\ge\tfrac{27}{16}$ for every $m\ge 4$.
+  $c_m\ge\tfrac{27}{16}$ for every $n\ge 4$.
 \end{lemma}
 
 \begin{lemma}\label{lem:decreasing}
