@@ -58,6 +58,15 @@ for any remaining errors.
 
 ## License
 
-Source code and manuscript source are released under the
-[Apache License, Version 2.0](LICENSE). The Mathlib dependency is
-also Apache 2.0. See [`NOTICE`](NOTICE) for attribution details.
+This repository uses two licenses for different parts of the tree:
+
+- **Source code** (`CoinsLean/`, `simulation/`, top-level build
+  files) is released under the
+  [Apache License, Version 2.0](LICENSE). The Mathlib dependency
+  is also Apache 2.0.
+- **Research manuscript and figures** (`Manuscript/`) are released
+  under the
+  [Creative Commons Attribution 4.0 International License](Manuscript/LICENSE)
+  (CC BY 4.0).
+
+See [`NOTICE`](NOTICE) for the full split and attribution details.
