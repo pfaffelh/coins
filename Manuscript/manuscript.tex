@@ -575,12 +575,13 @@ $<n$ supplying exactly what is needed at level~$n$.
   and $c_m\ge\tfrac{27}{16}=c_3$ for $m\ge 4$ (IH(b)), the minimum
   over $\{j,\dots,n-1\}$ is~$c_j$.
 
-  For $j\in\{4,\dots,n-1\}$: by IH(c), $(c_m)_{m\ge 5}$ is strictly
-  decreasing, so $c_5>c_6>\dots>c_{n-1}$, and in particular
-  $c_m\ge c_{n-1}$ for $m\in\{5,\dots,n-1\}$.  For $m=4$,
-  $c_4=\tfrac{111}{64}>c_6$ (Example~\ref{ex:cn-small}) and
-  $c_6\ge c_{n-1}$ (IH(c)), so $c_4\ge c_{n-1}$ as well.  Hence the
-  minimum over $\{j,\dots,n-1\}$ for $j\ge 4$ is~$c_{n-1}$.
+  For $j\in\{4,\dots,n-1\}$: iterating IH(c) gives the chain
+  $c_5>c_6>\dots>c_{n-1}$, so in particular
+  $c_m\ge c_{n-1}$ for every $m\in\{5,\dots,n-1\}$.  For $m=4$,
+  $c_4=\tfrac{111}{64}>c_6$ (Example~\ref{ex:cn-small}); using the
+  segment $c_6\ge c_{n-1}$ of the same chain, we obtain $c_4\ge
+  c_{n-1}$ as well.  Hence the minimum over $\{j,\dots,n-1\}$ for
+  $j\ge 4$ is~$c_{n-1}$.
 
   \emph{(d) Linear recursion.}  Substituting the collapse~(a)
   just proved into~\eqref{eq:cn-rec} and splitting the sum at $j=3$
