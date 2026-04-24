@@ -611,21 +611,33 @@ $<n$ supplying exactly what is needed at level~$n$.
   by~\eqref{eq:alg-id}, and~(b) follows.  For $n\ge 13$ we argue
   cumulatively: define $\varepsilon_n:=c_n-\tfrac{27}{16}$ and
   $\delta_n:=3(n^2-15n+36)/(32\cdot 2^n)$,
-  so~(d) gives $\varepsilon_n=(1-B_n)\varepsilon_{n-1}-\delta_n$.
+  so~(d) gives $\varepsilon_n=(1-B_n)\varepsilon_{n-1}-\delta_n$
+  for every $n\ge 13$.  Iterating this identity from level~$12$
+  upwards and using the trivial bound $0<1-B_k\le 1$ yields, for
+  every $n\ge 13$,
+  \begin{equation}\label{eq:eps-iter}
+    \varepsilon_n
+    \;=\; \prod_{k=13}^{n}(1-B_k)\,\varepsilon_{12}
+    \;-\; \sum_{k=13}^{n}\!\Bigl(\prod_{j=k+1}^{n}(1-B_j)\Bigr)\delta_k
+    \;\ge\; \Bigl(\prod_{k=13}^{n}(1-B_k)\Bigr)\varepsilon_{12}
+            \;-\; \sum_{k=13}^{n}\delta_k.
+  \end{equation}
   The starting value $\varepsilon_{12}>\tfrac{1}{60}$ is verified by
   exact rational computation (formally:
   \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2995}{\texttt{c\_twelve\_buffer}});
-  the cumulative negative contribution
-  is bounded by $\sum_{n\ge 13}\delta_n
-  \le\tfrac{297}{65536}<\tfrac{1}{200}$ (using
-  $\sum_{n\ge 13}n^2/2^n=\tfrac{99}{2048}$; formally:
+  the cumulative negative contribution is bounded by
+  $\sum_{n\ge 13}\delta_n \le\tfrac{297}{65536}<\tfrac{1}{200}$
+  (using $\sum_{n\ge 13}n^2/2^n=\tfrac{99}{2048}$; formally:
   \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L889}{\texttt{delta\_tail\_bound}});
   meanwhile $\prod_{n\ge 13}(1-B_n)>\tfrac{7}{8}$ (using
   $\sum_{n\ge 13}B_n<\tfrac{1}{8}$; formally:
   \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L864}{\texttt{B\_tail\_bound}}).
-  So $\varepsilon_n>\tfrac{1}{60}\cdot\tfrac{7}{8}-\tfrac{1}{200}
-  =\tfrac{23}{2400}>0$ for $n\ge 13$.  The cumulative recursive
-  step itself is formally verified as
+  Inserting these three inequalities into~\eqref{eq:eps-iter} gives
+  $\varepsilon_n>\tfrac{1}{60}\cdot\tfrac{7}{8}-\tfrac{1}{200}
+  =\tfrac{23}{2400}>0$ for every $n\ge 13$.  The iterated inequality
+  itself is formally verified (in the slightly weaker
+  Bernoulli-style form
+  $\prod(1-B_k)\ge 1-\sum B_k$) as
   \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L949}{\texttt{cum\_eps\_bound}}.
 
   (\emph{Note for an inductive treatment:} the sequence
