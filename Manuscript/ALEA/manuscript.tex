@@ -1,16 +1,48 @@
-\documentclass[12pt]{article}
+\documentclass[reqno,final,11pt]{amsart}
+%% ALEA-style preamble (see example.tex in this folder).
+%% Do not alter margins or font size.
 
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{amsmath,amssymb,amsthm}
-\usepackage{mathtools}
-\usepackage{enumerate}
-\usepackage[margin=2.5cm]{geometry}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage{color}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{geometry}
+\geometry{
+  top=1in,
+  inner=1in,
+  outer=1in,
+  bottom=1in,
+  headheight=3ex,
+  headsep=2ex,
+}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{enumerate}
 \usepackage{booktabs}
 
-% Theorem environments
+%% Colors for hyperref
+\definecolor{aleacolor}{rgb}{0.16,0.59,0.78}
+\hypersetup{breaklinks,colorlinks=true,
+  linkcolor=aleacolor,urlcolor=aleacolor,citecolor=aleacolor}
+
+%% Make \doi produce a hyperlink in the bibliography.
+%% (The alea3 .bbl ships \doi as plain text "doi:<id>"; we override it.)
+\providecommand{\doi}{}
+\renewcommand{\doi}[1]{\href{https://doi.org/#1}{doi:#1}}
+
+%% Fancy headers
+\pagestyle{fancy}\fancyhf{}\fancyhead[RO,LE]{\small\thepage}
+\fancyhead[RE]{\small\shortauthors}\fancyhead[LO]{\small\shorttitle}
+
+%% natbib: author-year inline citations
+\renewcommand{\cite}{\citet}
+
+%% Theorem environments (amsart.cls ships with amsthm already loaded)
+\theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
@@ -22,19 +54,42 @@
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
-% Shortcuts
+%% Section-scoped numbering (ALEA convention)
+\makeatletter\@addtoreset{equation}{section}\makeatother
+\renewcommand\theequation{\thesection.\arabic{equation}}
+\renewcommand\thefigure{\thesection.\arabic{figure}}
+\renewcommand\thetable{\thesection.\arabic{table}}
+
+%% First-page header and logo (placeholders; adjust on acceptance)
+\newcommand{\aleaIndex}[1]{\href{http://alea.impa.br/english/index_v23.htm}{\bf 23}}
+\newcommand{\aleaDOI}[1]{\href{https://doi.org/10.30757/ALEA.v23-}{DOI: 10.30757/ALEA.v23-}}
+\eheader{ALEA, Lat. Am. J. Probab. Math. Stat.}{\aleaIndex{23}}{2026}{1}{1}{\aleaDOI}
+\elogo{\parbox[c]{180pt}{\includegraphics[width=170pt]{logo.pdf}}}
+
+%% Shortcuts
+\newcommand{\tildeurl}{\raisebox{0.5ex}\texttildelow}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\One}{\textsc{One}}
 \newcommand{\All}{\textsc{All}}
 
-\title{Optimal strategies in the all-heads coin game}
-\author{Peter Pfaffelhuber}
-\date{\today}
+\date{\today; accepted DATE; published under license
+\href{https://creativecommons.org/licenses/by/4.0/}{\textup{CC BY 4.0}}}
 
 \begin{document}
-\maketitle
+
+\title[Optimal strategies in the all-heads coin game]%
+      {Optimal strategies in the all-heads coin game}
+
+\author{Peter Pfaffelhuber}
+\address{Albert-Ludwigs-Universit\"at Freiburg,
+  Ernst-Zermelo-Str.~1, 79104 Freiburg, Germany}
+\email{peter.pfaffelhuber@stochastik.uni-freiburg.de}
+
+\subjclass[2020]{60G40, 90C40, 68V20}
+\keywords{Bellman equation; Tannery's theorem; Markov decision
+  process; perturbation expansion; formal verification; Lean~4}
 
 \begin{abstract}
   We study a sequential coin-flipping game in which a player starts
@@ -66,16 +121,17 @@
   non-perturbative phenomenon.
 \end{abstract}
 
+\maketitle
+
 %% ====================================================================
 \section{Introduction}\label{sec:intro}
 %% ====================================================================
 
 \paragraph{A note on authorship.}
-The mathematical text, the numerical code
-(\texttt{simulation/}), and the complete Lean~4/Mathlib
+\textit{The mathematical text, the numerical code, and the complete Lean~4/Mathlib
 formalization in this paper were produced by Anthropic's Claude
 (versions Opus~4.6 and Opus~4.7), interactively, in conversations
-with the author.  To be precise about attribution: the underlying
+with the author. To be precise about attribution: the underlying
 mathematical ideas, the selection of the research question
 (alternative objective $w_{n,p}$ vs.\ $v_{n,p}$), the decision to
 carry out a first-order perturbation in $\delta=\tfrac12-p$, the
@@ -89,16 +145,17 @@ inequality in \S\ref{sec:joint}, or the Tannery-style dominated
 convergence argument in the proof of Theorem~\ref{thm:limit}), and
 producing the numerical scripts.  Individual decisions in both
 categories were settled through back-and-forth dialogue; the
-author reviewed every edit.
+author reviewed every edit.}
 
 %This attribution is necessarily imperfect --- many intermediate
 %choices (the precise form of an auxiliary lemma, the wording of a
 %remark, the numerical examples in \S\ref{sec:numerics}) straddle
-%the two roles.  
-A one-page tour of the main Lean definitions and theorems, in
+%the two roles.
+\sloppy
+\textit{A one-page tour of the main Lean definitions and theorems, in
 the form of \texttt{\#check} and \texttt{\#print} statements, is
 provided by
-\href{https://github.com/pfaffelh/coins/blob/c60bcd3/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/Summary.lean}};
+\href{https://github.com/pfaffelh/coins/blob/c60bcd3/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/\allowbreak Summary.lean}};
 running it (\texttt{lake env lean CoinsLean/Summary.lean} from
 within \texttt{CoinsLean/}) prints the types and axiom list,
 verifying via Lean's kernel that the formalization type-checks as
@@ -106,7 +163,7 @@ claimed.  Readers who want the full record can consult a
 prompt-by-prompt transcript at
 \href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}};
 a more granular development history of the formalization appears
-in Appendix~\ref{app:lean}.
+in Appendix~\ref{app:lean}.}
 % Any remaining errors are the author's responsibility.
 
 \subsection{The game}
@@ -140,8 +197,8 @@ every success immediately.  Neither is universally optimal.
 \paragraph{Relation to prior work.}
 \sloppy A close variant of this game --- building on an earlier
 question posed by Joachim~Breitner on Mathematics Stack
-Exchange~\cite{Breitner2015} --- was introduced and studied by
-van~Doorn~\cite{vanDoorn2024}, who took as objective the
+Exchange~\citeyearpar{Breitner2015} --- was introduced and studied by
+\citet{vanDoorn2024}, who took as objective the
 \emph{expected number of heads} collected, $v_{n,p}$, rather than
 the all-heads-wins probability $w_{n,p}$ studied here.  Van~Doorn's
 analysis is essentially complete for $p\ge\tfrac12$: he proves
@@ -158,7 +215,7 @@ The present paper makes two changes in emphasis.  First, the
 objective: maximising the all-heads probability $w_{n,p}$ rather
 than the expected count $v_{n,p}$. As a consequence, the $p>\tfrac12$ case becomes simpler: 
 the strategy~\One{} is always optimal --- a fact noted in passing
-in~\cite[\S 10]{vanDoorn2024} and proved here in
+in \citet[\S 10]{vanDoorn2024} and proved here in
 Theorem~\ref{thm:above} below with a self-contained joint
 induction. Second, and more importantly, our focus is the regime
 $p<\tfrac12$ that van~Doorn explicitly leaves open.  We carry out
@@ -201,8 +258,8 @@ starting from state~$n$.
 
 Because every policy absorbs with probability at least
 $p^m+(1-p)^m>0$ per round, the MDP is a \emph{stochastic
-shortest-path} (SSP) problem in the sense of Bertsekas and Tsitsiklis
-\cite{BertsekisTsitsiklis1991}: the Bellman operator is a contraction
+shortest-path} (SSP) problem in the sense of Bertsekas and
+Tsitsiklis~\citeyearpar{BertsekisTsitsiklis1991}: the Bellman operator is a contraction
 and the optimal value function is its unique fixed point.
 
 \begin{definition}[Optimal winning probability]\label{def:w}
@@ -225,8 +282,8 @@ value~$w_{m,p}$.
 The Bellman equation~\eqref{eq:bellman} is the standard optimality
 equation for this SSP--MDP.  For general background on Markov decision
 processes and the Bellman equation we refer to the monographs of
-Puterman~\cite{Puterman1994}, Bertsekas~\cite{Bertsekas2017}, and
-Stokey, Lucas and Prescott~\cite{StokeyLucas1989}.
+Puterman~\citeyearpar{Puterman1994}, Bertsekas~\citeyearpar{Bertsekas2017}, and
+Stokey, Lucas and Prescott~\citeyearpar{StokeyLucas1989}.
 
 \subsection{Strategies \One{} and \All}
 
@@ -443,7 +500,7 @@ trivially by the Weierstrass criterion.
   strictly positive limit $\Pi_k\in(0,1)$, and the resulting
   series $\sum_k p^k\Pi_k$ converges absolutely by comparison with
   $\sum_k p^k$.  By Tannery's theorem
-  (cf.~Knopp~\cite[\S 41]{Knopp1990}) with dominator $p^k$, limit
+  (cf.\ Knopp~\citeyearpar[\S 41]{Knopp1990}) with dominator $p^k$, limit
   and summation commute, giving~\eqref{eq:above-W-formula}.
 
   It remains to show $W(p)<1$.  Set $U(p):=1-W(p)$ and
@@ -501,7 +558,7 @@ trivially by the Weierstrass criterion.
 For $p<\tfrac12$ the structure of $n\mapsto w_{n,p}$ is far richer:
 numerical experiments show that the sequence develops local minima
 and maxima, and the optimal strategy is neither~\One{}
-nor~\All{} in general; see \cite{vanDoorn2024}, Section~10, and
+nor~\All{} in general; see \citet[Section~10]{vanDoorn2024} and
 Section~\ref{sec:numerics} of the present paper for illustrations.
 
 To get analytical traction, we study the regime
@@ -850,8 +907,7 @@ The actual mathematical content of this subsection is the
   $0<B_m<1$ for all $m\ge 7$ (shown in the inductive proof of
   the previous subsection), the partial products
   $\prod_{m=n_0}^n(1-B_m)$ converge as $n\to\infty$ to a strictly
-  positive limit $\prod_{m\ge n_0}(1-B_m)$; cf.\ Knopp
-  \cite[§29]{Knopp1990}.
+  positive limit $\prod_{m\ge n_0}(1-B_m)$; cf.\ Knopp~\citeyearpar[\S 29]{Knopp1990}.
 
   \emph{Step 2 (series of products).}  For each fixed $k\ge n_0$
   the same argument gives
@@ -865,7 +921,7 @@ The actual mathematical content of this subsection is the
   Since $A_k=O(k^3/2^k)$, the series $\sum_{k\ge n_0}|A_k|$
   converges.  The bound~\eqref{eq:series-dominate} therefore supplies
   a summable dominant, so by Tannery's theorem — the dominated
-  convergence theorem for series, see Knopp~\cite[§41]{Knopp1990} —
+  convergence theorem for series, see Knopp~\citeyearpar[\S 41]{Knopp1990} ---
   limit and summation commute:
   \[
     \lim_{n\to\infty}\sum_{k=n_0}^n A_k\prod_{m=k+1}^n(1-B_m)
@@ -899,7 +955,7 @@ The actual mathematical content of this subsection is the
   from~$\tfrac12$ (e.g.\ at $n=9$ for $p=0.42$, verified by exact
   rational arithmetic).  This is consistent with the corollary: local
   maxima are a \emph{non-perturbative} phenomenon invisible to the
-  first-order expansion.  Van Doorn~\cite{vanDoorn2024}, Section~10,
+  first-order expansion.  Van Doorn~\citeyearpar[Section~10]{vanDoorn2024}
   conjectures that the optimal strategy for $p<\tfrac12$ is
   ``infinitely complex.''
 \end{remark}
@@ -1057,7 +1113,7 @@ constant~$C$.
   The picture for $p\le 0.35$ in our data --- a strictly
   decreasing sequence with no local extrema within $n\le 20$ ---
   is consistent with, but does not prove, monotone decrease on
-  all of~$\mathbb{N}$.  Van~Doorn~\cite{vanDoorn2024} proves that
+  all of~$\mathbb{N}$.  Van~Doorn~\citeyearpar{vanDoorn2024} proves that
   strategy~\All{} is \emph{not} optimal for $p<\tfrac12$ (there
   exists $n$ with $w_{n,p}\ne b_{n,p}$); equivalently, the
   sequence $n\mapsto w_{n,p}$ is not monotone non-increasing.
@@ -1247,60 +1303,8 @@ and Harald Binder for suggesting this new kind of doing mathematics.
 This research was supported by the DFG Project-ID 499552394–SFB 1597.
 
 
-\begin{thebibliography}{99}
-
-\bibitem{Bertsekas2017}
-  D.~P.~Bertsekas,
-  \emph{Dynamic Programming and Optimal Control},
-  Vol.~I, 4th ed.,
-  Athena Scientific, Belmont, MA, 2017.
-
-\bibitem{BertsekisTsitsiklis1991}
-  D.~P.~Bertsekas and J.~N.~Tsitsiklis,
-  An analysis of stochastic shortest path problems,
-  \emph{Math.\ Oper.\ Res.}\ \textbf{16} (1991), 580--595.
-  \href{https://doi.org/10.1287/moor.16.3.580}{doi:10.1287/moor.16.3.580}.
-
-\bibitem{Breitner2015}
-  J.~Breitner,
-  \emph{Expected outcome for repeated dice rolls with dice fixing},
-  Question on Mathematics Stack Exchange, 2015.
-  Available at
-  \url{https://math.stackexchange.com/questions/1118263/expected-outcome-for-repeated-dice-rolls-with-dice-fixing}.
-
-\bibitem{DubinsSavage1965}
-  L.~E.~Dubins and L.~J.~Savage,
-  \emph{How to Gamble If You Must: Inequalities for Stochastic
-    Processes},
-  McGraw-Hill, New York, 1965;
-  reprinted by Dover, 2014.
-
-\bibitem{Knopp1990}
-  K.~Knopp,
-  \emph{Theory and Application of Infinite Series},
-  2nd English ed.,
-  translated from the 4th German ed.,
-  Dover, New York, 1990.
-
-\bibitem{Puterman1994}
-  M.~L.~Puterman,
-  \emph{Markov Decision Processes: Discrete Stochastic Dynamic
-    Programming},
-  Wiley, New York, 1994.
-  \href{https://doi.org/10.1002/9780470316887}{doi:10.1002/9780470316887}.
-
-\bibitem{StokeyLucas1989}
-  N.~L.~Stokey, R.~E.~Lucas~Jr., and E.~C.~Prescott,
-  \emph{Recursive Methods in Economic Dynamics},
-  Harvard University Press, Cambridge, MA, 1989.
-  \href{https://doi.org/10.2307/j.ctvjnrt76}{doi:10.2307/j.ctvjnrt76}.
-
-\bibitem{vanDoorn2024}
-  E.~A.~van~Doorn,
-  Optimal play of a coin-flipping game,
-  \emph{arXiv preprint} arXiv:2406.14700, 2024.
-  \href{https://doi.org/10.48550/arXiv.2406.14700}{doi:10.48550/arXiv.2406.14700}.
-
-\end{thebibliography}
+\nocite{DubinsSavage1965}
+\bibliographystyle{alea3}
+\bibliography{manuscript}
 
 \end{document}

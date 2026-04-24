@@ -2806,3 +2806,141 @@ of `b_asymptotics.py` and were not referenced anywhere. Removed
 the corresponding dead plot functions (`plot_phi`,
 `amplitude_vs_n`) from the script.
 
+## 2026-04-24 — Session 5: ALEA submission preparation
+
+### Journal choice and policy check
+
+Author asked me to check ALEA (https://alea.impa.br) for an
+AI/LLM policy. Fetched and parsed the index, editorial policy,
+and submission pages. Finding: ALEA has **no** explicit
+AI-disclosure policy. They use CC~BY~4.0 for all published
+articles, peer review, IMS EJMS for submission, and require
+authors to use their own \LaTeX{} template (no margin/font
+changes).
+
+Implications: our existing disclosure (§1 "A note on authorship"
++ Appendix~A + `journal.md` link) comfortably exceeds any
+implicit floor. Since ALEA uses CC~BY~4.0, the preprint should
+match — recommended CC~BY (not the arXiv perpetual non-exclusive
+default) on the arXiv submission form.
+
+### ALEA-styled manuscript (new folder `Manuscript/ALEA/`)
+
+Converted the paper to ALEA's template. The template ships in
+`Manuscript/ALEA/alea_template.zip` and contains `amsart.cls`,
+`alea3.bst`, `logo.pdf`, and an `example.tex`. Unpacked, then
+produced a new `Manuscript/ALEA/manuscript.tex` that:
+
+- Uses `\documentclass[reqno,final,11pt]{amsart}` with the ALEA
+  packages (natbib, fancyhdr, geometry matching template, hyperref
+  with ALEA color `rgb(0.16,0.59,0.78)`).
+- Sets `\eheader` and `\elogo` with placeholder volume/year (to
+  be filled by the editor on acceptance).
+- Section-scoped equation numbering (`\thesection.\arabic{equation}`).
+- Replaced the inline `thebibliography` block with a proper
+  BibTeX bibliography: new file `Manuscript/ALEA/manuscript.bib`,
+  eight entries, with `\bibliographystyle{alea3}`.
+- Added author address (Albert-Ludwigs-Universität Freiburg,
+  corrected to **Ernst-Zermelo-Str.~1**), email, MSC codes, and
+  keywords.
+- Copied the four referenced figures into
+  `Manuscript/ALEA/figures/`.
+
+### MSC classes and keywords
+
+After discussion, settled on:
+
+- **60G40** (stopping times; optimal stopping; **gambling theory**)
+- **90C40** (Markov and semi-Markov decision processes)
+- **68V20** (formalization of mathematics in connection with
+  theorem provers)
+
+Considered but rejected: 91A60 (multi-player games — wrong, this
+is single-player), 41A60 (asymptotic expansions — secondary at
+best).
+
+Keywords (6): **Bellman equation; Tannery's theorem; Markov
+decision process; perturbation expansion; formal verification;
+Lean~4**.
+
+### Style polish for ALEA version
+
+- Citation-doubling fix. In author-year style, `Knopp~\cite{Knopp1990}`
+  renders as "Knopp Knopp (1990)". Converted all such sites to
+  `\citeyearpar` (three Knopp, two van Doorn, one Bertsekas–Tsitsiklis,
+  one Puterman/Bertsekas/Stokey run). Retained `\citet[Section~10]`
+  for the in-prose sentence "shown in van Doorn (2024, §10)".
+- Italicised the two opening paragraphs of §1 ("A note on
+  authorship" and the Summary.lean tour), each via its own
+  `\textit{...}` — `\textit` cannot span a paragraph break.
+- Fixed a single overfull hbox (the long `CoinsLean/Summary.lean`
+  URL label) with `\sloppy` + a `\allowbreak` in the typewriter
+  text. No overfull hboxes remain.
+
+### DOIs added (both manuscripts)
+
+Looked up DOIs via web search + verified each resolves against
+`doi.org`. Added four:
+
+- `10.1287/moor.16.3.580` (Bertsekas–Tsitsiklis 1991, already
+  present)
+- `10.1002/9780470316887` (Puterman 1994, Wiley)
+- `10.2307/j.ctvjnrt76` (Stokey–Lucas–Prescott 1989, JSTOR)
+- `10.48550/arXiv.2406.14700` (van Doorn 2024, arXiv canonical DOI)
+
+No DOI exists for Bertsekas 2017 (Athena Scientific does not
+register DOIs for their textbooks, confirmed), Breitner 2015
+(Math Stack Exchange has no DOI scheme), DubinsSavage 1965
+(neither the McGraw-Hill original nor the Dover 2014 reprint
+carries one), or Knopp 1990 (Dover reprint, no DOI).
+
+### DOIs hyperlinkable
+
+The `alea3.bst` style writes `\doi{10.xxx}` and defines `\doi`
+locally in the `.bbl` as plain text `"doi:10.xxx"`. Added
+`\renewcommand{\doi}[1]{\href{https://doi.org/#1}{doi:#1}}` to
+the ALEA preamble (after `\hypersetup`) so the `.bbl`'s
+`\providecommand` is a no-op and our definition takes effect.
+Verified by extracting URI annotations from the output PDF: all
+four DOI URLs correctly embedded as clickable links.
+
+Same DOI treatment applied to the original
+`Manuscript/manuscript.tex` by wrapping each `\bibitem` DOI in
+`\href{https://doi.org/…}{doi:…}` directly, since it uses an
+inline `thebibliography` (no `.bst`).
+
+### Displayed derivation of eq.~(8) added to `manuscript.tex`
+
+Already logged above (from earlier in the session).
+
+### Numerical experiments for strategy-ALL asymptotics
+
+Already logged above.
+
+### arXiv submission bundle
+
+Built `arxiv20260424.zip` at the repo root: five files
+(`manuscript.tex` + four figures under `figures/`). Bibliography
+is inline in the original manuscript, so no `.bib`/`.bbl` needed.
+Verified by extracting into a clean temp directory and running
+`pdflatex` twice — produces the same 18-page PDF that the
+working copy produces.
+
+### arXiv policy check
+
+Confirmed the arXiv ChatGPT / generative-AI policy (published
+January 2023): disclose significant use, authors take full
+responsibility, AI cannot be listed as an author. Our existing
+disclosure (§1 "A note on authorship" + Appendix~A + linked
+`journal.md`) satisfies all three requirements. No further
+changes needed for arXiv posting.
+
+### Submission recommendations summarised
+
+- **arXiv license**: CC~BY.
+- **arXiv primary category**: `math.PR`. Cross-list `math.OC`.
+- **arXiv MSC**: `60G40, 90C40, 68V20`.
+- **arXiv upload**: `arxiv20260424.zip`.
+- **ALEA submission**: `Manuscript/ALEA/manuscript.tex` with
+  figures, bib, and the template files bundled.
+
