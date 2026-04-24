@@ -160,9 +160,9 @@ explicit formula and a numerical value $L\approx
 structure of $n\mapsto w_{n,p}$ is fully determined to first order
 (Corollary~\ref{cor:shape}).
 
-A third, methodological, change concerns formal verification. 
-Since the results of the present paper were generated in collabortion with AI, 
-we want to avoid halluzinations: the reader does not have to be a specialist in Lean~4, 
+A third, methodological, change concerns formal verification.
+Since the results of the present paper were generated in collaboration with AI,
+we want to avoid hallucinations: the reader does not have to be a specialist in Lean~4, 
 the corresponding proof assistant, but has to acknowledge the fact that (i) the recursive definition
 for $w_{n,p}$ from \eqref{eq:bellman} is correctly implemented and (ii) the results as they stand 
 compile without error, meaning that Lean~4 has checked every proof. 
@@ -243,16 +243,20 @@ winning probability is $w_{n,1/2}=\tfrac12$ for every~$n$, and that
 in fact every reasonable strategy achieves this value.  In
 Section~\ref{sec:above} we show that for $p>\tfrac12$ the
 strategy~\One{} is always optimal and $n\mapsto w_{n,p}$ is strictly
-increasing.  Section~\ref{sec:below} treats the case $p<\tfrac12$
-near~$\tfrac12$: we introduce a first-order perturbation in
-$\delta=\tfrac12-p$, derive a recursion for the leading
-coefficient~$c_n$, prove that it simplifies to a linear recursion for
-$n\ge 7$, and compute the limit $L=\lim c_n$.
-Section~\ref{sec:numerics} complements the first-order analysis with
-numerical experiments that illustrate the shape of
+increasing; as a consequence (\S\ref{sec:above-limit}) the limit
+$W(p)=\lim_n w_{n,p}$ exists and admits a closed-form series
+representation.  Section~\ref{sec:below} treats the case
+$p<\tfrac12$ near~$\tfrac12$: we introduce a first-order
+perturbation in $\delta=\tfrac12-p$, derive a recursion for the
+leading coefficient~$c_n$, prove that it simplifies to a linear
+recursion for $n\ge 7$, and compute the limit $L=\lim c_n$.
+Section~\ref{sec:numerics} complements the first-order analysis
+with numerical experiments that illustrate the shape of
 $n\mapsto w_{n,p}$ away from $p=\tfrac12$, including the emergence
-of local maxima for $p$ bounded away from~$\tfrac12$
-(invisible in the first-order expansion).  Appendix~\ref{app:lean}
+of local maxima for $p$ bounded away from~$\tfrac12$ (invisible in
+the first-order expansion), and Section~\ref{sec:discussion}
+collects concluding observations and open questions.
+Appendix~\ref{app:lean}
 describes the formal verification of all results in Lean~4 and
 provides a line-level map between the manuscript and the
 formalization on GitHub.
