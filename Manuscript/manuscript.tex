@@ -459,8 +459,12 @@ Thus $\Delta_{n,p}=O(\delta)$.
     c_5=\tfrac{3555}{2048}\approx 1.7358,\quad
     c_6=\tfrac{113337}{65536}\approx 1.7293.
   \end{gather*}
-  The sequence increases on $\{1,\dots,5\}$ and decreases on $\{5,6,7,...\}$ (as we will prove below).  
-  In particular $c_5>c_4, c_6$, both of which we use below as base cases.
+  The sequence increases on $\{1,\dots,5\}$ and decreases on $\{5,6,7,...\}$ (as we will prove below).
+  In particular $c_5>c_4 > c_6$.
+  Each of the six identities above is formally verified in
+  Lean~4 (\texttt{c\_one}, \dots, \texttt{c\_six}); see
+  Appendix~\ref{app:lean}, Table~\ref{tab:lean-map}, for direct
+  links to the source.
   Figure~\ref{fig:cn-sequence} plots the sequence up to $n=25$,
   together with the limit $L=\lim_{n\to\infty}c_n\approx
   1.70347$ and the uniform lower bound $\tfrac{27}{16}=1.6875$
@@ -507,7 +511,7 @@ $<n$ supplying exactly what is needed at level~$n$.
 \end{lemma}
 
 \begin{lemma}\label{lem:lower}
-  $c_m\ge\tfrac{27}{16}$ for every $n\ge 4$.
+  $c_n\ge\tfrac{27}{16}$ for every $n\ge 4$.
 \end{lemma}
 
 \begin{lemma}\label{lem:decreasing}
@@ -540,12 +544,12 @@ $<n$ supplying exactly what is needed at level~$n$.
   from~\eqref{eq:AB} using $\binom{n}{2}=\tfrac{n(n-1)}{2}$ and
   $\binom{n}{3}=\tfrac{n(n-1)(n-2)}{6}$; we use it freely below.
 
-  For $n\ge 4$ let $P(n)$ denote the conjunction of the following
+  Let $P(n)$ denote the conjunction of the following
   four claims (each understood vacuously when its index range is
   empty):
   \begin{enumerate}[\rm(a)]
   \item Lemma~\ref{lem:collapse} holds at level~$n$ (when $n\ge 7$);
-  \item $c_n\ge\tfrac{27}{16}$;
+  \item $c_n\ge\tfrac{27}{16}$ (when $n\ge 4$);
   \item $c_n<c_{n-1}$ (when $n\ge 6$);
   \item the linear recursion~\eqref{eq:cn-linear} holds at level~$n$
     (when $n\ge 7$).
@@ -910,6 +914,24 @@ Proposition~\ref{prop:delta-rec} &
 Proposition~\ref{prop:cn} &
   \texttt{deficit\_first\_order} &
   \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2503}{Perturbation.lean:2503} \\
+Example~\ref{ex:cn-small} ($c_1=1$) &
+  \texttt{c\_one} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L76}{Perturbation.lean:76} \\
+Example~\ref{ex:cn-small} ($c_2=\tfrac{3}{2}$) &
+  \texttt{c\_two} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L119}{Perturbation.lean:119} \\
+Example~\ref{ex:cn-small} ($c_3=\tfrac{27}{16}$) &
+  \texttt{c\_three} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L169}{Perturbation.lean:169} \\
+Example~\ref{ex:cn-small} ($c_4=\tfrac{111}{64}$) &
+  \texttt{c\_four} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L186}{Perturbation.lean:186} \\
+Example~\ref{ex:cn-small} ($c_5=\tfrac{3555}{2048}$) &
+  \texttt{c\_five} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L211}{Perturbation.lean:211} \\
+Example~\ref{ex:cn-small} ($c_6=\tfrac{113337}{65536}$) &
+  \texttt{c\_six} &
+  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L244}{Perturbation.lean:244} \\
 Lemma~\ref{lem:collapse} (low) &
   \texttt{suffMin\_collapse\_low} &
   \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1501}{Perturbation.lean:1501} \\
