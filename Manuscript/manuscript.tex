@@ -652,8 +652,13 @@ $<n$ supplying exactly what is needed at level~$n$.
   Using $c_{n-1}\ge\tfrac{27}{16}$ (IH(b)) and $B_n>0$, this is
   $\le A_n-\tfrac{27}{16}B_n<0$ for $n\ge 13$ by~\eqref{eq:alg-id}
   ($n^2-15n+36>0$ there).  For $n\in\{7,\dots,12\}$, $c_n<c_{n-1}$
-  is verified by direct rational computation.  This completes the
-  inductive step.
+  is verified by direct rational computation (chain via the linear
+  recursion from $c_6$ up to $c_n$, then numerical comparison).
+  This completes the inductive step.  The combined statement of~(c)
+  for all $n\ge 5$ is exposed as
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1488}{\texttt{c\_strict\_anti\_from\_five}};
+  the corresponding statement of~(b) for all $m\ge 4$ as
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1483}{\texttt{c\_ge\_27\_16\_full}}.
 \end{proof}
 
 \subsection{The limit}
