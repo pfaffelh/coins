@@ -335,7 +335,7 @@ formalization on GitHub.
   \emph{Base case $n=2$.}
   One computes $w_{1,p}=p$ and
   $w_{2,p}=p^2+(1-p^2-q^2)p = 3p^2-2p^3$.  Then
-  $w_{2,p}-w_{1,p}=p(1-p)(2p-1)>0$ since $p = >\tfrac12$.
+  $w_{2,p}-w_{1,p}=p(1-p)(2p-1)>0$ since $p >\tfrac12$.
   Also $w_{1,p}=p = p/(p + q) < p^2/(p^2+q^2)$.
 
   \emph{Inductive step.}  Assume (i) and (ii) hold for all indices up
@@ -395,45 +395,85 @@ trivially by the Weierstrass criterion.
 \begin{theorem}[Limit and explicit formula above $\tfrac12$]
   \label{thm:above-limit}
   For every $p\in(\tfrac12,1)$ the limit
-  $W(p):=\lim_{n\to\infty}w_{n,p}$ exists, satisfies $W(p)\in
-  (\tfrac12,1)$, and admits the closed-form representation
+  $W(p):=\lim_{n\to\infty}w_{n,p}$ exists, satisfies
+  $p\le W(p)<1$, and admits the closed-form representation
   \begin{equation}\label{eq:above-W-formula}
-    W(p) \;=\; \prod_{k=1}^\infty\bigl(1-p^k-q^k\bigr)
-    \;+\; \sum_{k=1}^\infty p^k\!\!\!\prod_{j=k+1}^\infty\!\!
+    W(p) \;=\; \sum_{k=1}^\infty p^k\!\!\!\prod_{j=k+1}^\infty\!\!
             \bigl(1-p^j-q^j\bigr).
   \end{equation}
-  Both the product and the series converge absolutely
-  (geometrically, since $p^k+q^k=O(\max(p,q)^k)$).
+  The series converges absolutely at geometric rate.
 \end{theorem}
 
 \begin{proof}
-  Existence and the bounds $\tfrac12<W(p)<1$ are immediate from
-  Theorems~\ref{thm:half} and~\ref{thm:above}~(i)--(ii).
-  Iterating~\eqref{eq:above-lin} from $k=1$ to $k=n$ gives
-  \[
-    w_{n,p} \;=\; \prod_{k=1}^n\bigl(1-p^k-q^k\bigr)\;w_{0,p}
+  Existence follows from Theorem~\ref{thm:above}~(i) (monotone,
+  bounded above by~$1$).  The lower bound $W(p)\ge w_{1,p}=p$ is
+  immediate from monotonicity; combined with $p>\tfrac12$ this
+  gives $W(p)>\tfrac12$.
+
+  For the explicit formula, iterate~\eqref{eq:above-lin} from
+  $k=1$ up to $k=n$:
+  \begin{equation}\label{eq:W-finite-iter}
+    w_{n,p} \;=\; \underbrace{\prod_{k=1}^n\!\bigl(1-p^k-q^k\bigr)
+                               \cdot w_{0,p}}_{=\,0}
     \;+\; \sum_{k=1}^n p^k\!\prod_{j=k+1}^n\!\bigl(1-p^j-q^j\bigr),
+  \end{equation}
+  where the first product vanishes because its $k=1$ factor is
+  $1-p-q=0$.  For $j\ge 2$ the factors
+  $1-p^j-q^j=\sum_{i=1}^{j-1}\binom{j}{i}p^{j-i}q^i$ lie in $(0,1)$
+  (positive from the $i=1$ term; strictly less than $1$ since we
+  subtracted $p^j+q^j>0$).  Together with
+  $\sum_{j\ge 2}(p^j+q^j)<\infty$, the partial products
+  $\prod_{j=k+1}^n(1-p^j-q^j)$ converge as $n\to\infty$ to a
+  strictly positive limit $\Pi_k\in(0,1)$, and the resulting
+  series $\sum_k p^k\Pi_k$ converges absolutely by comparison with
+  $\sum_k p^k$.  By Tannery's theorem
+  (cf.~Knopp~\cite[\S 41]{Knopp1990}) with dominator $p^k$, limit
+  and summation commute, giving~\eqref{eq:above-W-formula}.
+
+  It remains to show $W(p)<1$.  Set $U(p):=1-W(p)$; the recursion
+  for $u_n:=1-w_{n,p}$ is $u_n=q^n+(1-p^n-q^n)u_{n-1}$, $u_0=0$,
+  and iterating identically to~\eqref{eq:W-finite-iter}
+  gives the analogue
+  \[
+    U(p) \;=\; \sum_{k=1}^\infty q^k\Pi_k,
   \]
-  with $w_{0,p}=1$.  Each factor $1-p^k-q^k=\sum_{j=1}^{k-1}\binom{k}{j}p^{k-j}q^j$ lies in $(0,1)$ for $k\ge 1$
-  (positive: pick the $j=1$ term; less than $1$: subtract the
-  positive $p^k+q^k$); together with $\sum_k(p^k+q^k)<\infty$ the
-  infinite product converges to a positive limit.  The series
-  converges by direct geometric comparison.  Passing to the limit
-  $n\to\infty$ yields~\eqref{eq:above-W-formula}.
+  which is a strictly positive sum (every term is positive: $q>0$
+  and $\Pi_k>0$).  Hence $W(p)=1-U(p)<1$.
 \end{proof}
 
-\begin{remark}\label{rem:above-W-numerics}
-  Numerically, $W(p)$ is monotone increasing in~$p$ on
-  $(\tfrac12,1)$ with $W(\tfrac12^+)=\tfrac12$ and $W(1^-)=1$.
-  Selected values (computed via the partial product/series
-  to $80$-digit precision):
-  \[
-    W(0.55)\approx 0.5984,\quad W(0.6)\approx 0.6886,\quad
-    W(0.7)\approx 0.8395,\quad W(0.9)\approx 0.9842.
-  \]
+\begin{remark}[Parallel with Theorem~\ref{thm:limit}]\label{rem:above-vs-below}
+  The iterated identity~\eqref{eq:W-finite-iter} and its limit
+  formula~\eqref{eq:above-W-formula} have the same structure as
+  the finite iteration~\eqref{eq:cn-finite-iter} and the
+  formula~\eqref{eq:L-formula} for~$L$ below: in both cases a
+  linear recursion of the form $x_n=A_n+(1-B_n)\,x_{n-1}$ is
+  iterated and Tannery's theorem identifies the resulting limit
+  as $\lim x_{n_0-1}\prod(1-B_j)+\sum A_k\prod(1-B_j)$, with
+  dominator $\sum|A_k|<\infty$.  The two differ only in the
+  coefficients: for $W(p)$, $A_k=p^k$ and $B_k=p^k+q^k$; for
+  $L$, $A_k=A_{\mathrm{lin}}(k)$ and $B_k=B_{\mathrm{lin}}(k)$
+  from Proposition~\ref{prop:linear}, and the structural step
+  leading to the linear recursion is trivial above $\tfrac12$
+  (immediate from monotonicity) but requires the joint induction
+  of \S\ref{sec:joint} below.
 \end{remark}
 
-\begin{remark}\label{rem:above-vs-below}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.78\linewidth]{figures/W_above.pdf}
+  \caption{The limit $W(p)=\lim_{n\to\infty}w_{n,p}$ as a function
+    of~$p$, for $p\in(\tfrac12,1)$.  Computed via the recursion
+    of Corollary~\ref{cor:above-lin} iterated to $n=400$ in
+    $80$-digit arithmetic.  Selected values:
+    $W(0.55)\approx 0.6288$, $W(0.6)\approx 0.7482$,
+    $W(0.7)\approx 0.9255$, $W(0.9)\approx 0.99998$.  The limit
+    is monotone in~$p$, bounded below by the identity line (since
+    $W(p)\ge p$) and strictly below~$1$ by
+    Theorem~\ref{thm:above-limit}.}
+  \label{fig:W-above}
+\end{figure}
+
+\begin{remark}\label{rem:above-below-asymm}
   The two limit theorems we obtain --- $W(p)$ for $p>\tfrac12$
   (Theorem~\ref{thm:above-limit}) and the perturbative limit $L$
   for the deficit coefficient $c_n$ as $\delta=\tfrac12-p\to
@@ -1169,9 +1209,10 @@ and a thematic commentary tied to each commit is in
 %% ====================================================================
 
 The author thanks Joachim Breitner for introducing him to the
-game, Wouter van~Doorn for valuable discussion, and the
-Deutsche Forschungsgemeinschaft (DFG) for funding through the
-Collaborative Research Centre CRC~1597 ``Small Data''.
+game as well as help in Lean~4, Wouter van~Doorn for valuable discussion, 
+and Harald Binder for suggesting this new kind of doing mathematics.
+This research was supported by the DFG Project-ID 499552394–SFB 1597.
+
 
 \begin{thebibliography}{99}
 
