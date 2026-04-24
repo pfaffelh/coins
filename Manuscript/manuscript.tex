@@ -95,11 +95,18 @@ author reviewed every edit.
 %choices (the precise form of an auxiliary lemma, the wording of a
 %remark, the numerical examples in \S\ref{sec:numerics}) straddle
 %the two roles.  
-Readers who want the full record can consult a
+A one-page tour of the main Lean definitions and theorems, in
+the form of \texttt{\#check} and \texttt{\#print} statements, is
+provided by
+\href{https://github.com/pfaffelh/coins/blob/c60bcd3/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/Summary.lean}};
+running it (\texttt{lake env lean CoinsLean/Summary.lean} from
+within \texttt{CoinsLean/}) prints the types and axiom list,
+verifying via Lean's kernel that the formalization type-checks as
+claimed.  Readers who want the full record can consult a
 prompt-by-prompt transcript at
 \href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}};
 a more granular development history of the formalization appears
-in Appendix~\ref{app:lean}.  
+in Appendix~\ref{app:lean}.
 % Any remaining errors are the author's responsibility.
 
 \subsection{The game}
