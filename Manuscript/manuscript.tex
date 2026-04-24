@@ -462,9 +462,9 @@ Thus $\Delta_{n,p}=O(\delta)$.
   The sequence increases on $\{1,\dots,5\}$ and decreases on $\{5,6,7,...\}$ (as we will prove below).
   In particular $c_5>c_4 > c_6$.
   Each of the six identities above is formally verified in
-  Lean~4 (\href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L76}{\texttt{c\_one}},
+  Lean~4 (\href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L76}{\texttt{c\_one}},
   \dots,
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L244}{\texttt{c\_six}});
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L244}{\texttt{c\_six}});
   see Appendix~\ref{app:lean}, Table~\ref{tab:lean-map}, for direct
   links to the source.
   Figure~\ref{fig:cn-sequence} plots the sequence up to $n=25$,
@@ -546,7 +546,7 @@ $<n$ supplying exactly what is needed at level~$n$.
   from~\eqref{eq:AB} using $\binom{n}{2}=\tfrac{n(n-1)}{2}$ and
   $\binom{n}{3}=\tfrac{n(n-1)(n-2)}{6}$; we use it freely below.
   Formally, it is verified in Lean as the lemma
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L932}{\texttt{alg\_id}};
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L932}{\texttt{alg\_id}};
   see Appendix~\ref{app:lean}, Table~\ref{tab:lean-map}.
 
   Let $P(n)$ denote the conjunction of the following
@@ -592,7 +592,7 @@ $<n$ supplying exactly what is needed at level~$n$.
   just proved into~\eqref{eq:cn-rec} and splitting the sum at $j=3$
   yields~\eqref{eq:cn-linear}--\eqref{eq:AB}.  Formally, this
   substitution is verified in Lean as the theorem
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1495}{\texttt{c\_linear\_rec}};
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1495}{\texttt{c\_linear\_rec}};
   see Appendix~\ref{app:lean}, Table~\ref{tab:lean-map}.
 
   \emph{(b) Lower bound.}  From~(d) and~\eqref{eq:alg-id},
@@ -613,18 +613,20 @@ $<n$ supplying exactly what is needed at level~$n$.
   $\delta_n:=3(n^2-15n+36)/(32\cdot 2^n)$,
   so~(d) gives $\varepsilon_n=(1-B_n)\varepsilon_{n-1}-\delta_n$.
   The starting value $\varepsilon_{12}>\tfrac{1}{60}$ is verified by
-  exact rational computation; the cumulative negative contribution
+  exact rational computation (formally:
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2995}{\texttt{c\_twelve\_buffer}});
+  the cumulative negative contribution
   is bounded by $\sum_{n\ge 13}\delta_n
   \le\tfrac{297}{65536}<\tfrac{1}{200}$ (using
   $\sum_{n\ge 13}n^2/2^n=\tfrac{99}{2048}$; formally:
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L889}{\texttt{delta\_tail\_bound}});
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L889}{\texttt{delta\_tail\_bound}});
   meanwhile $\prod_{n\ge 13}(1-B_n)>\tfrac{7}{8}$ (using
   $\sum_{n\ge 13}B_n<\tfrac{1}{8}$; formally:
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L864}{\texttt{B\_tail\_bound}}).
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L864}{\texttt{B\_tail\_bound}}).
   So $\varepsilon_n>\tfrac{1}{60}\cdot\tfrac{7}{8}-\tfrac{1}{200}
   =\tfrac{23}{2400}>0$ for $n\ge 13$.  The cumulative recursive
   step itself is formally verified as
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L949}{\texttt{cum\_eps\_bound}}.
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L949}{\texttt{cum\_eps\_bound}}.
 
   (\emph{Note for an inductive treatment:} the sequence
   $(\delta_n)_{n\ge 13}$ is not monotone — one computes
@@ -906,7 +908,7 @@ Table~\ref{tab:lean-map} lists every numbered theorem,
 proposition, lemma, and corollary stated in the main text together
 with its corresponding Lean theorem.  Each hyperlink points to the
 exact line of the current pinned revision
-(commit~\href{https://github.com/pfaffelh/coins/tree/b98f5ba}{\texttt{b98f5ba}}).
+(commit~\href{https://github.com/pfaffelh/coins/tree/536c6b5}{\texttt{536c6b5}}).
 
 \renewcommand{\arraystretch}{1.15}
 \begin{table}[h]
@@ -917,81 +919,84 @@ exact line of the current pinned revision
 \hline
 Theorem~\ref{thm:half} &
   \texttt{w\_half} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Optimal.lean\#L102}{Optimal.lean:102} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Optimal.lean\#L102}{Optimal.lean:102} \\
 Theorem~\ref{thm:above} (joint) &
   \texttt{above\_half} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Above.lean\#L108}{Above.lean:108} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Above.lean\#L108}{Above.lean:108} \\
 Proposition~\ref{prop:delta-rec} &
   \texttt{deficit\_succ} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L301}{Perturbation.lean:301} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L301}{Perturbation.lean:301} \\
 Proposition~\ref{prop:cn} &
   \texttt{deficit\_first\_order} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2503}{Perturbation.lean:2503} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2503}{Perturbation.lean:2503} \\
 Example~\ref{ex:cn-small} ($c_1=1$) &
   \texttt{c\_one} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L76}{Perturbation.lean:76} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L76}{Perturbation.lean:76} \\
 Example~\ref{ex:cn-small} ($c_2=\tfrac{3}{2}$) &
   \texttt{c\_two} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L119}{Perturbation.lean:119} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L119}{Perturbation.lean:119} \\
 Example~\ref{ex:cn-small} ($c_3=\tfrac{27}{16}$) &
   \texttt{c\_three} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L169}{Perturbation.lean:169} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L169}{Perturbation.lean:169} \\
 Example~\ref{ex:cn-small} ($c_4=\tfrac{111}{64}$) &
   \texttt{c\_four} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L186}{Perturbation.lean:186} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L186}{Perturbation.lean:186} \\
 Example~\ref{ex:cn-small} ($c_5=\tfrac{3555}{2048}$) &
   \texttt{c\_five} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L211}{Perturbation.lean:211} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L211}{Perturbation.lean:211} \\
 Example~\ref{ex:cn-small} ($c_6=\tfrac{113337}{65536}$) &
   \texttt{c\_six} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L244}{Perturbation.lean:244} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L244}{Perturbation.lean:244} \\
 Lemma~\ref{lem:collapse} (low) &
   \texttt{suffMin\_collapse\_low} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1501}{Perturbation.lean:1501} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1501}{Perturbation.lean:1501} \\
 Lemma~\ref{lem:collapse} (high) &
   \texttt{suffMin\_collapse\_high} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1507}{Perturbation.lean:1507} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1507}{Perturbation.lean:1507} \\
 Lemma~\ref{lem:lower} &
   \texttt{c\_ge\_27\_16\_full} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1483}{Perturbation.lean:1483} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1483}{Perturbation.lean:1483} \\
 Lemma~\ref{lem:decreasing} &
   \texttt{c\_strict\_anti\_from\_five} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1488}{Perturbation.lean:1488} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1488}{Perturbation.lean:1488} \\
 Proposition~\ref{prop:linear} &
   \texttt{c\_linear\_rec} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1495}{Perturbation.lean:1495} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1495}{Perturbation.lean:1495} \\
 Identity~\eqref{eq:alg-id} &
   \texttt{alg\_id} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L932}{Perturbation.lean:932} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L932}{Perturbation.lean:932} \\
 $\sum_{n\ge 13}B_n<\tfrac{1}{8}$ (\S\ref{sec:joint}) &
   \texttt{B\_tail\_bound} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L864}{Perturbation.lean:864} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L864}{Perturbation.lean:864} \\
+$\varepsilon_{12}\ge\tfrac{1}{60}$ (\S\ref{sec:joint}) &
+  \texttt{c\_twelve\_buffer} &
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2995}{Perturbation.lean:2995} \\
 $\sum_{n\ge 13}\delta_n\le\tfrac{1}{200}$ (\S\ref{sec:joint}) &
   \texttt{delta\_tail\_bound} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L889}{Perturbation.lean:889} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L889}{Perturbation.lean:889} \\
 Cumulative $\varepsilon$-bound (\S\ref{sec:joint}) &
   \texttt{cum\_eps\_bound} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L949}{Perturbation.lean:949} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L949}{Perturbation.lean:949} \\
 Theorem~\ref{thm:limit} (existence) &
   \texttt{c\_limit\_exists} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L1517}{Perturbation.lean:1517} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L1517}{Perturbation.lean:1517} \\
 Theorem~\ref{thm:limit} (formula) &
   \texttt{c\_limit\_formula} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2065}{Perturbation.lean:2065} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2065}{Perturbation.lean:2065} \\
 Corollary~\ref{cor:shape}~(i) &
   \texttt{w\_gap\_first\_order} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2811}{Perturbation.lean:2811} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2811}{Perturbation.lean:2811} \\
 Corollary~\ref{cor:shape}~(ii) &
   \texttt{w\_local\_min\_at\_five} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2847}{Perturbation.lean:2847} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2847}{Perturbation.lean:2847} \\
 Corollary~\ref{cor:shape}~(iii) &
   \texttt{no\_first\_order\_local\_max} &
-  \href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Perturbation.lean\#L2948}{Perturbation.lean:2948} \\
+  \href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Perturbation.lean\#L2948}{Perturbation.lean:2948} \\
 \hline
 \end{tabular}
 \caption{Correspondence between manuscript results and their Lean
   formalization.  Links point to the exact line of
-  commit~\texttt{b98f5ba} on the repository's
+  commit~\texttt{536c6b5} on the repository's
   \texttt{main} branch.}\label{tab:lean-map}
 \end{table}
 
@@ -1007,7 +1012,7 @@ of Theorem~\ref{thm:limit}.
 A self-contained one-page summary of the headline objects, with
 their source-level definitions, full types, and axiom dependencies,
 is provided by the file
-\href{https://github.com/pfaffelh/coins/blob/b98f5ba/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/Summary.lean}}.
+\href{https://github.com/pfaffelh/coins/blob/536c6b5/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/Summary.lean}}.
 Running
 \begin{center}
   \texttt{lake env lean CoinsLean/Summary.lean}
