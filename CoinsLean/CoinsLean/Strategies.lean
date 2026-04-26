@@ -6,14 +6,9 @@
       a(p, n+1)   = p^(n+1) + (1 - p^(n+1) - (1-p)^(n+1)) * a(p, n).
 -/
 import Mathlib
+import CoinsLean.Defs
 
 open Finset BigOperators Nat
-
-/-- Winning probability under strategy ONE (set aside exactly one head when
-    `1 ≤ k ≤ n-1`, all `n` heads when `k = n`). -/
-noncomputable def a (p : ℝ) : ℕ → ℝ
-  | 0     => 1
-  | n + 1 => p ^ (n + 1) + (1 - p ^ (n + 1) - (1 - p) ^ (n + 1)) * a p n
 
 theorem a_zero (p : ℝ) : a p 0 = 1 := rfl
 

@@ -2944,3 +2944,183 @@ changes needed for arXiv posting.
 - **ALEA submission**: `Manuscript/ALEA/manuscript.tex` with
   figures, bib, and the template files bundled.
 
+## 2026-04-26 — Lean comparator harness, toolchain downgrade, definition hoist
+
+The author asked whether the Lean comparator
+(<https://github.com/leanprover/comparator>) could be used to give
+referees a stronger, fully mechanical check of the formalization.
+The result was a substantial reorganisation of the Lean side and a
+matching update to both manuscripts.
+
+### What the comparator gives
+
+The comparator builds a `Challenge.lean` (theorem statements with
+`sorry`) and a `Solution.lean` (proofs) inside a `landrun`
+sandbox, exports both environments via `lean4export`, and replays
+the proof terms in the Lean kernel. It then verifies that every
+theorem named in `config.json` proves *exactly* the statement
+declared in `Challenge.lean` and uses only the listed axioms. The
+trust surface for a referee shrinks to two short files plus
+Mathlib.
+
+### Initial harness (config + Challenge + Solution)
+
+Created three new files in `CoinsLean/`:
+
+- `Challenge.lean` — the eleven headline theorems of the paper,
+  all with `:= by sorry`. First version copied the seven required
+  definitions (`a`, `w`, `c`, `deficit`, `suffMin`, `A_lin`,
+  `B_lin`) verbatim from the existing modules so that Challenge
+  was self-contained.
+- `Solution.lean` — a one-line `import CoinsLean` re-exporting
+  every proof.
+- `config.json` — names the eleven theorems and the three permitted
+  foundational axioms.
+- `lakefile.toml` — added `[[lean_lib]]` entries for `Challenge`
+  and `Solution` so `lake build` produces both.
+
+Subsequent prompt added Lemmas 4.5 (low/high), 4.6, 4.7 and
+Proposition 4.8 to Challenge.lean, growing the verified set to
+sixteen theorems. The required definitions `suffMin`, `A_lin`,
+`B_lin` were also copied in. Build green, sixteen `sorry`s in
+Challenge, zero anywhere else.
+
+### Toolchain downgrade `v4.29.1` → `v4.29.0` (no commit yet)
+
+The comparator and `lean4export` only have a `v4.29.0` tag
+(their `master` is on `v4.30.0-rc2`). Downgrading the project by
+one patch level is the safest path:
+
+- `CoinsLean/lean-toolchain`: `v4.29.1` → `v4.29.0`.
+- `CoinsLean/lakefile.toml` Mathlib pin: `v4.29.1` → `v4.29.0`.
+- `lake update mathlib` refreshed `lake-manifest.json`; the new
+  Mathlib commit is `8a178386`.
+- `lake exe cache get` re-fetched the matching pre-built oleans
+  (8232 files, ~6 GB).
+- `lake build` re-verified the entire formalization at v4.29.0;
+  no proof breakage.
+
+Updated stale text references:
+
+- `CoinsLean/README.md` directory layout comment.
+- Both manuscripts' Appendix A "All results … verified in Lean 4
+  (toolchain `v4.29.1`) … Mathlib `v4.29.1` (revision `5e932f97`)"
+  → `v4.29.0` / `8a178386`.
+- `claude.md` was left alone (it is a historical log).
+
+### Const-mismatch on `w` → shared `CoinsLean/Defs.lean`
+
+First comparator run failed:
+
+> uncaught exception: Const does not match between challenge and target 'w'
+
+Verified the comparator's check by reading
+`Comparator/Compare.lean`@`v4.29.0`: the test is `challengeConst
+!= solutionConst` on full `Lean.ConstantInfo` records, i.e.
+structural equality on the elaborated `Expr` body. Anderson
+(<https://github.com/frenzymath/Anderson-Conjecture>) gets away
+with re-declaring its trust-surface predicates in
+`Challenge.lean` because their definitions are pure
+`def := <expression>` — no `by`-blocks, no `termination_by`. Our
+`w` and `c` carry both: a `by`-block proving non-emptiness for
+`Finset.attach.sup'` / `inf'`, and a `termination_by` /
+`decreasing_by` pair. Those auxiliary proof terms can elaborate
+to non-identical `Expr` trees in two independent compilation
+runs, breaking the kernel-level equality.
+
+Fix: hoist the seven definitions into a single shared module
+`CoinsLean/CoinsLean/Defs.lean`. Both Challenge.lean and the
+proof modules now `import CoinsLean.Defs`, so there is exactly
+one kernel constant for each of `a`, `w`, `c`, `deficit`,
+`suffMin`, `A_lin`, `B_lin`, and the comparator has nothing to
+disagree about. Concretely:
+
+- New file `Defs.lean` — the seven definitions only.
+- `Strategies.lean`, `Optimal.lean`, `Perturbation.lean` —
+  removed the local `def`s, added `import CoinsLean.Defs`.
+- `Challenge.lean` — removed the duplicated defs, added `import
+  CoinsLean.Defs`.
+- `CoinsLean.lean` (root) — now lists `Defs` first.
+- `Bellman.lean` is untouched (its `b` is not part of the trust
+  surface).
+
+`lake build CoinsLean Challenge Solution`: 8262 jobs, green,
+sixteen expected `sorry`s in Challenge.
+
+### Repurpose `Summary.lean` as a deprecation notice
+
+`Summary.lean` was a small file with `#check` / `#print axioms`
+statements that an early referee could run as a poor man's
+verification. The comparator subsumes it. Rewrote `Summary.lean`
+to a 35-line `/- … -/` docstring explaining that the comparator
+is now the recommended check, naming `Challenge.lean` and
+`Defs.lean` as the trust surface and giving the exact `lake env
+comparator config.json` invocation. Builds in 160 ms (no
+declarations).
+
+### Manuscript updates (identical text in both versions)
+
+Two locations per manuscript:
+
+1. **§1 authorship note** — the "one-page tour via `#check` and
+   `#print` statements" sentence was replaced by a pointer to
+   `Challenge.lean` + `Defs.lean` as the trust surface, with a
+   forward reference to Appendix A for the comparator instructions
+   and a `~\cite{LeanComparator}` (main) /
+   `~\citep{LeanComparator}` (ALEA, natbib).
+2. **Appendix A** — the "self-contained one-page summary"
+   paragraph was replaced by a new "Independent verification with
+   the comparator" subsection naming the two-file trust surface,
+   crediting the Lean FRO tool, listing the three external
+   binaries (`landrun`, `lean4export`, `comparator`), and giving
+   the exact `rm -rf .lake/build && lake env comparator
+   config.json` invocation.
+
+No academic publication exists for the comparator. Cited it as
+software:
+
+- `Manuscript/manuscript.tex` — new inline `\bibitem{LeanComparator}`.
+- `Manuscript/ALEA/manuscript.bib` — new `@misc{LeanComparator,
+  …}` entry; renders in the `.bbl` as
+  "Böving, H. and Lean FRO. *Comparator: a trustworthy judge for
+  Lean proofs*. Software, version `v4.29.0` (2026)."
+
+PDFs recompile cleanly: main 18 pp. (unchanged), ALEA 16 pp.
+(was 15 — one extra page for the new bibliography entry plus the
+slightly longer appendix paragraph). No `Summary.lean` references
+remain in either `.tex` source.
+
+### Run instructions for a referee
+
+External binaries (cloned outside the repo, e.g. in `~/tools/`):
+
+```bash
+mkdir -p ~/tools && cd ~/tools
+sudo apt-get install -y golang-go
+git clone https://github.com/Zouuup/landrun.git
+(cd landrun && go build -o landrun cmd/landrun/main.go)
+git clone https://github.com/leanprover/lean4export.git
+(cd lean4export && git checkout v4.29.0 && lake build)
+git clone https://github.com/leanprover/comparator.git
+(cd comparator && git checkout v4.29.0 && lake build)
+export PATH="$PATH:$HOME/tools/landrun:$HOME/tools/lean4export/.lake/build/bin:$HOME/tools/comparator/.lake/build/bin"
+```
+
+Then from `CoinsLean/`:
+
+```bash
+rm -rf .lake/build
+lake env comparator config.json
+```
+
+### Status
+
+- Lean side: 8262 jobs, zero `sorry` outside `Challenge.lean`,
+  sixteen expected `sorry`s in `Challenge.lean` (one per theorem
+  in `config.json`).
+- Manuscripts: both compile cleanly, both cite the comparator,
+  both direct referees to `Challenge.lean` + `Defs.lean`.
+- Comparator end-to-end run: still to be performed locally by the
+  author; the harness compiles and the `Const`-mismatch root
+  cause has been fixed by the def hoist.
+

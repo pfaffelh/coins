@@ -95,14 +95,16 @@ author reviewed every edit.
 %choices (the precise form of an auxiliary lemma, the wording of a
 %remark, the numerical examples in \S\ref{sec:numerics}) straddle
 %the two roles.  
-A one-page tour of the main Lean definitions and theorems, in
-the form of \texttt{\#check} and \texttt{\#print} statements, is
-provided by
-\href{https://github.com/pfaffelh/coins/blob/c60bcd3/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/Summary.lean}};
-running it (\texttt{lake env lean CoinsLean/Summary.lean} from
-within \texttt{CoinsLean/}) prints the types and axiom list,
-verifying via Lean's kernel that the formalization type-checks as
-claimed.  Readers who want the full record can consult a
+The headline statements that have been formalized are collected,
+together with the seven shared definitions on which they depend, in
+\href{https://github.com/pfaffelh/coins/blob/main/CoinsLean/Challenge.lean}{\texttt{CoinsLean/Challenge.lean}}
+and
+\href{https://github.com/pfaffelh/coins/blob/main/CoinsLean/CoinsLean/Defs.lean}{\texttt{CoinsLean/CoinsLean/Defs.lean}};
+together these two files are the entire trust surface of the
+formalization.  A referee can then independently verify the proofs
+mechanically by running the Lean comparator~\cite{LeanComparator}
+on the public repository --- see Appendix~\ref{app:lean} for
+instructions.  Readers who want the full record can consult a
 prompt-by-prompt transcript at
 \href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}};
 a more granular development history of the formalization appears
@@ -1073,9 +1075,9 @@ constant~$C$.
 \section{Formal verification in Lean~4}\label{app:lean}
 
 All results of this paper have been formally verified in
-Lean~4 (toolchain \texttt{leanprover/lean4:v4.29.1}) using the
-Mathlib library at release tag \texttt{v4.29.1} (revision
-\texttt{5e932f97}).  The formalization is publicly available at
+Lean~4 (toolchain \texttt{leanprover/lean4:v4.29.0}) using the
+Mathlib library at release tag \texttt{v4.29.0} (revision
+\texttt{8a178386}).  The formalization is publicly available at
 \begin{center}
   \url{https://github.com/pfaffelh/coins}
 \end{center}
@@ -1200,18 +1202,32 @@ Step~1 uses
 These are exactly the two analytic ingredients cited in the proof
 of Theorem~\ref{thm:limit}.
 
-A self-contained one-page summary of the headline objects, with
-their source-level definitions, full types, and axiom dependencies,
-is provided by the file
-\href{https://github.com/pfaffelh/coins/blob/c60bcd3/CoinsLean/CoinsLean/Summary.lean}{\texttt{CoinsLean/Summary.lean}}.
-Running
+\paragraph{Independent verification with the comparator.}
+A referee who wants to mechanically verify the formalization
+without auditing the full proof modules can do so using the Lean
+comparator~\cite{LeanComparator}, a sandboxed kernel-replay tool
+maintained by the Lean FRO.  The trust surface is then the two
+short files
+\href{https://github.com/pfaffelh/coins/blob/main/CoinsLean/Challenge.lean}{\texttt{CoinsLean/Challenge.lean}}
+(the sixteen theorem statements with \texttt{sorry} placeholders)
+and
+\href{https://github.com/pfaffelh/coins/blob/main/CoinsLean/CoinsLean/Defs.lean}{\texttt{CoinsLean/CoinsLean/Defs.lean}}
+(the seven shared definitions \texttt{a}, \texttt{w}, \texttt{c},
+\texttt{deficit}, \texttt{suffMin}, \texttt{A\_lin}, \texttt{B\_lin}
+on which the statements depend).  A successful comparator run
+guarantees that the proofs in
+\href{https://github.com/pfaffelh/coins/blob/main/CoinsLean/Solution.lean}{\texttt{Solution.lean}}
+prove exactly the statements declared in \texttt{Challenge.lean},
+use only the three foundational axioms above, and are accepted by
+the Lean kernel.  Concretely, after installing the three external
+binaries \texttt{landrun}, \texttt{lean4export}, and
+\texttt{comparator} (build instructions in the project's
+\texttt{README.md}), one runs from inside \texttt{CoinsLean/}
 \begin{center}
-  \texttt{lake env lean CoinsLean/Summary.lean}
+  \texttt{rm -rf .lake/build \&\& lake env comparator config.json}
 \end{center}
-from within the \texttt{CoinsLean/} directory prints the types of
-\texttt{w}, \texttt{deficit}, \texttt{c}, the main theorems of
-the paper, and the axiom list --- verifying, via Lean's kernel,
-that the formalization type-checks as claimed.
+where \texttt{config.json} (also at the project root) lists the
+sixteen theorem names and the permitted axioms.
 
 \paragraph{Development history.}
 The formalization was produced in two stages of interactive work
@@ -1274,6 +1290,12 @@ This research was supported by the DFG Project-ID 499552394–SFB 1597.
     Processes},
   McGraw-Hill, New York, 1965;
   reprinted by Dover, 2014.
+
+\bibitem{LeanComparator}
+  H.~B\"oving and Lean FRO,
+  \emph{Comparator: a trustworthy judge for Lean proofs},
+  software, version \texttt{v4.29.0}, 2026.
+  Available at \url{https://github.com/leanprover/comparator}.
 
 \bibitem{Knopp1990}
   K.~Knopp,

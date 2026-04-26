@@ -1,0 +1,24 @@
+{
+    "challenge_module": "Challenge",
+    "solution_module": "Solution",
+    "theorem_names": [
+        "w_half",
+        "above_half",
+        "above_linear_rec",
+        "above_limit_exists",
+        "above_limit_ge",
+        "suffMin_collapse_low",
+        "suffMin_collapse_high",
+        "c_ge_27_16_full",
+        "c_strict_anti_from_five",
+        "c_linear_rec",
+        "c_limit_exists",
+        "c_twelve_buffer",
+        "deficit_first_order",
+        "w_gap_first_order",
+        "w_local_min_at_five",
+        "no_first_order_local_max"
+    ],
+    "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+    "enable_nanoda": false
+}

@@ -1,3 +1,4 @@
+import CoinsLean.Defs
 import CoinsLean.Bellman
 import CoinsLean.HalfP
 import CoinsLean.Strategies

@@ -200,8 +200,8 @@ only two hits, both inside **docstring comments** (the literal string
 CoinsLean/
 ├── README.md                 (this file)
 ├── lakefile.toml             build configuration
-├── lean-toolchain            pinned Lean version (v4.29.1)
-├── lake-manifest.json        pinned Mathlib version (v4.29.1)
+├── lean-toolchain            pinned Lean version (v4.29.0)
+├── lake-manifest.json        pinned Mathlib version (v4.29.0)
 ├── CoinsLean.lean            root module (imports everything)
 └── CoinsLean/
     ├── Bellman.lean          strategy-ALL value b(p,n)

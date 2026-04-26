@@ -4,26 +4,10 @@
   w(1/2,n) = 1/2 (Theorem 2.1, Step 1).
 -/
 import Mathlib
+import CoinsLean.Defs
 import CoinsLean.Strategies
 
 open Finset BigOperators Nat
-
-/-- Optimal winning probability defined by the Bellman equation. -/
-noncomputable def w (p : ℝ) : ℕ → ℝ
-  | 0     => 1
-  | n + 1 =>
-    p ^ (n + 1) +
-      ∑ j ∈ (Ico 1 (n + 1)).attach,
-        (Nat.choose (n + 1) j.val : ℝ) * p ^ (n + 1 - j.val) * (1 - p) ^ j.val *
-          ((Ico j.val (n + 1)).attach.sup'
-            ⟨⟨j.val, by
-              have := (mem_Ico.mp j.prop)
-              exact mem_Ico.mpr ⟨le_refl _, this.2⟩⟩, mem_attach _ _⟩
-            (fun m => w p m.val))
-  termination_by n => n
-  decreasing_by
-    have hm := mem_Ico.mp m.prop
-    omega
 
 /-- Suffix-maximum of `w p` over `[j, n)`; returns `0` when `j ≥ n`. -/
 noncomputable def suffMax (p : ℝ) (j n : ℕ) : ℝ :=
