@@ -1,0 +1,429 @@
+\documentclass[11pt,aspectratio=169]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,backgrounds}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{background}
+\usepackage{xcolor}
+
+% Lean code rendering (compile with: lualatex --shell-escape ...)
+\usepackage{minted}
+\setminted{encoding=utf-8}
+\usepackage{fontspec}
+\setmonofont[Scale=0.85]{dejavu-sans}
+\definecolor{mygray}{rgb}{0.97,0.97,0.97}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{blocks}[rounded][shadow=true]
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{darkblue}{rgb}{0.1,0.1,0.5}
+\definecolor{darkred}{rgb}{0.5,0.0,0.0}
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{author}{fg=white}
+\setbeamercolor{date}{fg=white}
+\setbeamercolor{institute}{fg=white}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\One}{\textsc{One}}
+\newcommand{\All}{\textsc{All}}
+
+\title[All-heads coin game]{Optimal strategies in the all-heads coin game}
+\subtitle{Verified in Lean~4, written with Claude Opus~4.7}
+\author[Pfaffelhuber]{Peter Pfaffelhuber}
+\institute[Freiburg]{University of Freiburg}
+\date{\today}
+
+\begin{document}
+\backgroundsetup{scale=1, color=black, opacity=1, angle=0, contents={\vspace*{3cm}\hspace*{-10cm}\includegraphics[width=1.80\paperwidth,height=1.33\paperheight]{hintergrund_vortrag1.pdf}}}
+
+\setbeamertemplate{background}{\BgMaterial}
+\begin{frame}
+  \titlepage
+  
+\end{frame}
+
+
+% Slides 2+: no background image, just a small UFR logo as footer.
+\setbeamertemplate{background}{}
+\setbeamertemplate{footline}{%
+  \hbox{\hskip 0.5cm\includegraphics[height=0.55cm]{ufr.png}\hfill}%
+  \vskip 4pt%
+}
+
+
+
+%% ====================================================================
+\begin{frame}{The game}
+  \tikzset{
+    coin/.style={circle, draw, minimum size=4.5mm, inner sep=0pt,
+                 font=\tiny\bfseries},
+    active/.style={coin, fill=gray!15},
+    kept/.style={coin, fill=green!35, draw=green!50!black, line width=0.5pt},
+    arr/.style={-{Stealth[length=1.1mm]}, thin, gray!70},
+    setarr/.style={-{Stealth[length=1.1mm]}, thin, green!55!black},
+    carryarr/.style={-{Stealth[length=1.1mm]}, thin, green!55!black}
+  }
+  \begin{itemize}
+    \item $n$ coins; each flip:
+          \tikz[baseline=-0.6ex]{\node[active]{H};}~with prob.~$p$,\;
+          \tikz[baseline=-0.6ex]{\node[active]{T};}~with prob.~$q=1-p$
+    \item each round: flip the in-play coins; keep $\ge 1$ head
+          \tikz[baseline=-0.6ex]{\node[kept]{H};}
+    \item kept coins move into the right column and carry over
+    \item bottom row all green $\Rightarrow$ \emph{win};\quad
+          no head $\Rightarrow$ \emph{lose}
+  \end{itemize}
+
+  \medskip
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \centering\textbf{Strategy \One}\\[2pt]
+    \begin{tikzpicture}[scale=0.8, transform shape,
+        every node/.style={inner sep=0pt}]
+      % Fix the bounding box so the figure does not shift between overlays.
+      \useasboundingbox (-0.85,-1.85) rectangle (4.20,1.85);
+      % active slots: x = 0, 0.5, 1.0, 1.5
+      % set-aside slots: x = 2.4, 2.9, 3.4, 3.9
+      % Row labels (appear with their first content)
+      \node<1->[anchor=east, font=\tiny] at (-0.40, 1.5)  {R1};
+      \node<2->[anchor=east, font=\tiny] at (-0.40, 0.5)  {R2};
+      \node<4->[anchor=east, font=\tiny] at (-0.40,-0.5)  {R3};
+      \node<6->[anchor=east, font=\tiny, green!50!black]
+                                          at (-0.40,-1.5) {win};
+
+      % Slide 1: Round 1 (4 active)
+      \node<1->[active] (a1) at (0,1.5)    {H};
+      \node<1->[active] (a2) at (0.5,1.5)  {T};
+      \node<1->[active] (a3) at (1.0,1.5)  {H};
+      \node<1->[active] (a4) at (1.5,1.5)  {T};
+
+      % Slide 2: set-aside coin from R1
+      \node<2->[kept]   (s1) at (2.4,0.5)  {H};
+
+      % Slide 3: R2 active coins
+      \node<3->[active] (b1) at (0,0.5)    {H};
+      \node<3->[active] (b2) at (0.5,0.5)  {T};
+      \node<3->[active] (b4) at (1.5,0.5)  {T};
+
+      % Slide 4: set-aside coins from R2
+      \node<4->[kept]   (s2) at (2.4,-0.5) {H};
+      \node<4->[kept]   (s3) at (2.9,-0.5) {H};
+
+      % Slide 5: R3 active coins
+      \node<5->[active] (c2) at (0.5,-0.5) {H};
+      \node<5->[active] (c4) at (1.5,-0.5) {H};
+
+      % Slide 6: final win row
+      \node<6->[kept] (e1) at (2.4,-1.5) {H};
+      \node<6->[kept] (e2) at (2.9,-1.5) {H};
+      \node<6->[kept] (e3) at (3.4,-1.5) {H};
+      \node<6->[kept] (e4) at (3.9,-1.5) {H};
+
+      % R1 -> R2 set-aside (slide 2+)
+      \draw<2->[setarr] (a3) -- (s1);
+      % R1 -> R2 active (slide 3+)
+      \draw<3->[arr]    (a1) -- (b1);
+      \draw<3->[arr]    (a2) -- (b2);
+      \draw<3->[arr]    (a4) -- (b4);
+      % R2 -> R3 set-aside (slide 4+)
+      \draw<4->[setarr]   (b1) -- (s3);
+      \draw<4->[carryarr] (s1) -- (s2);
+      % R2 -> R3 active (slide 5+)
+      \draw<5->[arr] (b2) -- (c2);
+      \draw<5->[arr] (b4) -- (c4);
+      % R3 -> end (slide 6)
+      \draw<6->[setarr]   (c2) -- (e3);
+      \draw<6->[setarr]   (c4) -- (e4);
+      \draw<6->[carryarr] (s2) -- (e1);
+      \draw<6->[carryarr] (s3) -- (e2);
+    \end{tikzpicture}
+
+    \column{0.5\textwidth}
+    \centering\textbf{Strategy \All}\\[2pt]
+    \begin{tikzpicture}[scale=0.8, transform shape,
+        every node/.style={inner sep=0pt}]
+      % Fix the bounding box so the figure does not shift between overlays.
+      \useasboundingbox (-0.85,-1.85) rectangle (4.20,1.85);
+      % Row labels
+      \node<1->[anchor=east, font=\tiny] at (-0.40, 1.5)  {R1};
+      \node<2->[anchor=east, font=\tiny] at (-0.40, 0.5)  {R2};
+      \node<4->[anchor=east, font=\tiny] at (-0.40,-0.5)  {R3};
+      \node<6->[anchor=east, font=\tiny, green!50!black]
+                                          at (-0.40,-1.5) {win};
+
+      % Slide 1: Round 1
+      \node<1->[active] (a1) at (0,1.5)    {H};
+      \node<1->[active] (a2) at (0.5,1.5)  {T};
+      \node<1->[active] (a3) at (1.0,1.5)  {H};
+      \node<1->[active] (a4) at (1.5,1.5)  {T};
+
+      % Slide 2: set-aside coins from R1
+      \node<2->[kept]   (s1a) at (2.4,0.5) {H};
+      \node<2->[kept]   (s1b) at (2.9,0.5) {H};
+
+      % Slide 3: R2 active coins
+      \node<3->[active] (b2) at (0.5,0.5)  {H};
+      \node<3->[active] (b4) at (1.5,0.5)  {T};
+
+      % Slide 4: set-aside coins from R2
+      \node<4->[kept]   (s2a) at (2.4,-0.5) {H};
+      \node<4->[kept]   (s2b) at (2.9,-0.5) {H};
+      \node<4->[kept]   (s3)  at (3.4,-0.5) {H};
+
+      % Slide 5: R3 active coin
+      \node<5->[active] (c4) at (1.5,-0.5) {H};
+
+      % Slide 6: final win row
+      \node<6->[kept] (e1) at (2.4,-1.5) {H};
+      \node<6->[kept] (e2) at (2.9,-1.5) {H};
+      \node<6->[kept] (e3) at (3.4,-1.5) {H};
+      \node<6->[kept] (e4) at (3.9,-1.5) {H};
+
+      % R1 -> R2 set-aside (slide 2+)
+      \draw<2->[setarr] (a1) -- (s1a);
+      \draw<2->[setarr] (a3) -- (s1b);
+      % R1 -> R2 active (slide 3+)
+      \draw<3->[arr]    (a2) -- (b2);
+      \draw<3->[arr]    (a4) -- (b4);
+      % R2 -> R3 set-aside (slide 4+)
+      \draw<4->[setarr]   (b2)  -- (s3);
+      \draw<4->[carryarr] (s1a) -- (s2a);
+      \draw<4->[carryarr] (s1b) -- (s2b);
+      % R2 -> R3 active (slide 5+)
+      \draw<5->[arr] (b4) -- (c4);
+      % R3 -> end (slide 6)
+      \draw<6->[setarr]   (c4)  -- (e4);
+      \draw<6->[carryarr] (s2a) -- (e1);
+      \draw<6->[carryarr] (s2b) -- (e2);
+      \draw<6->[carryarr] (s3)  -- (e3);
+    \end{tikzpicture}
+  \end{columns}
+
+  \vspace*{10cm}
+
+\end{frame}
+
+%% ====================================================================
+\begin{frame}{The Bellman equation}
+  $w_{n,p}$ = optimal winning probability with $n$ coins, $w_{0,p}:=1$.
+
+  \medskip
+  \[
+    \boxed{\;
+      w_{n,p}\;=\;p^{n}\;+\;\sum_{j=1}^{n-1}\binom{n}{j}\,p^{n-j}q^{j}\,
+      \max_{j\le m\le n-1} w_{m,p}\;}
+  \]
+
+  \medskip
+  \begin{itemize}
+    \item $p^{n}$: all heads $\Rightarrow$ immediate win
+    \item $j$ tails: choose remaining $m\in\{j,\dots,n-1\}$
+    \item player maximises $w_{m,p}$
+  \end{itemize}
+\end{frame}
+
+%% ====================================================================
+\begin{frame}{The fair case $p=\tfrac12$}
+  \begin{block}{Theorem}
+    $w_{n,1/2}=\tfrac12$ for every $n\ge 1$.
+  \end{block}
+
+  More: every policy taking the immediate win at $k=n$ has
+  $w_{n,1/2}=\tfrac12$.
+
+  \medskip
+  \textbf{Proof.}\enspace Strong induction on $n$; key identity
+  $\sum_{j=1}^{n-1}\binom{n}{j}2^{-n}=1-2^{1-n}$:
+  \[
+    w_{n,1/2}
+    \;=\; 2^{-n} + \tfrac12\bigl(1-2^{1-n}\bigr)
+    \;=\; \tfrac12. \qquad \square
+  \]
+
+  \medskip
+  \begin{itemize}
+    \item symmetry axis
+    \item all reasonable strategies optimal
+    % \item $p>\tfrac12$ vs $p<\tfrac12$: very different worlds
+  \end{itemize}
+\end{frame}
+
+%% ====================================================================
+\begin{frame}{Above: $p>\tfrac12$}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{block}{Theorem}
+      For $p>\tfrac12$, $n\ge 2$:
+      \begin{itemize}
+        \item[(i)] $w_{n,p}>w_{n-1,p}$
+        \item[(ii)] \One{} optimal: $w_{n,p}=a_{n,p}$
+      \end{itemize}
+      $\Rightarrow$ $W(p):=\lim_n w_{n,p}$ exists,
+      $\;p\le W(p)<1$,
+      \[
+        W(p) = \sum_{k\ge 1}p^{k} \prod_{j>k} \bigl(1-p^{j}-q^{j}\bigr).
+      \]
+    \end{block}
+
+    \medskip
+    {\scriptsize\textbf{Proof idea:} joint induction with
+    $w_{n-1,p}<\dfrac{p^{n}}{p^{n}+q^{n}}$.}
+
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{../Manuscript/figures/W_above.pdf}
+  \end{columns}
+\end{frame}
+
+%% ====================================================================
+\begin{frame}{Workflow: human + Claude Opus~4.7}
+  Manuscript, code, Lean formalisation: produced \emph{interactively}.
+
+  \medskip
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Author}
+    \begin{itemize}
+      \item question: $w_{n,p}$ vs.\ $v_{n,p}$
+      \item perturbation in $\delta=\tfrac12-p$
+      \item joint induction
+      \item decision to formalise
+      \item review every step
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{Claude}
+    \begin{itemize}
+      \item drafts prose
+      \item proposes / debugs Lean tactics
+      \item picks Mathlib lemmas
+      \item spots cubic / Tannery
+      \item numerics, plots
+    \end{itemize}
+  \end{columns}
+
+  \medskip
+  Loop: pick result $\to$ draft $\to$ \texttt{lake build} $\to$ review
+  $\to$ commit.
+
+  \smallskip
+  Log:
+  \href{https://github.com/pfaffelh/coins/blob/main/journal.md}{\texttt{journal.md}}\enspace
+  $\cdot$\enspace $\approx 3700$ lines Lean
+  $\cdot$\enspace 0 \texttt{sorry}
+  $\cdot$\enspace 0 custom axioms.
+\end{frame}
+
+%% ====================================================================
+\begin{frame}{Below: $p<\tfrac12$ is hard}
+  \begin{center}
+    \includegraphics[width=0.8\linewidth]{../Manuscript/figures/local_max_detail.pdf}
+  \end{center}
+
+  \begin{itemize}
+    \item local minima \& maxima drift with $p$
+    \item neither \One{} nor \All{} optimal in general
+    % \item van Doorn (2024): \glqq infinitely complex\grqq{} optimal strategy
+    \item our route: perturbation around $p=\tfrac12$,\enspace
+          $p=\tfrac12-\delta$
+  \end{itemize}
+\end{frame}
+
+%% ====================================================================
+\begin{frame}{First-order asymptotics: $c_n$}
+  Deficit $\Delta_{n,p}:=\tfrac12-w_{n,p}$,\enspace $p=\tfrac12-\delta$:
+  \[
+    \Delta_{n,p}\;=\;c_{n}\,\delta+O(\delta^{2}),\quad c_{1}=1,
+  \]
+  \[
+    \boxed{\;
+      c_{n}\;=\;\frac{n}{2^{n-1}}+\frac{1}{2^{n}}\sum_{j=1}^{n-1}\binom{n}{j}\,
+      \min_{j\le m\le n-1}c_{m}\;}\;\; (n\ge 2).
+  \]
+
+  \medskip
+  \begin{columns}[T]
+    \column{0.40\textwidth}
+    \scriptsize
+    \begin{align*}
+      c_{1}&=1,\;\; c_{2}=\tfrac{3}{2}\\
+      c_{3}&=\tfrac{27}{16}\\
+      c_{4}&=\tfrac{111}{64}\\
+      c_{5}&=\tfrac{3555}{2048}\;(\max)\\
+      c_{6}&=\tfrac{113337}{65536}\\
+      c_{n}&\to L\approx 1.7035
+    \end{align*}
+
+    \column{0.60\textwidth}
+    \centering
+    \includegraphics[width=\linewidth,height=4cm,keepaspectratio]%
+      {../Manuscript/figures/cn_sequence.pdf}
+  \end{columns}
+\end{frame}
+
+%% ====================================================================
+\begin{frame}{Shape of $w_{n,p}$ at first order}
+  \begin{block}{Corollary ($p=\tfrac12-\delta$, $\delta>0$ small)}
+    \begin{itemize}
+      \item[(i)] $w_{n-1,p}-w_{n,p}=(c_{n}-c_{n-1})\,\delta+O(\delta^{2})$
+      \item[(ii)] strict local \emph{minimum} at $n=5$
+      \item[(iii)] no local maximum at first order
+    \end{itemize}
+  \end{block}
+
+  \medskip
+  \textbf{Proof idea.}\enspace Joint induction on $n$ over four
+  statements:
+  \begin{itemize}
+    \item[(a)] \emph{collapse:} $\min_{j\le m\le n-1}c_{m}=
+          \begin{cases}c_{j} & j\le 3\\ c_{n-1} & j\ge 4\end{cases}$
+          \quad ($n\ge 7$)
+    \item[(b)] \emph{lower bound:} $c_{n}\ge\tfrac{27}{16}$ \quad ($n\ge 4$)
+    \item[(c)] \emph{strict decrease:} $c_{n}<c_{n-1}$ \quad ($n\ge 6$)
+    \item[(d)] \emph{linear recursion:} $c_{n}=A_{n}+(1-B_{n})\,c_{n-1}$
+          \quad ($n\ge 7$)
+  \end{itemize}
+  %Then Tannery $\Rightarrow$ explicit series for $L$;\enspace
+  %local maxima: \emph{non-perturbative}.
+\end{frame}
+
+%% ====================================================================
+\begin{frame}[fragile]{Lean~4: \texttt{Comparator}}
+  Trust surface = \texttt{Challenge.lean} + \texttt{Defs.lean}.\\
+  Comparator: only \texttt{propext}, \texttt{Quot.sound},
+  \texttt{Classical.choice}.
+
+  \medskip
+  \begin{minted}[fontsize=\scriptsize, mathescape, bgcolor=mygray,
+                 framesep=2mm]{Lean}
+-- Defs.lean : Bellman definition of w
+noncomputable def w (p : ℝ) : ℕ → ℝ
+  | 0     => 1
+  | n + 1 =>
+    p ^ (n + 1)
+      + ∑ j ∈ (Ico 1 (n + 1)).attach,
+          (Nat.choose (n + 1) j.val : ℝ)
+            * p ^ (n + 1 - j.val) * (1 - p) ^ j.val
+            * (Ico j.val (n + 1)).attach.sup' _ (fun m => w p m.val)
+
+-- Challenge.lean : one of 16 headline statements
+theorem w_local_min_at_five :
+  ∃ δ₀ : ℝ, 0 < δ₀ ∧ ∀ δ, 0 < δ → δ < δ₀ →
+    w (1/2 - δ) 5 < w (1/2 - δ) 4 ∧
+    w (1/2 - δ) 5 < w (1/2 - δ) 6
+  \end{minted}
+
+  \medskip
+  16 theorems\enspace$\cdot$\enspace 0 \texttt{sorry}\enspace$\cdot$\enspace
+  0 custom axioms\enspace$\cdot$\enspace
+  \href{https://github.com/pfaffelh/coins}{\texttt{github.com/pfaffelh/coins}}
+\end{frame}
+
+\end{document}
