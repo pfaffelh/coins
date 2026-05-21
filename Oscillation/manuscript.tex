@@ -1,0 +1,619 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\One}{\textsc{One}}
+\newcommand{\All}{\textsc{All}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+
+%% ---------------------------------------------------------------------
+%%  DRAFT MARKER.  \gap{label}{text} flags a step that is NOT yet
+%%  complete.  It renders as a conspicuous red box in the PDF.  Every
+%%  such box marks a place where work must continue; the manuscript is
+%%  written in finished form around them on purpose, so that the
+%%  narrative and the precise proof obligations are visible.
+%% ---------------------------------------------------------------------
+\newcommand{\gap}[2]{%
+  \par\smallskip\noindent
+  \fcolorbox{red!70!black}{red!7}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{%
+      {\bfseries\color{red!70!black}$\blacktriangleright$~OPEN GAP --- #1.
+       Work continues here.}\\[2pt]#2}}%
+  \par\smallskip}
+
+\title{Log-periodic oscillation in the all-heads coin game}
+\author{Peter Pfaffelhuber}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  We study the large-$n$ behaviour of the all-heads coin game below
+  the fair coin. Two phenomena are established. First, for every
+  $p\in(0,\tfrac12)$ the value $b_{n,p}$ of the greedy strategy
+  \All{} is asymptotically \emph{log-periodic}: it is asymptotic to a
+  continuous, non-constant function of $\log n$ with period
+  $\log\bigl(1/(1-p)\bigr)$, and in particular does not converge.
+  Second --- and this is the main result --- the \emph{optimal}
+  winning probability $w_{n,p}$ inherits this oscillation: for every
+  $p\in(0,\tfrac12)$ the sequence $n\mapsto w_{n,p}$ is not eventually
+  monotone and has infinitely many strict local maxima and minima.
+  The proof reduces the statement to two one-sided assertions, treats
+  the increasing side by an elementary Bellman estimate, and the
+  decreasing side by an exact transfer to strategy~\All{} followed by
+  a renormalisation argument that propagates the oscillation across
+  geometric scales. This paper is the asymptotic companion to the
+  exact and perturbative analysis of~\cite{Paper1}.
+\end{abstract}
+
+\noindent\emph{\small Working draft. Steps still to be completed are
+flagged in the text by boxed} {\small\bfseries\color{red!70!black}OPEN
+GAP} \emph{\small markers (Gaps~A--D); Section~\ref{sec:status}
+consolidates their status.}
+
+%% =====================================================================
+\section{Introduction}\label{sec:intro}
+%% =====================================================================
+
+\subsection{The game}
+
+Fix $p\in(0,1)$ and write $q:=1-p$. A player holds $n$ coins, each of
+which lands heads independently with probability~$p$. In each round
+all remaining coins are tossed; the player must set aside at least one
+coin showing heads, and loses if no coin shows heads. The game is won
+once every coin has been set aside. Writing $w_{n,p}$ for the optimal
+winning probability, the dynamic-programming principle gives the
+Bellman equation
+\begin{equation}\label{eq:bellman}
+  w_{n,p}=p^{n}+\sum_{j=1}^{n-1}\binom{n}{j}p^{\,n-j}q^{\,j}
+          \max_{j\le m\le n-1}w_{m,p},\qquad w_{0,p}:=1 .
+\end{equation}
+Two strategies are natural: \One{} sets aside a single head each round
+(value $a_{n,p}$), and \All{} sets aside \emph{every} head (value
+$b_{n,p}$). The companion paper~\cite{Paper1} determines $w_{n,p}$
+\emph{exactly} at $p=\tfrac12$, identifies the limit
+$W(p)=\lim_n w_{n,p}$ for $p>\tfrac12$, and gives a first-order
+perturbation expansion for $p<\tfrac12$ near $\tfrac12$. All of those
+results are machine-checked in Lean~4.
+
+The present paper concerns the regime left open by a perturbative
+analysis: the genuine large-$n$ behaviour for $p<\tfrac12$, which
+turns out to be \emph{oscillatory} rather than convergent.
+
+\subsection{Main results}\label{sec:main}
+
+We state the two theorems at once; everything else in the paper is in
+their service.
+
+\begin{theorem}[oscillation of the optimal value]\label{thm:main}
+  For every $p\in(0,\tfrac12)$ the sequence $n\mapsto w_{n,p}$ is not
+  eventually monotone. It has infinitely many strict local maxima and
+  infinitely many strict local minima.
+\end{theorem}
+
+\begin{theorem}[log-periodicity of strategy \All]\label{thm:ALL}
+  For every $p\in(0,\tfrac12)$,
+  \[
+    b_{n,p}=\Phi_p(\log n)\,\bigl(1+o(1)\bigr)\qquad(n\to\infty),
+  \]
+  where $\Phi_p$ is continuous, strictly positive, non-constant, and
+  periodic of period $L:=\log(1/q)$. In particular $b_{n,p}$ does not
+  converge: $\liminf_n b_{n,p}<\limsup_n b_{n,p}$.
+\end{theorem}
+
+Theorem~\ref{thm:main} sharpens, and corrects the natural first
+guess about, the first-order picture of~\cite{Paper1}: that analysis
+shows $w_{n,p}$ to be eventually increasing \emph{at first order in}
+$\tfrac12-p$, but the exact sequence is not eventually monotone at
+all. The oscillation is non-perturbative --- its amplitude is
+exponentially small in $1/(\tfrac12-p)$ --- which is why it is
+invisible to any finite-order expansion.
+
+\subsection{Strategy of proof}\label{sec:strategy}
+
+The proof of Theorem~\ref{thm:main} has a rigid skeleton, which we
+record now so that the role of each later section is clear. For a
+real sequence $(x_n)$ put $d_n:=x_{n+1}-x_n$.
+
+\begin{quote}
+\textbf{Step 0 (reduction).} A bounded sequence has infinitely many
+strict local maxima and minima as soon as it is \emph{not eventually
+monotone}, i.e.\ as soon as $d_n>0$ infinitely often \emph{and}
+$d_n<0$ infinitely often (Lemma~\ref{lem:reduction}). Thus
+Theorem~\ref{thm:main} splits into
+\[
+  \text{(A) }(w_{n,p})\text{ is not eventually non-decreasing,}
+  \qquad
+  \text{(B) }(w_{n,p})\text{ is not eventually non-increasing.}
+\]
+
+\textbf{Step A (the increasing side).} On a stretch where $w$ is
+non-decreasing, the suffix-maximum in~\eqref{eq:bellman} collapses to
+its right endpoint and the Bellman equation becomes the linear
+strategy-\One{} recursion, whose one-step increment has the
+sign-definite dominant term $-q^{n}w_{n-1}$. Since $q>p$, this forces
+an eventual decrease. Statement~(A) follows
+(Proposition~\ref{prop:A}); the argument is elementary and complete.
+
+\textbf{Step B (the decreasing side).} On a stretch where $w$ is
+non-increasing, the suffix-maximum collapses to its \emph{left}
+endpoint, and $w$ becomes --- exactly --- a strategy-\All{} sequence
+(Lemma~\ref{lem:transfer}). Strategy~\All{} oscillates
+(Theorem~\ref{thm:ALL}); hence $w$ cannot have a non-increasing tail.
+The transfer of the oscillation from \All{} to $w$ is carried out by
+a renormalisation argument (Section~\ref{sec:renorm}): a windowed
+fundamental coefficient $A(t)$ is shown to satisfy a propagation
+identity across the geometric scale, from which non-convergence ---
+hence non-monotonicity --- follows.
+\end{quote}
+
+The asymmetry between Steps~A and~B is structural: the increasing side
+reduces to a contractive linear recursion with a sign-definite drift,
+the decreasing side to a scale-invariant recursion whose solutions
+oscillate. Step~A is elementary; Step~B carries the analytic weight of
+the paper.
+
+%% =====================================================================
+\section{Setup and notation}\label{sec:setup}
+%% =====================================================================
+
+Throughout, $p\in(0,\tfrac12)$ is fixed, $q=1-p\in(\tfrac12,1)$, and
+we use freely that $q>p$, $p/q<1$ and $2p<1$. We write
+$L:=\log(1/q)>0$ and $\omega:=2\pi/L$.
+
+The value $w_{n,p}$ satisfies~\eqref{eq:bellman}; it is a probability,
+so $0<w_{n,p}\le1$, and in fact $w_{n,p}<1$ for $n\ge1$. The two
+reference strategies satisfy \emph{linear} recursions:
+\begin{equation}\label{eq:ab}
+  a_{n,p}=p^{n}+(1-p^{n}-q^{n})\,a_{n-1,p},
+  \qquad
+  b_{n,p}=\sum_{j=0}^{n-1}\binom{n}{j}p^{\,n-j}q^{\,j}\,b_{j,p},
+\end{equation}
+with $a_{0,p}=b_{0,p}=1$, and $w_{n,p}\ge\max(a_{n,p},b_{n,p})$ since
+the optimum dominates any fixed strategy. We use the binomial
+identities $\sum_{j=1}^{n-1}\binom nj p^{n-j}q^j=1-p^n-q^n$ and
+$\sum_{j=0}^{n-1}\binom nj p^{n-j}q^j=1-q^n$. Where the value of $p$
+is fixed we abbreviate $w_n:=w_{n,p}$, $b_n:=b_{n,p}$.
+
+%% =====================================================================
+\section{Strategy \All{}: log-periodic asymptotics}\label{sec:ALL}
+%% =====================================================================
+
+This section proves Theorem~\ref{thm:ALL}. We summarise the analysis;
+the full development is in the companion note
+\texttt{strategy\_all\_asymptotics.tex}.
+
+\subsection{The functional equation}
+
+Let $B(z):=\sum_{n\ge0}b_n z^n/n!$ be the exponential generating
+function of strategy~\All. The convolution structure of~\eqref{eq:ab}
+yields the first-order $q$-difference equation
+\begin{equation}\label{eq:Bfunc}
+  B(z)=1+(e^{pz}-1)\,B(qz),
+\end{equation}
+and iterating it (the remainder tends to $0$ since each factor
+$e^{pq^kz}-1\to0$),
+\begin{equation}\label{eq:Bseries}
+  B(z)=\sum_{M\ge0}\;\prod_{k=0}^{M-1}\bigl(e^{pq^kz}-1\bigr).
+\end{equation}
+Extracting coefficients exhibits $b_n/p^n$ as a $q$-analogue of the
+Fubini (ordered-Bell) polynomials; equivalently, with
+$X_1,\dots,X_n$ i.i.d.\ geometric,
+$b_{n,p}=\Pr(\{X_1,\dots,X_n\}=\{1,\dots,\max_iX_i\})$.
+
+\subsection{Saddle-point and Mellin analysis}
+
+Writing $e^{pq^kz}-1=e^{pq^kz}(1-e^{-pq^kz})$ and using
+$p\sum_{k=0}^{M-1}q^k=1-q^M$,
+\[
+  \prod_{k=0}^{M-1}(e^{pq^kz}-1)
+  = e^{\,z(1-q^M)}\prod_{k=0}^{M-1}\bigl(1-e^{-pq^kz}\bigr).
+\]
+On the positive axis the terms of~\eqref{eq:Bseries} are dominated by
+$M$ near $K(z):=\log(pz)/\log(1/q)$; a saddle-point evaluation gives
+$B(z)=e^{z}\,\Phi(\log z)(1+o(1))$ with $\Phi$ bounded and periodic of
+period $L$, and a Hayman-type transfer to coefficients yields
+$b_{n,p}=\Phi_p(\log n)(1+o(1))$. A Mellin analysis of the harmonic
+sum $\sum_k\log(1-e^{-pq^kz})$ identifies the Fourier coefficients of
+$\Phi_p$ at frequencies $s_\ell=2\pi i\ell/L$ as
+\[
+  c_\ell=-\frac{1}{L}\,p^{-s_\ell}\,\Gamma(s_\ell)\,\zeta(s_\ell+1),
+  \qquad \ell\in\Z .
+\]
+For $\ell\ne0$ these are non-zero: $\Gamma$ has no zeros and
+$\zeta(1+it)\ne0$ for real $t\ne0$ (the non-vanishing of $\zeta$ on
+the line $\Re s=1$). Hence $\Phi_p$ is non-constant and $b_{n,p}$ does
+not converge --- which is Theorem~\ref{thm:ALL}.
+
+\gap{Gap A --- Hayman regularity}{The Hayman-type transfer from
+$B(z)\sim e^z\Phi(\log z)$ to the coefficient asymptotics
+$b_n\sim\Phi_p(\log n)$ requires admissibility / sector control of
+$B(z)$. Here $B$ is entire of order~$1$ and type~$1$ (indeed
+$B(r)\le e^r$, since $0\le b_n\le1$); the delicate feature is the
+non-constant log-periodic factor, which the closure theory of
+H-admissible functions does not cover. A direct sector saddle-point
+estimate is needed.}
+
+\gap{Gap B --- Mellin contour}{The Mellin step --- the strip of
+analyticity and the contour shift for the transform of
+$\log B(z)-z$ --- is standard in spirit (Flajolet--Sedgewick) but is
+not carried out here.}
+
+\begin{remark}
+  Gaps~A and~B concern the \emph{quantitative} asymptotics. The
+  qualitative conclusion of Theorem~\ref{thm:ALL} that we actually
+  use downstream --- that $b_{n,p}$ does not converge, equivalently
+  $\Phi_p$ non-constant --- is, granted the Mellin framework, secured
+  by $\zeta(1+it)\ne0$.
+\end{remark}
+
+%% =====================================================================
+\section{Step A: \texorpdfstring{$w_{n,p}$}{w(n,p)} is not eventually
+  increasing}\label{sec:A}
+%% =====================================================================
+
+\begin{proposition}\label{prop:A}
+  For $p\in(0,\tfrac12)$ there is no $M$ with $w_n\ge w_{n-1}$ for all
+  $n>M$. That is, $w_n<w_{n-1}$ for infinitely many~$n$.
+\end{proposition}
+
+\begin{proof}
+  Suppose $w_n\ge w_{n-1}$ for all $n>M$, i.e.\ $w$ is non-decreasing
+  on $\{M,M+1,\dots\}$. Fix $n>M+1$ and split the Bellman
+  sum~\eqref{eq:bellman} at $j=M$, writing $S_{j,n}:=\max_{j\le m\le
+  n-1}w_m$. For $j\ge M$ the index window lies in the
+  non-decreasing range, so $S_{j,n}=w_{n-1}$; for every $j$ one has
+  $w_{n-1}\le S_{j,n}\le1$. With $U_n:=\sum_{j=1}^{M-1}\binom nj
+  p^{n-j}q^j$ and $T_n:=\sum_{j=1}^{M-1}\binom nj p^{n-j}q^j S_{j,n}$,
+  \[
+    w_n=p^n+T_n+(1-p^n-q^n-U_n)\,w_{n-1},
+  \]
+  hence
+  \[
+    w_n-w_{n-1}=p^n(1-w_{n-1})-q^n w_{n-1}+(T_n-U_n w_{n-1}).
+  \]
+  Since $w_{n-1}\le S_{j,n}\le1$ one has $0\le T_n-U_nw_{n-1}\le U_n$,
+  and $U_n\le(M-1)\,n^{M-1}p^{\,n-M+1}=C_1\,n^{M-1}p^n$ with
+  $C_1=(M-1)p^{1-M}$. With $c:=w_M>0$ and $w_{n-1}\ge c$,
+  \[
+    w_n-w_{n-1}\le\bigl(1+C_1n^{M-1}\bigr)p^n-c\,q^n .
+  \]
+  As $p/q<1$, the ratio $(1+C_1n^{M-1})(p/q)^n\to0$, so the
+  right-hand side is negative for all large~$n$ --- contradicting
+  $w_n\ge w_{n-1}$.
+\end{proof}
+
+Proposition~\ref{prop:A} is statement~(A) of Section~\ref{sec:strategy}
+and is fully rigorous.
+
+%% =====================================================================
+\section{Step B, part 1: reduction and the transfer
+  lemma}\label{sec:transfer}
+%% =====================================================================
+
+\begin{lemma}[reduction]\label{lem:reduction}
+  A bounded real sequence $(x_n)$ that is neither eventually
+  non-decreasing nor eventually non-increasing has infinitely many
+  strict local maxima and infinitely many strict local minima,
+  provided $x_n\ne x_{n+1}$ for all large~$n$.
+\end{lemma}
+
+\begin{proof}
+  Not eventually non-decreasing means $d_n:=x_{n+1}-x_n<0$ infinitely
+  often; not eventually non-increasing means $d_n>0$ infinitely
+  often. Between a sign change of $d$ from $-$ to $+$ lies a local
+  minimum, between $+$ and $-$ a local maximum; infinitely many sign
+  changes yield infinitely many of each, strict under $x_n\ne x_{n+1}$.
+\end{proof}
+
+\begin{lemma}[transfer to strategy \All]\label{lem:transfer}
+  Suppose $w_n\ge w_{n+1}$ for all $n\ge M$. Define $x_0:=1$,
+  $x_j:=\max_{j\le m\le M}w_m$ for $1\le j\le M-1$, and $x_j:=w_j$ for
+  $j\ge M$. Then $x_n=w_n$ for $n\ge M$, and $(x_n)$ satisfies the
+  exact strategy-\All{} recursion
+  \[
+    x_n=\sum_{j=0}^{n-1}\binom nj p^{\,n-j}q^{\,j}\,x_j
+    \qquad\text{for every }n>M .
+  \]
+\end{lemma}
+
+\begin{proof}
+  Fix $n>M$. In the Bellman equation~\eqref{eq:bellman} the
+  suffix-maximum $S_{j,n}=\max_{j\le m\le n-1}w_m$ collapses to the
+  \emph{left} endpoint on the non-increasing range: for $M\le j\le
+  n-1$, $S_{j,n}=w_j=x_j$; for $1\le j\le M-1$,
+  $S_{j,n}=\max(\max_{j\le m\le M-1}w_m,\,w_M)=\max_{j\le m\le
+  M}w_m=x_j$, independent of $n$. Writing the $p^n$ term as
+  $\binom n0p^nq^0x_0$ gives the displayed recursion.
+\end{proof}
+
+Lemma~\ref{lem:transfer} is the crux of Step~B: it says that a
+non-increasing tail of $w$ is, exactly, a strategy-\All{} sequence
+with finitely many initial values modified. The remaining task is to
+show such a sequence cannot exist, by transferring the oscillation of
+Theorem~\ref{thm:ALL}.
+
+%% =====================================================================
+\section{Step B, part 2: the renormalisation argument}\label{sec:renorm}
+%% =====================================================================
+
+Throughout this section $(x_n)$ is a bounded solution of the
+strategy-\All{} recursion for $n>M$ --- either $b$ itself, or a
+transferred sequence of Lemma~\ref{lem:transfer}.
+
+\subsection{The recursion as a smoothing in log-scale}
+
+With $J_n\sim\mathrm{Bin}(n,q)$ the recursion reads
+$x_n=E[x_{J_n}]/(1+q^n)$. Passing to $t:=\log n$ and the log-linear
+interpolation $y$ of $n\mapsto x_n$, and using $\log(qn)=\log n-L$,
+one application of the recursion shifts the log-scale down by exactly
+one period~$L$ and smooths by a kernel of width
+$\sigma(t)\sim\sqrt{p/q}\;e^{-t/2}\to0$.
+
+\subsection{The local fundamental coefficient}
+
+Fix a window $\chi\in C_c^\infty(\R)$ with $\int\chi=1$ and
+$\hat\chi(2\pi)=0$, and set
+\begin{equation}\label{eq:Adef}
+  A(t):=\frac1L\int_\R y(s)\,e^{-i\omega s}\,
+        \chi\!\Bigl(\tfrac{s-t}{L}\Bigr)\,ds .
+\end{equation}
+The condition $\hat\chi(2\pi)=0$ makes $A$ annihilate the constant
+(mean-level) component, so $A$ extracts the fundamental oscillation.
+If $x_n$ converges then $A(t)\to0$.
+
+\subsection{The propagation estimate}
+
+\begin{proposition}[propagation]\label{prop:prop}
+  There are $\kappa(t)\in\mathbb C$ and a remainder $r(t)$ with
+  \[
+    A(t+L)=\kappa(t)\,A(t)+r(t),\qquad
+    |\kappa(t)-1|=O(e^{-t}),\qquad |r(t)|=O(e^{-t/2}).
+  \]
+\end{proposition}
+
+The factor $\kappa$ is fully under control.
+
+\begin{lemma}[the factor $\kappa$]\label{lem:kappa}
+  For $J_n\sim\mathrm{Bin}(n,q)$,
+  $\kappa(n)=E[(J_n/(qn))^{i\omega}\mathbf 1_{J_n\ge1}]
+  =1-\tfrac{p}{2qn}(\omega^2+i\omega)+O(n^{-3/2})$. In particular
+  $|\kappa-1|=O(1/n)=O(e^{-t})$.
+\end{lemma}
+
+\begin{proof}[Proof (sketch)]
+  Put $V_n=J_n/(qn)-1$; the binomial central moments give
+  $E[V_n^2]=p/(qn)$ and $E[|V_n|^3]=O(n^{-3/2})$. Expanding
+  $(1+V_n)^{i\omega}$ to second order on $\{|V_n|\le\tfrac12\}$ and
+  bounding the tail by Hoeffding yields the claim. (Full proof: the
+  development note, Lemma~8.4.)
+\end{proof}
+
+For the remainder we record the structural identities on which the
+estimate rests. Both are exact.
+
+\begin{lemma}[windowed-smoothing identities]\label{lem:wsi}
+  Let $A[y]$ be given by~\eqref{eq:Adef}.
+  \begin{enumerate}[label=\rm(\alph*),leftmargin=2.2em]
+  \item $A[y]\in C^\infty$ in $t$, with $\partial_tA[y]=-\tfrac1L
+    A^{[\chi']}[y]$; since $\widehat{\chi'}(2\pi)=2\pi
+    i\,\hat\chi(2\pi)=0$, every $t$-derivative of $A[y]$ is again a
+    constant-annihilating windowed coefficient, hence bounded.
+  \item For a probability law $\nu$ and $S_\nu y(s):=\int
+    y(s+\zeta)\,\nu(d\zeta)$,
+    \[
+      A[S_\nu y](t)=\int e^{i\omega\zeta}\,A[y](t+\zeta)\,\nu(d\zeta).
+    \]
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+  (a) Differentiate under the integral. (b) Fubini, then substitute
+  $s\mapsto s+\zeta$ in the inner integral.
+\end{proof}
+
+\noindent\emph{Decomposition of the remainder.} Applying the recursion
+inside~\eqref{eq:Adef} at $t+L$ and substituting $s\mapsto s+L$
+(using $e^{-i\omega L}=1$),
+\[
+  A(t+L)=\frac1L\int E_{\nu^{(s+L)}}\!\bigl[y(s+\zeta)\bigr]\,
+         e^{-i\omega s}\chi\!\bigl(\tfrac{s-t}{L}\bigr)\,ds
+         \;+\;\varepsilon_{\mathrm{tail}}(t),
+\]
+where $\nu^{(s+L)}$ is the law of $\log(J_{e^{s+L}}/(qe^{s+L}))$.
+Four contributions arise:
+\begin{enumerate}[label=\rm(\roman*),leftmargin=2.4em]
+\item $\varepsilon_{\mathrm{tail}}$ (the factor $1/(1+q^n)$ and the
+  indices $j\le M$): super-exponentially small. \emph{Rigorous.}
+\item the discretisation error (sum versus integral): with a
+  $C^\infty$ compactly supported window, super-polynomially small by
+  Poisson summation. \emph{Rigorous.}
+\item the main term: replacing $\nu^{(s+L)}$ by the window-centre law
+  $\nu^{(t+L)}$ and applying Lemma~\ref{lem:wsi}(b) and a Taylor
+  expansion of $A(t+\zeta)$ (legitimate by Lemma~\ref{lem:wsi}(a)),
+  together with Lemma~\ref{lem:kappa}, gives
+  $\kappa(t)A(t)+O(e^{-t/2})$. \emph{Rigorous.}
+\item the residual
+  $\rho(t)=\tfrac1L\int e^{-i\omega s}\chi(\tfrac{s-t}{L})\int
+  y(s+\zeta)\,(\nu^{(s+L)}-\nu^{(t+L)})(d\zeta)\,ds$, measuring the
+  slow variation of the smoothing kernel across the window.
+\end{enumerate}
+Thus $r(t)=\varepsilon_{\mathrm{tail}}+\varepsilon_{\mathrm{disc}}
++O(e^{-t/2})+\rho(t)$, and Proposition~\ref{prop:prop} follows once
+$|\rho(t)|=O(e^{-t/2})$.
+
+\gap{Gap C --- the remainder $\rho$}{The bound $|\rho(t)|=O(e^{-t/2})$
+is the one remaining piece of Proposition~\ref{prop:prop}; the other
+three contributions are established above. A naive total-variation
+bound fails ($\|\nu^{(s+L)}-\nu^{(t+L)}\|_{\mathrm{TV}}=\Theta(1)$
+across the window); the cancellation is genuine and is supplied by the
+windowed projection onto the fundamental mode. Closing it requires a
+density-level local central limit theorem for $\log J_n$. This is
+where work continues.}
+
+\subsection{From propagation to non-convergence}
+
+\begin{theorem}[renormalisation]\label{thm:renorm}
+  Let $(x_n)$ be a bounded solution of the strategy-\All{} recursion
+  for $n>M$. Then for each $t_0$ the sequence $A(t_0+kL)$ converges,
+  as $k\to\infty$, to a limit $A_\infty$. Moreover: if $x_n$
+  converges then $A_\infty=0$; and if $A_\infty\ne0$ then $(x_n)$ is
+  not eventually monotone.
+\end{theorem}
+
+\begin{proof}
+  Write $A_k=A(t_0+kL)$, $\kappa_k=\kappa(t_0+kL)$,
+  $r_k=r(t_0+kL)$. By Proposition~\ref{prop:prop},
+  $\sum_k|\kappa_k-1|<\infty$ and $\sum_k|r_k|<\infty$ (geometric
+  series in $e^{-L}<1$). Solving $A_{k+1}=\kappa_kA_k+r_k$,
+  \[
+    A_k=\Bigl(\prod_{j<k}\kappa_j\Bigr)A_0
+        +\sum_{j<k}\Bigl(\prod_{j<i<k}\kappa_i\Bigr)r_j
+        \;\longrightarrow\;A_\infty ,
+  \]
+  the products and series converging absolutely. If $x_n$ converges
+  then $A(t)\to0$, so $A_\infty=0$. If $A_\infty\ne0$ then
+  $A_k\not\to0$, so $x_n$ does not converge; a bounded non-convergent
+  sequence is not eventually monotone.
+\end{proof}
+
+%% =====================================================================
+\section{The base case and the proof of
+  Theorem~\ref{thm:main}}\label{sec:base}
+%% =====================================================================
+
+Theorem~\ref{thm:renorm} reduces Step~B to a single non-degeneracy:
+the limit $A_\infty$ must be non-zero.
+
+\begin{proposition}[base case]\label{prop:base}
+  For every transferred sequence $(x_n)$ of Lemma~\ref{lem:transfer},
+  $A_\infty\ne0$.
+\end{proposition}
+
+By linearity $A_\infty=A_\infty(b)+A_\infty(g)$, where $g=x-b$ is a
+non-negative solution of the homogeneous recursion (companion note,
+\S7). Here $A_\infty(b)$ is the fundamental Fourier coefficient
+$\gamma_1(p)$ of the profile $\Phi_p$ of Theorem~\ref{thm:ALL}, which
+is non-zero by $\zeta(1+it)\ne0$; the modulation by $g$ does not
+cancel it.
+
+\gap{Gap D --- the non-degeneracy}{$A_\infty\ne0$ is the genuine
+arithmetic heart of the proof. For the pure strategy~\All{} it is
+$\gamma_1(p)\ne0$, which holds within the Mellin framework
+(Gaps~A,~B) via the non-vanishing of $\zeta$ on the line
+$\Re s=1$. For a transferred sequence one must further exclude that
+the perturbation $g$ cancels the oscillation; the companion note
+reduces this to the linear independence, modulo constants, of the
+profiles of a family of auxiliary functions $B_r$. Work continues
+here.}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+  Fix $p\in(0,\tfrac12)$. By Lemma~\ref{lem:reduction} it suffices to
+  show that $(w_{n,p})$ is neither eventually non-decreasing nor
+  eventually non-increasing.
+
+  \emph{Not eventually non-decreasing} is Proposition~\ref{prop:A}.
+
+  \emph{Not eventually non-increasing.} Suppose, for contradiction,
+  $w_n\ge w_{n+1}$ for all $n\ge M$. By Lemma~\ref{lem:transfer} the
+  transferred sequence $(x_n)$ satisfies $x_n=w_n$ for $n\ge M$ and
+  solves the strategy-\All{} recursion for $n>M$; being a tail of a
+  monotone bounded sequence, $x_n$ converges. By
+  Theorem~\ref{thm:renorm} then $A_\infty=0$, contradicting
+  Proposition~\ref{prop:base}. Hence no non-increasing tail exists.
+
+  Both one-sided statements hold, so $(w_{n,p})$ is not eventually
+  monotone; Lemma~\ref{lem:reduction} gives infinitely many strict
+  local maxima and minima.
+\end{proof}
+
+\begin{remark}[strictness]
+  Lemma~\ref{lem:reduction} delivers \emph{strict} extrema once
+  $w_{n,p}\ne w_{n+1,p}$ for all large~$n$, which holds in all
+  computed data and is expected for every $p\in(0,\tfrac12)$; absent
+  it, Theorem~\ref{thm:main} holds with the non-strict notion of
+  local extremum.
+\end{remark}
+
+%% =====================================================================
+\section{Numerical evidence}\label{sec:numerics}
+%% =====================================================================
+
+The two predictions have been checked numerically in
+arbitrary-precision arithmetic (\texttt{simulation/b\_asymptotics.py},
+\texttt{simulation/renorm\_validation.py}). For strategy~\All{} the
+log-periodic oscillation of Theorem~\ref{thm:ALL} is confirmed across
+fourteen orders of magnitude in its amplitude. For the renormalisation
+argument: the windowed coefficient $A(t_0+kL)$ is observed to converge
+to a non-zero limit $A_\infty$ for every tested $p\in\{0.35,0.40,
+0.42,0.45\}$, and $n\,|\kappa(n)-1|$ converges to the constant
+$\tfrac{p}{2q}|\omega^2+i\omega|$ of Lemma~\ref{lem:kappa} --- a
+direct quantitative confirmation of Proposition~\ref{prop:prop}.
+
+%% =====================================================================
+\section{Status and open problems}\label{sec:status}
+%% =====================================================================
+
+The skeleton of the proof is complete and the rigorous backbone is
+substantial: the reduction (Lemma~\ref{lem:reduction}), the elementary
+Step~A (Proposition~\ref{prop:A}), the exact transfer lemma
+(Lemma~\ref{lem:transfer}), the windowed-smoothing identities
+(Lemma~\ref{lem:wsi}), the factor estimate (Lemma~\ref{lem:kappa}),
+three of the four contributions to the propagation remainder, and the
+renormalisation theorem (Theorem~\ref{thm:renorm}). Four steps remain
+open; they are flagged in the text and summarised here.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cll@{}}
+\hline
+\textbf{Gap} & \textbf{What is missing} & \textbf{Where} \\
+\hline
+A & Hayman regularity / sector control of $B(z)$ & \S\ref{sec:ALL} \\
+B & Mellin contour justification & \S\ref{sec:ALL} \\
+C & the remainder bound $|\rho(t)|=O(e^{-t/2})$ & \S\ref{sec:renorm} \\
+D & the non-degeneracy $A_\infty\ne0$ & \S\ref{sec:base} \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent A complete proof of Theorem~\ref{thm:main} consists of
+Proposition~\ref{prop:A} (done) together with Gaps~C and~D; Gaps~A
+and~B underpin Gap~D and the quantitative form of
+Theorem~\ref{thm:ALL}. The natural order of attack is C, then A and B,
+then D. Gap~C has been reduced (\S\ref{sec:renorm}) to a single
+density-level local limit theorem for the binomial; that is the
+current front of work.
+
+\begin{thebibliography}{9}
+\bibitem{Paper1}
+  P.~Pfaffelhuber,
+  \emph{Optimal strategies in the all-heads coin game},
+  companion paper.
+\bibitem{vanDoorn}
+  E.~A.~van~Doorn,
+  \emph{Optimal play of a coin-flipping game},
+  preprint, arXiv:2406.14700, 2024.
+\bibitem{FS}
+  P.~Flajolet, R.~Sedgewick,
+  \emph{Analytic Combinatorics},
+  Cambridge University Press, 2009.
+\end{thebibliography}
+
+\end{document}
