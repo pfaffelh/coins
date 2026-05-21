@@ -172,7 +172,7 @@ def oscillation_plot(p_frac: Fraction, n_max: int, out_path: Path) -> None:
 
 
 def main() -> None:
-    out_dir = Path(__file__).parent.parent / "Manuscript" / "figures"
+    out_dir = Path(__file__).parent.parent / "Oscillation" / "figures"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"mpmath working precision: {mp.dps} decimal digits\n")
