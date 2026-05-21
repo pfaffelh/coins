@@ -108,13 +108,14 @@ their service.
 \end{theorem}
 
 \begin{theorem}[log-periodicity of strategy \All]\label{thm:ALL}
-  For every $p\in(0,\tfrac12)$,
+  For every $p\in(0,\tfrac12)$ there is a continuous, strictly
+  positive, non-constant function $\Phi_p:\mathbb R\to\mathbb R$,
+  periodic with period $L:=\log(1/q)$, such that
   \[
-    b_{n,p}=\Phi_p(\log n)\,\bigl(1+o(1)\bigr)\qquad(n\to\infty),
+    b_{n,p}=\Phi_p(\log n)\,\bigl(1+o(1)\bigr)\qquad(n\to\infty).
   \]
-  where $\Phi_p$ is continuous, strictly positive, non-constant, and
-  periodic of period $L:=\log(1/q)$. In particular $b_{n,p}$ does not
-  converge: $\liminf_n b_{n,p}<\limsup_n b_{n,p}$.
+  In particular $b_{n,p}$ does not converge:
+  $\liminf_n b_{n,p}<\limsup_n b_{n,p}$.
 \end{theorem}
 
 Theorem~\ref{thm:main} sharpens, and corrects the natural first
