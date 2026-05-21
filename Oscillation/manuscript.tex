@@ -85,8 +85,18 @@ Bellman equation
           \max_{j\le m\le n-1}w_{m,p},\qquad w_{0,p}:=1 .
 \end{equation}
 Two strategies are natural: \One{} sets aside a single head each round
-(value $a_{n,p}$), and \All{} sets aside \emph{every} head (value
-$b_{n,p}$). The companion paper~\cite{Paper1} determines $w_{n,p}$
+(value $a_{n,p}$), and \All{} sets aside \emph{every} head. The
+winning probability $b_{n,p}$ of strategy~\All{} is defined by the
+linear recursion
+\begin{equation}\label{eq:brec}
+  b_{n,p}=\sum_{j=0}^{n-1}\binom{n}{j}p^{\,n-j}q^{\,j}\,b_{j,p},
+  \qquad b_{0,p}:=1,
+\end{equation}
+obtained by conditioning on the number $j$ of coins showing tails in
+the first round: those $j$ coins are re-tossed, while the $n-j\ge1$
+heads are set aside for good (the term $j=0$ has weight $p^{n}$ and
+wins immediately). The companion paper~\cite{Paper1} determines
+$w_{n,p}$
 \emph{exactly} at $p=\tfrac12$, identifies the limit
 $W(p)=\lim_n w_{n,p}$ for $p>\tfrac12$, and gives a first-order
 perturbation expansion for $p<\tfrac12$ near $\tfrac12$. All of those
@@ -180,13 +190,14 @@ $L:=\log(1/q)>0$ and $\omega:=2\pi/L$.
 
 The value $w_{n,p}$ satisfies~\eqref{eq:bellman}; it is a probability,
 so $0<w_{n,p}\le1$, and in fact $w_{n,p}<1$ for $n\ge1$. The two
-reference strategies satisfy \emph{linear} recursions:
-\begin{equation}\label{eq:ab}
-  a_{n,p}=p^{n}+(1-p^{n}-q^{n})\,a_{n-1,p},
-  \qquad
-  b_{n,p}=\sum_{j=0}^{n-1}\binom{n}{j}p^{\,n-j}q^{\,j}\,b_{j,p},
+reference strategies are dominated by the optimum. Strategy~\All{} has
+winning probability $b_{n,p}$, defined by the
+recursion~\eqref{eq:brec}; strategy~\One{} satisfies the linear
+recursion
+\begin{equation}\label{eq:arec}
+  a_{n,p}=p^{n}+(1-p^{n}-q^{n})\,a_{n-1,p},\qquad a_{0,p}:=1 .
 \end{equation}
-with $a_{0,p}=b_{0,p}=1$, and $w_{n,p}\ge\max(a_{n,p},b_{n,p})$ since
+In both cases $w_{n,p}\ge\max(a_{n,p},b_{n,p})$, since
 the optimum dominates any fixed strategy. We use the binomial
 identities $\sum_{j=1}^{n-1}\binom nj p^{n-j}q^j=1-p^n-q^n$ and
 $\sum_{j=0}^{n-1}\binom nj p^{n-j}q^j=1-q^n$. Where the value of $p$
@@ -203,7 +214,7 @@ the full development is in the companion note
 \subsection{The functional equation}
 
 Let $B(z):=\sum_{n\ge0}b_n z^n/n!$ be the exponential generating
-function of strategy~\All. The convolution structure of~\eqref{eq:ab}
+function of strategy~\All. The convolution structure of~\eqref{eq:brec}
 yields the first-order $q$-difference equation
 \begin{equation}\label{eq:Bfunc}
   B(z)=1+(e^{pz}-1)\,B(qz),
