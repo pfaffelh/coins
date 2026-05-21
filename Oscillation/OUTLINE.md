@@ -6,6 +6,12 @@ goes to Experimental Mathematics unchanged. Paper 2 — this folder — is
 the asymptotic / log-periodic regime: rigorous partial results +
 conjecture + numerics, not Lean-verified.*
 
+*Status update: the unified manuscript `Oscillation/manuscript.tex` now
+exists and is the paper of record. The development note `infMaxMin.tex`
+is **deprecated** (superseded by it); `strategy_all_asymptotics.tex`
+remains a building block. The section structure and gap catalogue
+below are reflected, in finished form, in the manuscript itself.*
+
 ---
 
 ## 1. Working title

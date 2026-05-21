@@ -401,8 +401,7 @@ The factor $\kappa$ is fully under control.
   Put $V_n=J_n/(qn)-1$; the binomial central moments give
   $E[V_n^2]=p/(qn)$ and $E[|V_n|^3]=O(n^{-3/2})$. Expanding
   $(1+V_n)^{i\omega}$ to second order on $\{|V_n|\le\tfrac12\}$ and
-  bounding the tail by Hoeffding yields the claim. (Full proof: the
-  development note, Lemma~8.4.)
+  bounding the tail by Hoeffding yields the claim.
 \end{proof}
 
 For the remainder we record the structural identities on which the
@@ -458,14 +457,70 @@ Thus $r(t)=\varepsilon_{\mathrm{tail}}+\varepsilon_{\mathrm{disc}}
 +O(e^{-t/2})+\rho(t)$, and Proposition~\ref{prop:prop} follows once
 $|\rho(t)|=O(e^{-t/2})$.
 
-\gap{Gap C --- the remainder $\rho$}{The bound $|\rho(t)|=O(e^{-t/2})$
-is the one remaining piece of Proposition~\ref{prop:prop}; the other
-three contributions are established above. A naive total-variation
-bound fails ($\|\nu^{(s+L)}-\nu^{(t+L)}\|_{\mathrm{TV}}=\Theta(1)$
-across the window); the cancellation is genuine and is supplied by the
-windowed projection onto the fundamental mode. Closing it requires a
-density-level local central limit theorem for $\log J_n$. This is
-where work continues.}
+\noindent\emph{The residual $\rho$: a Taylor expansion in the scale.}
+The kernel difference $\delta_s:=\nu^{(s+L)}-\nu^{(t+L)}$ defining
+$\rho$ vanishes at the window centre, $\delta_t=0$. Expanding it in
+$s$ about $s=t$,
+\begin{equation}\label{eq:deltataylor}
+  \delta_s=(s-t)\,\dot\nu+O\bigl((s-t)^2\bigr),
+  \qquad \dot\nu:=\partial_\tau\nu^{(\tau)}\big|_{\tau=t+L},
+\end{equation}
+where $\dot\nu$ is a \emph{fixed} signed measure of total mass zero
+(every $\nu^{(\tau)}$ is a probability measure). The fixed mass-zero
+measure brings the windowed-projection identities back into play.
+
+\begin{lemma}[leading order of the residual]\label{lem:rho1}
+  Suppose the kernel family is scale-regular:
+  \begin{equation}\label{eq:scalereg}
+    \partial_\tau\hat\nu^{(\tau)}(-\omega)=O(e^{-\tau}),
+    \qquad
+    \int|\zeta|\,\bigl|\partial_\tau\nu^{(\tau)}\bigr|(d\zeta)
+      =O(e^{-\tau/2}).
+  \end{equation}
+  Then the leading Taylor term of the residual,
+  \[
+    \rho_1(t):=\frac1L\int e^{-i\omega s}(s-t)\,
+      \chi\!\bigl(\tfrac{s-t}L\bigr)
+      \Bigl(\textstyle\int y(s+\zeta)\,\dot\nu(d\zeta)\Bigr)\,ds,
+  \]
+  satisfies $\rho_1(t)=O(e^{-t/2})$.
+\end{lemma}
+
+\begin{proof}
+  Write $(s-t)\chi(\tfrac{s-t}L)=L\,\psi(\tfrac{s-t}L)$ with
+  $\psi(u):=u\,\chi(u)\in C_c^\infty$. By Fubini and the translation
+  substitution of Lemma~\ref{lem:wsi}(b) --- whose proof is valid for
+  any window and any finite signed measure ---
+  \[
+    \rho_1(t)=L\int e^{i\omega\zeta}\,A^{[\psi]}(t+\zeta)\,
+             \dot\nu(d\zeta),
+  \]
+  where $A^{[\psi]}$ is the windowed coefficient with window $\psi$,
+  again $C^\infty$ with bounded derivatives. As $\dot\nu$ has mass
+  zero,
+  \[
+    \rho_1(t)=L\,A^{[\psi]}(t)\,\widehat{\dot\nu}(-\omega)
+      +L\int e^{i\omega\zeta}
+        \bigl(A^{[\psi]}(t+\zeta)-A^{[\psi]}(t)\bigr)\,\dot\nu(d\zeta).
+  \]
+  In the first term $\widehat{\dot\nu}(-\omega)
+  =\partial_\tau\hat\nu^{(\tau)}(-\omega)\big|_{t+L}=O(e^{-t})$ by the
+  first bound of~\eqref{eq:scalereg}, and $A^{[\psi]}$ is bounded. In
+  the second, $|A^{[\psi]}(t+\zeta)-A^{[\psi]}(t)|\le C|\zeta|$, so it
+  is $O\bigl(\int|\zeta|\,|\dot\nu|(d\zeta)\bigr)=O(e^{-t/2})$ by the
+  second bound. Hence $\rho_1(t)=O(e^{-t})+O(e^{-t/2})=O(e^{-t/2})$.
+\end{proof}
+
+\gap{Gap C --- scale-regularity of the kernel}{Proposition~\ref{prop:prop}
+is now reduced to two precisely delimited items. (i) The
+scale-regularity bounds~\eqref{eq:scalereg}: a characteristic-function
+estimate and a first-moment estimate for the \emph{scale-derivative}
+of the binomial log-deviation law --- a differentiated Edgeworth
+expansion for $\mathrm{Bin}(n,q)$, standard in spirit (Petrov-type
+local limit theory). (ii) The higher Taylor orders $O((s-t)^2)$
+in~\eqref{eq:deltataylor}, handled by the same device with windows
+$u^k\chi(u)$ and a routine remainder estimate (the window has compact
+support). Neither is carried out here; this is where work continues.}
 
 \subsection{From propagation to non-convergence}
 
@@ -507,8 +562,8 @@ the limit $A_\infty$ must be non-zero.
 \end{proposition}
 
 By linearity $A_\infty=A_\infty(b)+A_\infty(g)$, where $g=x-b$ is a
-non-negative solution of the homogeneous recursion (companion note,
-\S7). Here $A_\infty(b)$ is the fundamental Fourier coefficient
+non-negative solution of the homogeneous recursion. Here $A_\infty(b)$
+is the fundamental Fourier coefficient
 $\gamma_1(p)$ of the profile $\Phi_p$ of Theorem~\ref{thm:ALL}, which
 is non-zero by $\zeta(1+it)\ne0$; the modulation by $g$ does not
 cancel it.
@@ -518,10 +573,9 @@ arithmetic heart of the proof. For the pure strategy~\All{} it is
 $\gamma_1(p)\ne0$, which holds within the Mellin framework
 (Gaps~A,~B) via the non-vanishing of $\zeta$ on the line
 $\Re s=1$. For a transferred sequence one must further exclude that
-the perturbation $g$ cancels the oscillation; the companion note
-reduces this to the linear independence, modulo constants, of the
-profiles of a family of auxiliary functions $B_r$. Work continues
-here.}
+the perturbation $g$ cancels the oscillation; this reduces to the
+linear independence, modulo constants, of the profiles of a family of
+auxiliary functions $B_r$. Work continues here.}
 
 \begin{proof}[Proof of Theorem~\ref{thm:main}]
   Fix $p\in(0,\tfrac12)$. By Lemma~\ref{lem:reduction} it suffices to
@@ -597,9 +651,11 @@ D & the non-degeneracy $A_\infty\ne0$ & \S\ref{sec:base} \\
 Proposition~\ref{prop:A} (done) together with Gaps~C and~D; Gaps~A
 and~B underpin Gap~D and the quantitative form of
 Theorem~\ref{thm:ALL}. The natural order of attack is C, then A and B,
-then D. Gap~C has been reduced (\S\ref{sec:renorm}) to a single
-density-level local limit theorem for the binomial; that is the
-current front of work.
+then D. Within Gap~C the leading order is settled
+(Lemma~\ref{lem:rho1}): the remainder is now reduced to the
+scale-regularity bounds~\eqref{eq:scalereg} --- a differentiated
+Edgeworth expansion for the binomial --- together with the routine
+higher Taylor orders. That is the current front of work.
 
 \begin{thebibliography}{9}
 \bibitem{Paper1}
