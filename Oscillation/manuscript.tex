@@ -64,7 +64,7 @@
 
 \noindent\emph{\small Working draft. Steps still to be completed are
 flagged in the text by boxed} {\small\bfseries\color{red!70!black}OPEN
-GAP} \emph{\small markers (Gaps~A--D); Section~\ref{sec:status}
+GAP} \emph{\small markers (Gaps~A, B and~D); Section~\ref{sec:status}
 consolidates their status.}
 
 %% =====================================================================
@@ -372,10 +372,9 @@ transferred sequence of Lemma~\ref{lem:transfer}.
 \subsection{The recursion as a smoothing in log-scale}
 
 With $J_n\sim\mathrm{Bin}(n,q)$ the recursion reads
-$x_n=E[x_{J_n}]/(1+q^n)$. Passing to $t:=\log n$ and the log-linear
-interpolation $y$ of $n\mapsto x_n$, and using $\log(qn)=\log n-L$,
-one application of the recursion shifts the log-scale down by exactly
-one period~$L$ and smooths by a kernel of width
+$x_n=E[x_{J_n}]/(1+q^n)$. Read on the log-scale $t:=\log n$, and using
+$\log(qn)=\log n-L$, one application of the recursion shifts the scale
+down by exactly one period~$L$ and smooths by a kernel of width
 $\sigma(t)\sim\sqrt{p/q}\;e^{-t/2}\to0$.
 
 \subsection{The local fundamental coefficient}
@@ -383,12 +382,14 @@ $\sigma(t)\sim\sqrt{p/q}\;e^{-t/2}\to0$.
 Fix a window $\chi\in C_c^\infty(\R)$ with $\int\chi=1$ and
 $\hat\chi(2\pi)=0$, and set
 \begin{equation}\label{eq:Adef}
-  A(t):=\frac1L\int_\R y(s)\,e^{-i\omega s}\,
-        \chi\!\Bigl(\tfrac{s-t}{L}\Bigr)\,ds .
+  A(t):=\frac1L\sum_{n>M}x_n\,e^{-i\omega\log n}\,
+        \chi\!\Bigl(\tfrac{\log n-t}{L}\Bigr)\,\frac1n .
 \end{equation}
-The condition $\hat\chi(2\pi)=0$ makes $A$ annihilate the constant
-(mean-level) component, so $A$ extracts the fundamental oscillation.
-If $x_n$ converges then $A(t)\to0$.
+This is a windowed Fourier sum at frequency $\omega$ on the
+multiplicative grid, the weight $1/n$ being the log-scale element
+$d(\log n)$. The condition $\hat\chi(2\pi)=0$ makes $A$ annihilate the
+constant (mean-level) component, so $A$ extracts the fundamental
+oscillation. If $x_n$ converges then $A(t)\to0$.
 
 \subsection{The propagation estimate}
 
@@ -396,7 +397,7 @@ If $x_n$ converges then $A(t)\to0$.
   There are $\kappa(t)\in\mathbb C$ and a remainder $r(t)$ with
   \[
     A(t+L)=\kappa(t)\,A(t)+r(t),\qquad
-    |\kappa(t)-1|=O(e^{-t}),\qquad |r(t)|=O(e^{-t/2}).
+    |\kappa(t)-1|=O(e^{-t}),\qquad |r(t)|=O(e^{-t}).
   \]
 \end{proposition}
 
@@ -416,154 +417,115 @@ The factor $\kappa$ is fully under control.
   bounding the tail by Hoeffding yields the claim.
 \end{proof}
 
-For the remainder we record the structural identities on which the
-estimate rests. Both are exact.
+For the remainder we pass to the \emph{transposed} kernel. This makes
+the negative-binomial structure of the recursion explicit and, as it
+turns out, removes the need for any limit theorem. Write
+$a_n(t):=n^{-1}e^{-i\omega\log n}\chi\bigl(\tfrac{\log n-t}L\bigr)$, so
+that $A(t)=\frac1L\sum_{n>M}x_n\,a_n(t)$.
 
-\begin{lemma}[windowed-smoothing identities]\label{lem:wsi}
-  Let $A[y]$ be given by~\eqref{eq:Adef}.
-  \begin{enumerate}[label=\rm(\alph*),leftmargin=2.2em]
-  \item $A[y]\in C^\infty$ in $t$, with $\partial_tA[y]=-\tfrac1L
-    A^{[\chi']}[y]$; since $\widehat{\chi'}(2\pi)=2\pi
-    i\,\hat\chi(2\pi)=0$, every $t$-derivative of $A[y]$ is again a
-    constant-annihilating windowed coefficient, hence bounded.
-  \item For a probability law $\nu$ and $S_\nu y(s):=\int
-    y(s+\zeta)\,\nu(d\zeta)$,
-    \[
-      A[S_\nu y](t)=\int e^{i\omega\zeta}\,A[y](t+\zeta)\,\nu(d\zeta).
-    \]
-  \end{enumerate}
+\begin{lemma}[transposed kernel and the negative binomial]%
+\label{lem:transposed}
+  Substituting the recursion
+  $x_n=(1+q^n)^{-1}\sum_{j=0}^{n}P(\mathrm{Bin}(n,q)=j)\,x_j$
+  into $A(t+L)$ and exchanging the (finite) order of summation,
+  \[
+    A(t+L)=\frac1L\sum_{j}x_j\,W(j,t),\qquad
+    W(j,t)=\sum_{n\ge j}\frac{P(\mathrm{Bin}(n,q)=j)}{1+q^n}\,
+           a_n(t+L).
+  \]
+  The transposed weight has \emph{exact} total mass
+  \[
+    \sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)
+      =q^{j}\sum_{k\ge0}\binom{j+k}{j}p^{k}
+      =q^{j}(1-p)^{-(j+1)}=\frac1q ,
+  \]
+  and $q\,P(\mathrm{Bin}(n,q)=j)$ is the law of
+  $N_j:=j+\mathrm{NB}(j+1,q)$, with
+  \[
+    E[N_j]=\bar n_j:=\frac{j+p}{q},\qquad
+    \mathrm{Var}(N_j)=\frac{(j+1)p}{q^{2}} .
+  \]
+  Consequently
+  $W(j,t)=\tfrac1q\,E\bigl[(1+q^{N_j})^{-1}a_{N_j}(t+L)\bigr]$.
 \end{lemma}
 
 \begin{proof}
-  (a) Differentiate under the integral. (b) Fubini, then substitute
-  $s\mapsto s+\zeta$ in the inner integral.
+  The substitution is valid because the window lies far above $M$;
+  the swap is exact since $\chi$ has compact support, so every sum is
+  finite. The indices $j\le M$ contribute super-exponentially little
+  ($P(\mathrm{Bin}(n,q)=j)$ is super-exponentially small for fixed $j$
+  and $n$ in the window) and are absorbed silently. The mass identity
+  is the negative-binomial series
+  $\sum_{k\ge0}\binom{j+k}{k}p^{k}=(1-p)^{-(j+1)}$; hence
+  $q^{j+1}\binom{j+k}{k}p^{k}$, $k\ge0$, is the law of
+  $\mathrm{NB}(j+1,q)$ in $k=n-j$, and its mean and variance, shifted
+  by $j$, are those stated.
 \end{proof}
 
-\noindent\emph{Decomposition of the remainder.} Applying the recursion
-inside~\eqref{eq:Adef} at $t+L$ and substituting $s\mapsto s+L$
-(using $e^{-i\omega L}=1$),
-\[
-  A(t+L)=\frac1L\int E_{\nu^{(s+L)}}\!\bigl[y(s+\zeta)\bigr]\,
-         e^{-i\omega s}\chi\!\bigl(\tfrac{s-t}{L}\bigr)\,ds
-         \;+\;\varepsilon_{\mathrm{tail}}(t),
-\]
-where $\nu^{(s+L)}$ is the law of $\log(J_{e^{s+L}}/(qe^{s+L}))$.
-Four contributions arise:
-\begin{enumerate}[label=\rm(\roman*),leftmargin=2.4em]
-\item $\varepsilon_{\mathrm{tail}}$ (the factor $1/(1+q^n)$ and the
-  indices $j\le M$): super-exponentially small. \emph{Rigorous.}
-\item the discretisation error (sum versus integral): with a
-  $C^\infty$ compactly supported window, super-polynomially small by
-  Poisson summation. \emph{Rigorous.}
-\item the main term: replacing $\nu^{(s+L)}$ by the window-centre law
-  $\nu^{(t+L)}$ and applying Lemma~\ref{lem:wsi}(b) and a Taylor
-  expansion of $A(t+\zeta)$ (legitimate by Lemma~\ref{lem:wsi}(a)),
-  together with Lemma~\ref{lem:kappa}, gives
-  $\kappa(t)A(t)+O(e^{-t/2})$. \emph{Rigorous.}
-\item the residual
-  $\rho(t)=\tfrac1L\int e^{-i\omega s}\chi(\tfrac{s-t}{L})\int
-  y(s+\zeta)\,(\nu^{(s+L)}-\nu^{(t+L)})(d\zeta)\,ds$, measuring the
-  slow variation of the smoothing kernel across the window.
-\end{enumerate}
-Thus $r(t)=\varepsilon_{\mathrm{tail}}+\varepsilon_{\mathrm{disc}}
-+O(e^{-t/2})+\rho(t)$, and Proposition~\ref{prop:prop} follows once
-$|\rho(t)|=O(e^{-t/2})$.
+The exact identity is the crux. The transposed weight carries mass
+\emph{exactly} $1/q$ and is a genuine probability law --- being a
+shifted sum of i.i.d.\ geometrics, an exceptionally well-behaved one.
+The oscillatory cancellation is delivered by the recursion's own
+combinatorial structure; no local limit theorem enters.
 
-\noindent\emph{The residual $\rho$ as a kernel pairing.}
-Write $g(s):=\int y(s+\zeta)\,\delta_s(d\zeta)$ with
-$\delta_s:=\nu^{(s+L)}-\nu^{(t+L)}$, so that
-$\rho(t)=\frac1L\int g(s)\,e^{-i\omega s}\chi(\tfrac{s-t}L)\,ds$, and
-let $h_\tau$ denote the density of the log-deviation law
-$\nu^{(\tau)}$. The decisive step moves $y$ outside the oscillatory
-integral.
+\begin{proof}[Proof of Proposition~\ref{prop:prop}]
+  The transposed picture settles $\kappa$ and $r$ together: we show
+  $A(t+L)=A(t)+O(e^{-t})$, and then
+  $r(t)=A(t+L)-\kappa(t)A(t)=(1-\kappa(t))A(t)+O(e^{-t})=O(e^{-t})$,
+  using $|\kappa-1|=O(e^{-t})$ (Lemma~\ref{lem:kappa}) and the
+  boundedness of $A$.
 
-\begin{lemma}[kernel form of the residual]\label{lem:kernel}
-  One has $\displaystyle\rho(t)=\frac1L\int_{\mathbb R}y(u)\,K(u,t)\,du$,
-  where
+  For real $n>0$ the map $n\mapsto a_n(t+L)$ is smooth, supported in
+  the geometric window $\log n\in t+L+L\operatorname{supp}\chi$, and
+  every derivative obeys $|a_n^{(k)}(t+L)|\le C_k\,n^{-k-1}$: each
+  $n$-derivative produces one factor $n^{-1}$ and bounded constants
+  ($\omega$, $L^{-1}$, $\|\chi^{(k)}\|_\infty$). The factor
+  $(1+q^n)^{-1}=1+O(q^n)$ perturbs this super-exponentially little.
+
+  Fix $j$ with $\bar n_j$ within $O(1)$ of the window, so $j$ is of
+  order $e^{t}$. A second-order Taylor expansion of $a_n(t+L)$ about
+  $n=\bar n_j$, taken under $E[\,\cdot\,]$, loses its first-order term
+  because $E[N_j-\bar n_j]=0$:
   \[
-    K(u,t):=\int_{\mathbb R} e^{-i\omega s}\,
-            \chi\!\bigl(\tfrac{s-t}L\bigr)\,
-            \bigl[h_{s+L}-h_{t+L}\bigr](u-s)\,ds,
+    E\bigl[a_{N_j}(t+L)\bigr]=a_{\bar n_j}(t+L)
+      +\tfrac12\,E\bigl[a''_{\xi_j}(t+L)\,(N_j-\bar n_j)^2\bigr],
   \]
-  and therefore $|\rho(t)|\le\frac1L\,\|y\|_\infty\,
-  \|K(\cdot,t)\|_{L^1}$.
-\end{lemma}
+  with $\xi_j$ between $N_j$ and $\bar n_j$, hence $\xi_j\ge j$ (both
+  $N_j\ge j$ and $\bar n_j>j$). Thus $|a''_{\xi_j}|\le C_2\,j^{-3}$
+  and, since $\mathrm{Var}(N_j)=O(j)$,
+  \[
+    \bigl|E[a_{N_j}(t+L)]-a_{\bar n_j}(t+L)\bigr|
+      \le\tfrac12 C_2\,j^{-3}\,\mathrm{Var}(N_j)=O(j^{-2}).
+  \]
+  With the super-exponentially small $(1+q^{N_j})^{-1}$ correction,
+  $W(j,t)=\tfrac1q\,a_{\bar n_j}(t+L)+O(j^{-2})$.
 
-\begin{proof}
-  Insert $g(s)=\int y(s+\zeta)\,[h_{s+L}-h_{t+L}](\zeta)\,d\zeta$ into
-  the displayed formula for $\rho$, substitute $u=s+\zeta$ in the
-  inner integral, and exchange the order of integration (Fubini:
-  $\chi$ has compact support, $y$ is bounded). The bound is
-  $\bigl|\int yK\bigr|\le\|y\|_\infty\int|K|$.
+  It remains to undo the period shift. From $\bar n_j=(j+p)/q$,
+  \[
+    \log\bar n_j=\log j+L+\log(1+p/j),\qquad e^{-i\omega L}=1 ,
+  \]
+  and $\log(1+p/j)=O(j^{-1})$; expanding the three factors of
+  $a_{\bar n_j}(t+L)$ gives
+  $\tfrac1q\,a_{\bar n_j}(t+L)=a_j(t)\,(1+O(j^{-1}))=a_j(t)+O(j^{-2})$,
+  the last step because $a_j(t)=O(j^{-1})$. Hence
+  $W(j,t)=a_j(t)+O(j^{-2})$ uniformly in $j$, and
+  \[
+    A(t+L)-A(t)=\frac1L\sum_j x_j\bigl[W(j,t)-a_j(t)\bigr],
+    \qquad
+    |A(t+L)-A(t)|\le\frac{\|x\|_\infty}{L}\sum_j O(j^{-2}).
+  \]
+  The window confines $j$ to $[e^{t-cL},e^{t+cL}]$ with $c$ fixed by
+  $\operatorname{supp}\chi$; all these indices exceed $e^{t-cL}$, so
+  $\sum_j O(j^{-2})=O(e^{-t})$. This proves $A(t+L)=A(t)+O(e^{-t})$,
+  and with it Proposition~\ref{prop:prop}.
 \end{proof}
 
-The force of Lemma~\ref{lem:kernel} is that the bound holds for
-\emph{every} bounded $y$: the oscillatory cancellation now resides
-entirely in $K$ and is no longer entangled with the --- possibly
-large --- variation of $y$. The residual is reduced to an $L^1$
-estimate for an explicit kernel.
-
-\begin{proposition}[smallness of the kernel]\label{prop:kernel}
-  Suppose the log-deviation densities satisfy, uniformly for $\tau$ in
-  a window of width $O(L)$,
-  \begin{align}
-    \textstyle\int|\zeta|\,h_\tau(\zeta)\,d\zeta
-      &= O(e^{-\tau/2}),\label{eq:K1}\\[2pt]
-    \textstyle\int\bigl[h_{\tau-\zeta}(\zeta)-h_\tau(\zeta)\bigr]\,d\zeta
-      &= O(e^{-\tau}).\label{eq:K2}
-  \end{align}
-  Then $\|K(\cdot,t)\|_{L^1}=O(e^{-t/2})$, hence $\rho(t)=O(e^{-t/2})$
-  and Proposition~\ref{prop:prop} holds.
-\end{proposition}
-
-\begin{proof}
-  Substituting $\zeta=u-s$ in the definition of $K$,
-  \[
-    K(u,t)=e^{-i\omega u}\int e^{i\omega\zeta}\,
-           \chi\!\bigl(\tfrac{u-\zeta-t}L\bigr)\,
-           \bigl[h_{u+L-\zeta}(\zeta)-h_{t+L}(\zeta)\bigr]\,d\zeta .
-  \]
-  The factor $e^{i\omega\zeta}\chi(\tfrac{u-\zeta-t}L)$ is smooth; on
-  the effective support of the densities it equals
-  $\chi(\tfrac{u-t}L)+\theta(u,\zeta)$ with $|\theta(u,\zeta)|\le
-  C|\zeta|$. Hence $K(u,t)=e^{-i\omega u}\bigl[\chi(\tfrac{u-t}L)\,
-  m(u,t)+E(u,t)\bigr]$ with
-  \[
-    m(u,t)=\!\int\!\bigl[h_{u+L-\zeta}(\zeta)-h_{t+L}(\zeta)\bigr]d\zeta,
-    \quad
-    E(u,t)=\!\int\!\theta(u,\zeta)\bigl[h_{u+L-\zeta}(\zeta)
-            -h_{t+L}(\zeta)\bigr]d\zeta .
-  \]
-  Since $h_{u+L}$ and $h_{t+L}$ are probability densities,
-  $\int[h_{u+L}-h_{t+L}]=0$, so
-  $m(u,t)=\int[h_{u+L-\zeta}(\zeta)-h_{u+L}(\zeta)]\,d\zeta=O(e^{-t})$
-  by~\eqref{eq:K2} at $\tau=u+L$ (and $u-t=O(L)$ on
-  $\operatorname{supp}\chi$). And $|E(u,t)|\le
-  C\!\int|\zeta|\,(h_{u+L-\zeta}+h_{t+L})(\zeta)\,d\zeta=O(e^{-t/2})$
-  by~\eqref{eq:K1}. As $m$ and $E$ are supported in $u-t=O(L)$,
-  \[
-    \|K(\cdot,t)\|_{L^1}\le\|\chi\|_{L^1}L\cdot O(e^{-t})
-      +O(L)\cdot O(e^{-t/2})=O(e^{-t/2}).
-  \]
-  The remaining claims are Lemma~\ref{lem:kernel} and the
-  decomposition of $r(t)$.
-\end{proof}
-
-\gap{Gap C --- the local limit theorem for the kernel}{%
-Proposition~\ref{prop:kernel} reduces the propagation estimate to two
-properties of the binomial log-deviation density. The
-bound~\eqref{eq:K1}, a first absolute moment, is elementary (a
-binomial moment bound with a Hoeffding tail estimate). The
-\emph{mass-stability}~\eqref{eq:K2},
-$\int[h_{\tau-\zeta}(\zeta)-h_\tau(\zeta)]\,d\zeta=O(e^{-\tau})$,
-expresses the scale-regularity of the density; it is a local central
-limit theorem with one Edgeworth correction for $\mathrm{Bin}(n,q)$ ---
-classical in spirit but not carried out here. One technical layer
-accompanies it: $\nu^{(n)}$ is supported on a lattice, so $h_\tau$ is
-the atom-weight profile and \eqref{eq:K1}--\eqref{eq:K2} are the
-lattice form of the local limit theorem --- equivalently,
-Lemma~\ref{lem:kernel} is read as a discrete sum. This is where work
-continues.}
+\noindent In its earlier form the remainder bound was a separate gap
+--- a local central limit theorem, with one Edgeworth correction, for
+the binomial log-deviation density. The transposed picture closes it:
+the cancellation is supplied by the \emph{exact} negative-binomial
+identity of Lemma~\ref{lem:transposed}, and the windowed coefficient
+obeys the elementary propagation law $A(t+L)=A(t)+O(e^{-t})$.
 
 \subsection{From propagation to non-convergence}
 
@@ -670,11 +632,12 @@ direct quantitative confirmation of Proposition~\ref{prop:prop}.
 The skeleton of the proof is complete and the rigorous backbone is
 substantial: the reduction (Lemma~\ref{lem:reduction}), the elementary
 Step~A (Proposition~\ref{prop:A}), the exact transfer lemma
-(Lemma~\ref{lem:transfer}), the windowed-smoothing identities
-(Lemma~\ref{lem:wsi}), the factor estimate (Lemma~\ref{lem:kappa}),
-three of the four contributions to the propagation remainder, and the
-renormalisation theorem (Theorem~\ref{thm:renorm}). Four steps remain
-open; they are flagged in the text and summarised here.
+(Lemma~\ref{lem:transfer}), the factor estimate
+(Lemma~\ref{lem:kappa}), the propagation estimate
+(Proposition~\ref{prop:prop}) --- proved in full through the
+transposed negative-binomial kernel (Lemma~\ref{lem:transposed}) ---
+and the renormalisation theorem (Theorem~\ref{thm:renorm}). Three
+steps remain open; they are flagged in the text and summarised here.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
@@ -684,22 +647,20 @@ open; they are flagged in the text and summarised here.
 \hline
 A & Hayman regularity / sector control of $B(z)$ & \S\ref{sec:ALL} \\
 B & Mellin contour justification & \S\ref{sec:ALL} \\
-C & the remainder bound $|\rho(t)|=O(e^{-t/2})$ & \S\ref{sec:renorm} \\
 D & the non-degeneracy $A_\infty\ne0$ & \S\ref{sec:base} \\
 \hline
 \end{tabular}
 \end{center}
 
 \noindent A complete proof of Theorem~\ref{thm:main} consists of
-Proposition~\ref{prop:A} (done) together with Gaps~C and~D; Gaps~A
-and~B underpin Gap~D and the quantitative form of
-Theorem~\ref{thm:ALL}. The natural order of attack is C, then A and B,
-then D. Within Gap~C the reduction is complete:
-Lemma~\ref{lem:kernel} and Proposition~\ref{prop:kernel} reduce the
-propagation estimate to two density estimates,
-\eqref{eq:K1}--\eqref{eq:K2}, for the binomial log-deviation --- a
-local limit theorem with one Edgeworth correction, in lattice form.
-That is the current front of work.
+Proposition~\ref{prop:A} (done) together with Gap~D; Gaps~A and~B
+underpin Gap~D and the quantitative form of Theorem~\ref{thm:ALL}.
+The former Gap~C --- the propagation remainder --- is now closed: the
+transposed kernel (Lemma~\ref{lem:transposed}) reduces it to the exact
+negative-binomial identity $\sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)=1/q$,
+so that no local limit theorem is needed. The natural order of attack
+on what remains is A and~B, then~D; the non-degeneracy $A_\infty\ne0$
+(Gap~D) is the current front of work.
 
 \begin{thebibliography}{9}
 \bibitem{Paper1}

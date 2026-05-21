@@ -84,7 +84,8 @@ Proposed first action: migrate the two `.tex` files into this folder
    finitely many initial values modified). **Rigorous.**
 6. **The renormalisation route.** The recursion as a log-scale
    smoothing; the local fundamental coefficient `A(t)`; the
-   propagation estimate (κ-part rigorous, remainder = Gap C); the
+   propagation estimate `A(t+L) = A(t) + O(e^{-t})` — now fully
+   rigorous via the transposed negative-binomial kernel; the
    conditional renormalisation theorem. Source: `infMaxMin.tex` §8.
 7. **Eliminating the polynomial P.** The G3 reduction: the obstruction
    is `P`-independent — linear independence of the auxiliary profiles.
@@ -107,7 +108,7 @@ missing pieces, named precisely:
 |---|---|---|---|---|
 | **A** | Hayman-admissibility / sector control of `B(z)` | strategy-ALL asymptotics (§3) | open; the stated obstruction ("grows faster than `e^z`") dissolved after the `e^{z/p}→e^z` correction — `B` is entire of order 1, type 1. The real difficulty is the non-constant log-periodic factor. | a direct sector saddle-point estimate, or H-admissibility adapted to the oscillating factor. *Standard in spirit.* |
 | **B** | Mellin contour justification | strategy-ALL asymptotics (§3) | open | the strip of analyticity and the contour shift for the Mellin transform of `log B(z) - z`. *Standard in spirit (Flajolet–Sedgewick).* |
-| **C** | The remainder `r(t)` of the propagation estimate | renormalisation route (§6) | open | a density-level local CLT for `log J_n`, `J_n ~ Bin(n,q)`, plus the windowed-transfer bookkeeping. *Hard but standard.* |
+| **C** | ~~The remainder `r(t)` of the propagation estimate~~ | renormalisation route (§6) | **CLOSED 2026-05-22** | the transposed negative-binomial kernel: the exact identity `∑_{n≥j} P(Bin(n,q)=j) = 1/q` supplies the cancellation directly. No local CLT needed — the earlier density formulation was the artefact. |
 | **D** | The non-degeneracy `A_∞ ≠ 0` (the base case) | §6–§7, the crux | open | for the genuine `b`, `A_∞ = γ_1`; non-vanishing follows from `ζ(1+it) ≠ 0` **given** the Mellin framework (Gaps A,B). The §7 reduction recasts it as linear independence of the profiles `Ψ_r`. **The genuine open problem.** |
 
 **Done — not gaps** (the rigorous backbone of the paper):
@@ -138,8 +139,8 @@ Main conjecture
 picture, i.e. it presupposes `Gap A ∧ Gap B`. Hence:
 
 > **A full proof of the main conjecture = Proposition A (done) +
-> Gap C + Gap D, with Gaps A, B underpinning Gap D.**
-> Step 1 (the κ-estimate) is done.
+> Gap D, with Gaps A, B underpinning Gap D.**
+> Gap C (the propagation remainder) and the κ-estimate are done.
 
 The two routes are complementary: the **renormalisation route** is the
 elementary skeleton (replaces A, B by the single Gap C); the **Mellin
