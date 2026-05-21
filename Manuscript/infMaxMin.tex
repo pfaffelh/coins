@@ -796,6 +796,96 @@ The two exponents in~\eqref{eq:prop} are what matters: both
 $\sum_k|\kappa(t_0+kL)-1|$ and $\sum_k|r(t_0+kL)|$ converge, being
 geometric series in $e^{-L}<1$.
 
+The factor $\kappa$ admits a fully rigorous treatment; only the
+remainder $r(t)$ rests on the sketch. With $t=\log n$, the recursion
+of Lemma~\ref{lem:smooth} shifts the log-scale down by exactly one
+period to $\log(qn)$, and $\kappa$ is the resulting
+characteristic-function-type average over the binomial law.
+
+\begin{lemma}[the propagation factor]\label{lem:kappa}
+  Let $0<q<1$, $p=1-q$, $\omega\in\mathbb R$, and
+  $J_n\sim\mathrm{Bin}(n,q)$. Then
+  \[
+    \kappa(n):=E\bigl[(J_n/(qn))^{\,i\omega}\,
+                      \mathbf 1_{\{J_n\ge1\}}\bigr]
+  \]
+  satisfies, for every $n\ge1$,
+  \[
+    \kappa(n)=1-\frac{p}{2qn}\,(\omega^{2}+i\omega)+R_n,
+    \qquad |R_n|\le \frac{C(\omega,q)}{n^{3/2}},
+  \]
+  with $C(\omega,q)$ explicit. In particular $|\kappa(n)-1|=O(1/n)$,
+  and $n\,|\kappa(n)-1|\to\frac{p}{2q}\,|\omega^{2}+i\omega|
+  =\frac{p\,\omega\sqrt{\omega^{2}+1}}{2q}$.
+\end{lemma}
+
+\begin{proof}
+  Put $V_n:=J_n/(qn)-1$, so $E[V_n]=0$ and $-1\le V_n\le1/q$. The
+  central moments of $\mathrm{Bin}(n,q)$ give the exact values
+  $E[V_n^{2}]=\operatorname{Var}(J_n)/(qn)^{2}=p/(qn)$ and
+  $E[V_n^{4}]=3p^{2}/(q^{2}n^{2})+p(1-6pq)/(q^{3}n^{3})$; hence, for
+  $n\ge1/(pq)$, $E[V_n^{4}]\le4p^{2}/(q^{2}n^{2})$ and, by
+  Cauchy--Schwarz,
+  \begin{equation}\label{eq:V3bound}
+    E[|V_n|^{3}]\le\bigl(E[V_n^{2}]\,E[V_n^{4}]\bigr)^{1/2}
+                \le2\,(p/q)^{3/2}\,n^{-3/2}.
+  \end{equation}
+
+  \emph{Taylor expansion.} The map $g(v):=(1+v)^{i\omega}
+  =\exp(i\omega\log(1+v))$ has $g(0)=1$, $g'(0)=i\omega$,
+  $g''(0)=i\omega(i\omega-1)=-(\omega^{2}+i\omega)$, and
+  $|g'''(v)|=|\omega|\sqrt{\omega^{2}+1}\,\sqrt{\omega^{2}+4}\,
+  (1+v)^{-3}$. For $|v|\le\tfrac12$ one has $(1+v)^{-3}\le8$, so
+  Taylor's theorem with integral remainder gives
+  \begin{equation}\label{eq:gtaylor}
+    \bigl|(1+v)^{i\omega}-1-i\omega v
+          +\tfrac12(\omega^{2}+i\omega)v^{2}\bigr|
+    \le\tfrac{M_\omega}{6}|v|^{3},
+    \quad M_\omega:=8|\omega|\sqrt{\omega^{2}+1}\,\sqrt{\omega^{2}+4}.
+  \end{equation}
+
+  \emph{The tail event.} By Hoeffding's inequality
+  $P(|V_n|>\tfrac12)=P(|J_n-qn|>qn/2)\le2e^{-q^{2}n/2}$. On
+  $\{|V_n|\le\tfrac12\}$ one has $J_n\ge qn/2\ge1$ once $n\ge2/q$;
+  on the complement $|(1+V_n)^{i\omega}|=1$ and $|V_n|\le1/q$.
+
+  \emph{Assembling} (for $n\ge\max(2/q,1/(pq))$). Split
+  $\kappa(n)=E[(1+V_n)^{i\omega}\mathbf 1_{|V_n|\le1/2}]
+  +E[(1+V_n)^{i\omega}\mathbf 1_{|V_n|>1/2,\,J_n\ge1}]$; the second
+  term has modulus $\le P(|V_n|>\tfrac12)\le2e^{-q^{2}n/2}$. Inserting
+  \eqref{eq:gtaylor} into the first term,
+  \[
+    E[(1+V_n)^{i\omega}\mathbf 1_{|V_n|\le1/2}]
+    =P(|V_n|\le\tfrac12)+i\omega\,E[V_n\mathbf 1_{|V_n|\le1/2}]
+     -\tfrac12(\omega^{2}+i\omega)\,E[V_n^{2}\mathbf 1_{|V_n|\le1/2}]
+     +\mathcal E_n,
+  \]
+  with $|\mathcal E_n|\le\tfrac{M_\omega}{6}E[|V_n|^{3}]$. Each
+  truncated moment differs from the full moment ($E[V_n]=0$,
+  $E[V_n^{2}]=p/(qn)$) by at most $q^{-2}P(|V_n|>\tfrac12)
+  \le2q^{-2}e^{-q^{2}n/2}$, since $|V_n|\le1/q$. Collecting the
+  exponentially small terms and using~\eqref{eq:V3bound},
+  \[
+    \kappa(n)=1-\tfrac{p}{2qn}(\omega^{2}+i\omega)+R_n,
+    \qquad
+    |R_n|\le\tfrac{M_\omega}{3}(p/q)^{3/2}n^{-3/2}
+            +c(\omega,q)\,e^{-q^{2}n/2}.
+  \]
+  As $e^{-q^{2}n/2}=O(n^{-3/2})$ this is the claim; the finitely many
+  $n<\max(2/q,1/(pq))$ are absorbed by enlarging $C(\omega,q)$. The
+  limit statement follows since $|R_n|=o(1/n)$.
+\end{proof}
+
+\begin{remark}
+  Lemma~\ref{lem:kappa} makes the $\kappa$-half of
+  Proposition~\ref{prop:prop} rigorous, and sharper than the sketch:
+  beyond $|\kappa-1|=O(e^{-t})$ it gives the exact leading constant,
+  including the imaginary part $\tfrac{p\omega}{2qn}$ produced by the
+  convexity of $\log$. Only the remainder $r(t)$ --- the
+  windowed-coefficient bookkeeping --- still rests on the proof
+  sketch.
+\end{remark}
+
 \subsection{The induction}
 
 \begin{theorem}[renormalisation form]\label{thm:renorm}
@@ -858,7 +948,13 @@ non-degeneracy $A_\infty(x)\ne0$.
   therefore numerically accessible. For the genuine $b$
   (Hypothesis~\ref{hyp:osc}) the route is complete modulo
   Proposition~\ref{prop:prop} and the single inequality
-  $A_\infty(b)\ne0$.
+  $A_\infty(b)\ne0$. This picture is borne out numerically: the script
+  \texttt{simulation/renorm\_validation.py} computes, for
+  $p\in\{0.35,0.40,0.42,0.45\}$, both the windowed coefficient
+  $A(t_0+kL)$ --- found to converge to a non-zero limit --- and the
+  factor $\kappa(n)$, for which $n\,|\kappa(n)-1|$ approaches the
+  constant $\tfrac{p}{2q}|\omega^{2}+i\omega|$ of
+  Lemma~\ref{lem:kappa}.
 \end{itemize}
 
 \section{Summary}\label{sec:summary}
