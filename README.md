@@ -17,7 +17,7 @@ Mathlib formalization of the all-heads coin game studied in the paper
 | [`CoinsLean/CoinsLean/Summary.lean`](CoinsLean/CoinsLean/Summary.lean) | One-page `#check` / `#print` tour of the main results. |
 | [`simulation/`](simulation/) | Python scripts computing `w_{n,p}` via the exact Bellman recursion. |
 | [`journal.md`](journal.md) | Thematic development commentary, tied to each commit. |
-| [`claude.md`](claude.md) | Prompt-by-prompt log of the author–Claude collaboration. |
+| [`CONVERSATION_LOG.md`](CONVERSATION_LOG.md) | Prompt-by-prompt log of the author–Claude collaboration. |
 
 ## The Lean formalization
 

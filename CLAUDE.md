@@ -100,8 +100,8 @@ Appendix A of the paper gives the line-by-line `manuscript ↔ Lean` table.
 ## Provenance
 
 This is author-directed research. `journal.md` (thematic commentary tied to
-each commit) and `claude.md` (prompt-by-prompt collaboration log) are the
-provenance trail referenced in the paper's authorship note — update
+each commit) and `CONVERSATION_LOG.md` (prompt-by-prompt collaboration log)
+are the provenance trail referenced in the paper's authorship note — update
 `journal.md` when making substantive mathematical changes, consistent with
 the existing `Journal: <date> session N` commit pattern.
 
