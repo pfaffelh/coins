@@ -37,3 +37,6 @@ texput.log
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Third-party reference material (not redistributable)
+Manuscript/EM/tf_usmaa.pdf
