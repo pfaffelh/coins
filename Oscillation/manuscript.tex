@@ -457,70 +457,101 @@ Thus $r(t)=\varepsilon_{\mathrm{tail}}+\varepsilon_{\mathrm{disc}}
 +O(e^{-t/2})+\rho(t)$, and Proposition~\ref{prop:prop} follows once
 $|\rho(t)|=O(e^{-t/2})$.
 
-\noindent\emph{The residual $\rho$: a Taylor expansion in the scale.}
-The kernel difference $\delta_s:=\nu^{(s+L)}-\nu^{(t+L)}$ defining
-$\rho$ vanishes at the window centre, $\delta_t=0$. Expanding it in
-$s$ about $s=t$,
-\begin{equation}\label{eq:deltataylor}
-  \delta_s=(s-t)\,\dot\nu+O\bigl((s-t)^2\bigr),
-  \qquad \dot\nu:=\partial_\tau\nu^{(\tau)}\big|_{\tau=t+L},
-\end{equation}
-where $\dot\nu$ is a \emph{fixed} signed measure of total mass zero
-(every $\nu^{(\tau)}$ is a probability measure). The fixed mass-zero
-measure brings the windowed-projection identities back into play.
+\noindent\emph{The residual $\rho$ as a kernel pairing.}
+Write $g(s):=\int y(s+\zeta)\,\delta_s(d\zeta)$ with
+$\delta_s:=\nu^{(s+L)}-\nu^{(t+L)}$, so that
+$\rho(t)=\frac1L\int g(s)\,e^{-i\omega s}\chi(\tfrac{s-t}L)\,ds$, and
+let $h_\tau$ denote the density of the log-deviation law
+$\nu^{(\tau)}$. The decisive step moves $y$ outside the oscillatory
+integral.
 
-\begin{lemma}[leading order of the residual]\label{lem:rho1}
-  Suppose the kernel family is scale-regular:
-  \begin{equation}\label{eq:scalereg}
-    \partial_\tau\hat\nu^{(\tau)}(-\omega)=O(e^{-\tau}),
-    \qquad
-    \int|\zeta|\,\bigl|\partial_\tau\nu^{(\tau)}\bigr|(d\zeta)
-      =O(e^{-\tau/2}).
-  \end{equation}
-  Then the leading Taylor term of the residual,
+\begin{lemma}[kernel form of the residual]\label{lem:kernel}
+  One has $\displaystyle\rho(t)=\frac1L\int_{\mathbb R}y(u)\,K(u,t)\,du$,
+  where
   \[
-    \rho_1(t):=\frac1L\int e^{-i\omega s}(s-t)\,
-      \chi\!\bigl(\tfrac{s-t}L\bigr)
-      \Bigl(\textstyle\int y(s+\zeta)\,\dot\nu(d\zeta)\Bigr)\,ds,
+    K(u,t):=\int_{\mathbb R} e^{-i\omega s}\,
+            \chi\!\bigl(\tfrac{s-t}L\bigr)\,
+            \bigl[h_{s+L}-h_{t+L}\bigr](u-s)\,ds,
   \]
-  satisfies $\rho_1(t)=O(e^{-t/2})$.
+  and therefore $|\rho(t)|\le\frac1L\,\|y\|_\infty\,
+  \|K(\cdot,t)\|_{L^1}$.
 \end{lemma}
 
 \begin{proof}
-  Write $(s-t)\chi(\tfrac{s-t}L)=L\,\psi(\tfrac{s-t}L)$ with
-  $\psi(u):=u\,\chi(u)\in C_c^\infty$. By Fubini and the translation
-  substitution of Lemma~\ref{lem:wsi}(b) --- whose proof is valid for
-  any window and any finite signed measure ---
-  \[
-    \rho_1(t)=L\int e^{i\omega\zeta}\,A^{[\psi]}(t+\zeta)\,
-             \dot\nu(d\zeta),
-  \]
-  where $A^{[\psi]}$ is the windowed coefficient with window $\psi$,
-  again $C^\infty$ with bounded derivatives. As $\dot\nu$ has mass
-  zero,
-  \[
-    \rho_1(t)=L\,A^{[\psi]}(t)\,\widehat{\dot\nu}(-\omega)
-      +L\int e^{i\omega\zeta}
-        \bigl(A^{[\psi]}(t+\zeta)-A^{[\psi]}(t)\bigr)\,\dot\nu(d\zeta).
-  \]
-  In the first term $\widehat{\dot\nu}(-\omega)
-  =\partial_\tau\hat\nu^{(\tau)}(-\omega)\big|_{t+L}=O(e^{-t})$ by the
-  first bound of~\eqref{eq:scalereg}, and $A^{[\psi]}$ is bounded. In
-  the second, $|A^{[\psi]}(t+\zeta)-A^{[\psi]}(t)|\le C|\zeta|$, so it
-  is $O\bigl(\int|\zeta|\,|\dot\nu|(d\zeta)\bigr)=O(e^{-t/2})$ by the
-  second bound. Hence $\rho_1(t)=O(e^{-t})+O(e^{-t/2})=O(e^{-t/2})$.
+  Insert $g(s)=\int y(s+\zeta)\,[h_{s+L}-h_{t+L}](\zeta)\,d\zeta$ into
+  the displayed formula for $\rho$, substitute $u=s+\zeta$ in the
+  inner integral, and exchange the order of integration (Fubini:
+  $\chi$ has compact support, $y$ is bounded). The bound is
+  $\bigl|\int yK\bigr|\le\|y\|_\infty\int|K|$.
 \end{proof}
 
-\gap{Gap C --- scale-regularity of the kernel}{Proposition~\ref{prop:prop}
-is now reduced to two precisely delimited items. (i) The
-scale-regularity bounds~\eqref{eq:scalereg}: a characteristic-function
-estimate and a first-moment estimate for the \emph{scale-derivative}
-of the binomial log-deviation law --- a differentiated Edgeworth
-expansion for $\mathrm{Bin}(n,q)$, standard in spirit (Petrov-type
-local limit theory). (ii) The higher Taylor orders $O((s-t)^2)$
-in~\eqref{eq:deltataylor}, handled by the same device with windows
-$u^k\chi(u)$ and a routine remainder estimate (the window has compact
-support). Neither is carried out here; this is where work continues.}
+The force of Lemma~\ref{lem:kernel} is that the bound holds for
+\emph{every} bounded $y$: the oscillatory cancellation now resides
+entirely in $K$ and is no longer entangled with the --- possibly
+large --- variation of $y$. The residual is reduced to an $L^1$
+estimate for an explicit kernel.
+
+\begin{proposition}[smallness of the kernel]\label{prop:kernel}
+  Suppose the log-deviation densities satisfy, uniformly for $\tau$ in
+  a window of width $O(L)$,
+  \begin{align}
+    \textstyle\int|\zeta|\,h_\tau(\zeta)\,d\zeta
+      &= O(e^{-\tau/2}),\label{eq:K1}\\[2pt]
+    \textstyle\int\bigl[h_{\tau-\zeta}(\zeta)-h_\tau(\zeta)\bigr]\,d\zeta
+      &= O(e^{-\tau}).\label{eq:K2}
+  \end{align}
+  Then $\|K(\cdot,t)\|_{L^1}=O(e^{-t/2})$, hence $\rho(t)=O(e^{-t/2})$
+  and Proposition~\ref{prop:prop} holds.
+\end{proposition}
+
+\begin{proof}
+  Substituting $\zeta=u-s$ in the definition of $K$,
+  \[
+    K(u,t)=e^{-i\omega u}\int e^{i\omega\zeta}\,
+           \chi\!\bigl(\tfrac{u-\zeta-t}L\bigr)\,
+           \bigl[h_{u+L-\zeta}(\zeta)-h_{t+L}(\zeta)\bigr]\,d\zeta .
+  \]
+  The factor $e^{i\omega\zeta}\chi(\tfrac{u-\zeta-t}L)$ is smooth; on
+  the effective support of the densities it equals
+  $\chi(\tfrac{u-t}L)+\theta(u,\zeta)$ with $|\theta(u,\zeta)|\le
+  C|\zeta|$. Hence $K(u,t)=e^{-i\omega u}\bigl[\chi(\tfrac{u-t}L)\,
+  m(u,t)+E(u,t)\bigr]$ with
+  \[
+    m(u,t)=\!\int\!\bigl[h_{u+L-\zeta}(\zeta)-h_{t+L}(\zeta)\bigr]d\zeta,
+    \quad
+    E(u,t)=\!\int\!\theta(u,\zeta)\bigl[h_{u+L-\zeta}(\zeta)
+            -h_{t+L}(\zeta)\bigr]d\zeta .
+  \]
+  Since $h_{u+L}$ and $h_{t+L}$ are probability densities,
+  $\int[h_{u+L}-h_{t+L}]=0$, so
+  $m(u,t)=\int[h_{u+L-\zeta}(\zeta)-h_{u+L}(\zeta)]\,d\zeta=O(e^{-t})$
+  by~\eqref{eq:K2} at $\tau=u+L$ (and $u-t=O(L)$ on
+  $\operatorname{supp}\chi$). And $|E(u,t)|\le
+  C\!\int|\zeta|\,(h_{u+L-\zeta}+h_{t+L})(\zeta)\,d\zeta=O(e^{-t/2})$
+  by~\eqref{eq:K1}. As $m$ and $E$ are supported in $u-t=O(L)$,
+  \[
+    \|K(\cdot,t)\|_{L^1}\le\|\chi\|_{L^1}L\cdot O(e^{-t})
+      +O(L)\cdot O(e^{-t/2})=O(e^{-t/2}).
+  \]
+  The remaining claims are Lemma~\ref{lem:kernel} and the
+  decomposition of $r(t)$.
+\end{proof}
+
+\gap{Gap C --- the local limit theorem for the kernel}{%
+Proposition~\ref{prop:kernel} reduces the propagation estimate to two
+properties of the binomial log-deviation density. The
+bound~\eqref{eq:K1}, a first absolute moment, is elementary (a
+binomial moment bound with a Hoeffding tail estimate). The
+\emph{mass-stability}~\eqref{eq:K2},
+$\int[h_{\tau-\zeta}(\zeta)-h_\tau(\zeta)]\,d\zeta=O(e^{-\tau})$,
+expresses the scale-regularity of the density; it is a local central
+limit theorem with one Edgeworth correction for $\mathrm{Bin}(n,q)$ ---
+classical in spirit but not carried out here. One technical layer
+accompanies it: $\nu^{(n)}$ is supported on a lattice, so $h_\tau$ is
+the atom-weight profile and \eqref{eq:K1}--\eqref{eq:K2} are the
+lattice form of the local limit theorem --- equivalently,
+Lemma~\ref{lem:kernel} is read as a discrete sum. This is where work
+continues.}
 
 \subsection{From propagation to non-convergence}
 
@@ -651,11 +682,12 @@ D & the non-degeneracy $A_\infty\ne0$ & \S\ref{sec:base} \\
 Proposition~\ref{prop:A} (done) together with Gaps~C and~D; Gaps~A
 and~B underpin Gap~D and the quantitative form of
 Theorem~\ref{thm:ALL}. The natural order of attack is C, then A and B,
-then D. Within Gap~C the leading order is settled
-(Lemma~\ref{lem:rho1}): the remainder is now reduced to the
-scale-regularity bounds~\eqref{eq:scalereg} --- a differentiated
-Edgeworth expansion for the binomial --- together with the routine
-higher Taylor orders. That is the current front of work.
+then D. Within Gap~C the reduction is complete:
+Lemma~\ref{lem:kernel} and Proposition~\ref{prop:kernel} reduce the
+propagation estimate to two density estimates,
+\eqref{eq:K1}--\eqref{eq:K2}, for the binomial log-deviation --- a
+local limit theorem with one Edgeworth correction, in lattice form.
+That is the current front of work.
 
 \begin{thebibliography}{9}
 \bibitem{Paper1}
