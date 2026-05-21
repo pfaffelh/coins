@@ -117,9 +117,11 @@ Rewriting~\eqref{eq:Bseries} via $e^{pq^kz}-1 = e^{pq^kz}(1-e^{-pq^kz})$
 isolates the bulk exponential growth from a damping factor:
 \begin{equation}\label{eq:phi}
   \phi_M(z) := \prod_{k=0}^{M-1}\bigl(e^{pq^kz}-1\bigr)
-  \;=\; e^{\,z(1-q^M)/p}\,\prod_{k=0}^{M-1}\!\bigl(1-e^{-pq^kz}\bigr).
+  \;=\; e^{\,z(1-q^M)}\,\prod_{k=0}^{M-1}\!\bigl(1-e^{-pq^kz}\bigr).
 \end{equation}
-(We used $p\sum_{k=0}^{M-1}q^k = (1-q^M)$ and $1/p=1/(1-q)$.) On the
+(We used $\prod_k e^{pq^kz}=e^{pz\sum_k q^k}$ and
+$p\sum_{k=0}^{M-1}q^k = 1-q^M$, so the exponent is $pz\sum_k q^k=z(1-q^M)$.)
+On the
 positive real axis, as $z\to+\infty$:
 \begin{itemize}[leftmargin=2em]
   \item factors with $pq^kz\gg1$ satisfy $1-e^{-pq^kz}\approx 1$;
@@ -127,12 +129,12 @@ positive real axis, as $z\to+\infty$:
   \item crossover at $k\approx K(z):=\log(pz)/\log(1/q)$.
 \end{itemize}
 For $M\le K(z)$ the damping product is $\approx 1$, so $\phi_M(z)
-\approx e^{z(1-q^M)/p}$ which is monotone increasing in~$M$; for $M>K(z)$
+\approx e^{z(1-q^M)}$ which is monotone increasing in~$M$; for $M>K(z)$
 each extra factor contributes $pq^kz \ll 1$ and $\phi_M$ is exponentially
 killed. Hence the sum $B(z)=\sum_M\phi_M(z)$ is dominated by terms with
 $M$ near $K(z)$, and
 \begin{equation}\label{eq:Basymp}
-  B(z) \;=\; e^{z/p}\,\Phi\!\bigl(\log z\bigr)\,\bigl(1+o(1)\bigr),
+  B(z) \;=\; e^{z}\,\Phi\!\bigl(\log z\bigr)\,\bigl(1+o(1)\bigr),
   \qquad z\to+\infty,
 \end{equation}
 where $\Phi$ is a bounded function periodic in its argument with period
@@ -157,14 +159,16 @@ $u\,B'(u)/B(u)=n$, and
   b_n = n!\,[z^n]B(z) \;\sim\; \frac{n!\,B(u_n)}{u_n^{\,n}\sqrt{2\pi\,\beta_n}},
   \qquad \beta_n := u_n\,\frac{d}{du}\Bigl(u\,\tfrac{B'}{B}\Bigr)\Big|_{u_n}.
 \end{equation}
-Using $B(u)\sim e^{u/p}\Phi(\log u)$ gives $u B'/B\sim u/p$ and so
-$u_n\sim pn$ and $\beta_n\sim n$. Substituting:
+Using $B(u)\sim e^{u}\Phi(\log u)$ gives $u B'/B\sim u$ and so
+$u_n\sim n$ and $\beta_n\sim n$. Substituting
+$B(u_n)\sim e^{u_n}\Phi(\log u_n)\sim e^{n}\Phi(\log n)$:
 \begin{align*}
-  b_n &\sim \frac{n!\,e^{\,n}\,\Phi(\log(pn))}{(pn)^n\,\sqrt{2\pi n}}
-       \sim \frac{n^n e^{-n}\sqrt{2\pi n}\,e^n\,\Phi(\log(pn))}{(pn)^n\sqrt{2\pi n}}
-       = \frac{\Phi(\log(pn))}{p^{\,-\!n}\cdot p^n}\cdot p^n \\[-0.2em]
-  &\mkern-30mu \textrm{(Stirling $n!\sim n^ne^{-n}\sqrt{2\pi n}$ and the $\sqrt{n}$'s cancel)}\\[0.4em]
-  &\mkern80mu \boxed{\;b(p,n) \;=\; \Phi_p\bigl(\log(pn)\bigr)\,\bigl(1+o(1)\bigr),\;}
+  b_n &\sim \frac{n!\,e^{\,n}\,\Phi(\log n)}{n^n\,\sqrt{2\pi n}}
+       \;\sim\; \frac{n^n e^{-n}\sqrt{2\pi n}\;\,e^n\,\Phi(\log n)}
+                     {n^n\,\sqrt{2\pi n}} \\[-0.2em]
+  &\mkern10mu \textrm{(Stirling $n!\sim n^ne^{-n}\sqrt{2\pi n}$; the
+    $e^{\pm n}$, $n^n$ and $\sqrt{n}$ cancel)}\\[0.4em]
+  &\mkern70mu \boxed{\;b(p,n) \;=\; \Phi_p\bigl(\log n\bigr)\,\bigl(1+o(1)\bigr).\;}
 \end{align*}
 where $\Phi_p$ is a continuous positive function, periodic with period
 $\log(1/q)=\log\bigl(1/(1-p)\bigr)$.
@@ -206,7 +210,7 @@ the poles of $\Gamma(s)\zeta(s+1)$ at $s=-1$ (double pole: main term
 $\log z$-linear) and at negative integers, giving smooth
 correction terms. The full expansion has the form
 \begin{equation}\label{eq:mellinexp}
-  \log B(z) \;=\; \frac{z}{p}
+  \log B(z) \;=\; z
    \;+\; \frac{\log z}{\log(1/q)}
    \;+\; \sum_{\ell\in\mathbb{Z}} c_\ell\, e^{2\pi i\,\ell\,\log z/\log(1/q)}
    \;+\; O(1),
@@ -267,12 +271,16 @@ Two implications for the main manuscript:
 
 \paragraph{Open.} A rigorous proof of \eqref{eq:Basymp} and
 \eqref{eq:fourier} requires: (a) admissibility / Hayman regularity of
-$B(z)$, which needs some care because $B$ is entire but grows
-faster than $e^{z}$; (b) justification of the contour shift in the
-Mellin step, i.e.\ establishing the strip of analyticity for the
-Mellin transform of $\log B(z)-z/p$. Both are standard in spirit
-(Flajolet et al.) but non-trivial in detail. I have not attempted a
-rigorous write-up here; the note is intended as a map.
+$B(z)$. Here $B$ is entire of order~$1$ and type~$1$ --- indeed
+$0\le b_n\le 1$ forces $B(r)\le e^{r}$ on the positive axis, so $B$
+grows at the same rate as $e^{z}$, not faster --- but the bounded,
+non-constant log-periodic factor $\Phi$ is exactly the feature that
+the closure theory of H-admissible functions does not cover.
+(b) Justification of the contour shift in the Mellin step, i.e.\
+establishing the strip of analyticity for the Mellin transform of
+$\log B(z)-z$. Both are standard in spirit (Flajolet et al.) but
+non-trivial in detail. I have not attempted a rigorous write-up here;
+the note is intended as a map.
 
 \section{Numerical validation}\label{sec:numerics}
 
@@ -287,7 +295,7 @@ with Theorem~2.1 of the main paper.
 
 \paragraph{Geometric-progression test at $\boldsymbol{p=\tfrac23}$.}
 Here $1/q = 3$, so the exact geometric progression $n_k := n_0 \cdot
-3^k$ keeps the phase $\{\log(pn)/\log(1/q)\}$ \emph{exactly} constant
+3^k$ keeps the phase $\{\log n/\log(1/q)\}$ \emph{exactly} constant
 across $k$. Computing $b_{n_k}$ for $n_0\in\{4,7,11\}$:
 \medskip
 
@@ -391,7 +399,7 @@ $29$ & $0.19826607$ & $0.19826607$ & $0.19826607$ & $0.19826607$ & $0.19826607$\
 The winning probability $b(p,n)$ under strategy~\All{} does not admit
 a closed form in the usual sense, but it \emph{does} admit a clean
 asymptotic description: it is asymptotic to a log-periodic function
-$\Phi_p(\log(pn))$ of period $\log\bigl(1/(1-p)\bigr)$, with
+$\Phi_p(\log n)$ of period $\log\bigl(1/(1-p)\bigr)$, with
 exponentially damped Fourier coefficients.
 The amplitude of the oscillation is controlled by the Flajolet--Sedgewick
 factor $\exp(-\pi^2/\log(1/q))$, which ranges from $\sim 10^{-15}$ at

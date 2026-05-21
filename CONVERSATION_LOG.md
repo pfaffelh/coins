@@ -1597,3 +1597,155 @@ never install system-wide or `--user`.
 > Update journal.md and claude.md
 
 This update.
+
+## Session 4 (2026-05-21)
+
+*The sessions between Prompt 121 and here — the strategy-`ALL`
+asymptotics note, the ALEA submission preparation, the Lean comparator
+harness, the conference talk — were not recorded prompt-by-prompt; see
+`journal.md` and the git history. This session resumes the log. Prompt
+numbering continues sequentially.*
+
+### Prompt 122
+> Lies bitte mal CLAUDE.md / claude.md
+
+`CLAUDE.md` did not exist. Ran the `/init` skill: analysed the
+repository and created `CLAUDE.md` — build/test commands (Lean `lake`,
+Python venv, LaTeX), the CoinsLean architecture, the comparator
+harness (`Defs.lean` / `Challenge.lean` / `Solution.lean` /
+`config.json`), the hard invariants (no `sorry`, three axioms only),
+and the licensing split.
+
+### Prompt 123
+> Ja, bitte aufnehmen.
+
+Committed `CLAUDE.md` (`b6bfa4f`).
+
+### Prompt 124
+> Und nun bitte komplett die Inhalte von claude.md nach CLAUDE.md mergen.
+
+Flagged that `claude.md` is a 70 KB prompt log while `CLAUDE.md` is the
+auto-loaded guidance file. The intent was to remove the
+case-collision; renamed `claude.md` → `CONVERSATION_LOG.md` (this
+file), updated the references in `README.md`, `CLAUDE.md` and
+`Manuscript/manuscript.tex`, and left `journal.md`'s historical
+mentions intact. Commit `b1c81ea`.
+
+### Prompt 125
+> Das eingereichte Paper wurde abgelehnt [...] Ziel ist nun, bei
+> Experimental Mathematics einzureichen.
+
+ALEA rejected the paper (no Lean-expert referee available). Checked the
+Taylor & Francis author guidelines for *Experimental Mathematics*: EM
+wants plain `article` style (no `interact.cls`); submission via
+ScholarOne; single-blind review; unstructured abstract ≤ 150 words;
+required disclosure and data-availability statements.
+
+### Prompt 126
+> [pasted T&F instructions for authors; pasted the reference guide PDF]
+
+The reference guide is the **T&F Mathematical Association of America
+(MAA)** style: numbered citations `[n]`, reference list alphabetical by
+surname, year in parentheses.
+
+### Prompt 127
+> Es gab keine Fördermittel [...] ORCID 0000-0002-6421-5460 [...]
+> Bitte alles in Manuscript/EM ablegen.
+
+Created `Manuscript/EM/`: copied the manuscript and figures, then built
+the EM version — abstract shortened 215 → 138 words; keywords + 2020
+MSC; ORCID and affiliation on the title page; disclosure and
+data-availability statements; end matter reordered to the EM structure
+(appendix after the bibliography); bibliography converted to MAA style.
+Drafted `cover_letter.md` addressing the non-Lean-referee concern
+(comparator verification, reviewer's guide). Compiles clean, 19 pages.
+
+### Prompt 128
+> Meine Instituts-Mail ist p.p@stochastik.uni-freiburg.de
+
+Added the corresponding-author email to the title-page footnote and the
+cover letter.
+
+### Prompt 129
+> In "A note on authorship", start by mentioning the github repo.
+
+Rewrote the opening of the authorship note in `Manuscript/EM/` to
+introduce the public repository first, so that `simulation/`,
+`CoinsLean/` etc. have a referent.
+
+### Prompt 130
+> Ich vermute, dass es für jedes p ein N gibt, so dass n -> w_{n,p}
+> wachsend ist für n > N. Widerspricht das CONVERSATION_LOG.md?
+
+Read the full manuscript. The conjecture is trivially true for
+p > 1/2, constant at p = 1/2. For p < 1/2 it contradicts the earlier
+open conjecture in this log (Prompt 20: infinitely many strict local
+maxima), and is in fact **provably false**: a short Bellman argument
+forces w_n − w_{n−1} ≈ −w_{n−1} q^n < 0 on any long increasing run.
+
+### Prompt 131
+> Kannst Du "unendlich viele lokale Maxima/Minima" beweisen?
+
+Discussed the reduction: the statement is equivalent to
+¬(eventually increasing) ∧ ¬(eventually decreasing). The first half is
+provable (the q^n argument); the second reduces, via an exact transfer
+lemma, to the log-periodic oscillation of strategy `ALL`.
+
+### Prompt 132
+> Schreibe das sauber auf, in ein eigenes tex-File "infMaxMin.tex".
+
+Created `Manuscript/infMaxMin.tex`: the reduction, Proposition A
+(¬ eventually non-decreasing, full proof), the Transfer Lemma, the
+conditional theorem, and the open gaps. 7 pages.
+
+### Prompt 133
+> Kannst Du mal versuchen, (A) zu beweisen?
+
+Re-derived and verified the proof of statement (A) step by step (it is
+Proposition 3.1 of `infMaxMin.tex`).
+
+### Prompt 134
+> Bitte den Gap G3 versuchen.
+
+Reduced gap (G3) from "the specific polynomial P does not kill the
+oscillation" to a P-independent statement: linear independence of the
+profiles of auxiliary functions B_r. Added §7 "Progress on gap (G3)"
+to `infMaxMin.tex`, with the elementary g = w − b lemma and the
+reduction.
+
+### Prompt 135
+> So wie das klingt, ist keine Lücke numerisch überprüfbar, korrekt?
+
+Discussed: G1/G2 are proof-method gaps, not numerically verifiable;
+G3-reduced is numerically testable for evidence; the phenomenon itself
+(the strategy-`ALL` oscillation) is numerically well-confirmed.
+
+### Prompt 136
+> Kannst Du mal versuchen, G1 zu schließen?
+
+Could not close G1, but the attempt found an arithmetic error in
+`strategy_all_asymptotics.tex`: the exponent of φ_M should be
+e^{z(1−q^M)}, not e^{z(1−q^M)/p}; hence B(z) ~ e^z Φ, not e^{z/p} Φ
+(confirmed by b_n ≤ 1 ⇒ B(r) ≤ e^r). This dissolves the stated
+difficulty of G1.
+
+### Prompt 137
+> ja, bitte einarbeiten.
+
+Corrected e^{z/p} → e^z and the downstream saddle/Mellin bookkeeping in
+`strategy_all_asymptotics.tex` (8 spots) and `infMaxMin.tex` (3 spots).
+The conclusions are unchanged.
+
+### Prompt 138
+> Can Hypothesis 5.2 be proved by induction?
+
+Not by naive induction, but by a self-similar induction along
+geometric scales. Added §8 "A renormalisation route" to
+`infMaxMin.tex`: the recursion as a log-scale smoothing, the local
+fundamental coefficient, the propagation estimate, and the conditional
+renormalisation theorem. 12 pages.
+
+### Prompt 139
+> Bitte erst das CONVERSATION_LOG.md updaten. Dann commit and push.
+
+This update; then committed and pushed the session's work.
