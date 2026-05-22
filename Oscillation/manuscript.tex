@@ -329,21 +329,24 @@ $\Phi_p$.
 \subsection{Non-constancy}\label{sec:nonconst}
 
 By~\eqref{eq:bnasymp}, $b_{n,p}$ converges if and only if $\Phi_p$ is
-constant, if and only if $\mathcal M[\Xi](2\pi im/L)=0$ for every
+constant, equivalently $\mathcal M[\Xi](2\pi im/L)=0$ for every
 $m\ne0$. At $p=\tfrac12$ one has $b_n\equiv\tfrac12$ and
-$\Phi_p\equiv\tfrac12$. For $p<\tfrac12$ non-constancy is expected but
-unproved; it is implied by Gap~D (Section~\ref{sec:base}) and is the
-arithmetic heart of the paper.
+$\Phi_p\equiv\tfrac12$. For $p<\tfrac12$ the non-constancy of $\Phi_p$
+--- that $b_{n,p}$ genuinely oscillates --- is the arithmetic heart of
+the paper; it is Gap~D (Section~\ref{sec:base}).
 
-\begin{remark}
-  The harmonic sum $\tilde H$ \emph{does} genuinely oscillate: its
-  Mellin transform $-\Gamma(s)p^{-s}\zeta(s+1)/(1-q^{s})$
-  (fundamental strip $\Re s>0$) has simple poles at $s_m=2\pi im/L$
-  with residues $-L^{-1}\Gamma(s_m)p^{-s_m}\zeta(s_m+1)$, non-zero by
-  the non-vanishing of $\zeta$ on $\Re s=1$. This is why $\Phi_p$
-  \emph{should} be non-constant; but $\Phi_p$'s Fourier coefficients
-  $L^{-1}\mathcal M[\Xi](s_m)$ depend on $\Xi=e^{-w}e^{\tilde H(w/q)}$
-  non-linearly, and the non-vanishing does not transfer formally.
+\begin{remark}[the fair point]
+  Near $p=\tfrac12$ the non-constancy is explicit. With
+  $p=\tfrac12-\varepsilon$ and $b_{n,p}=\tfrac12-\varepsilon\beta_n
+  +O(\varepsilon^2)$, the first-order perturbation has generating
+  function $\mathcal B(z)=z\,e^{z/2}+(e^{z/2}-1)\,\mathcal B(z/2)$;
+  the same product identity gives its profile Fourier coefficients
+  $-L^{-1}\Gamma(1+s_m)\,D(1+s_m)$, with $s_m=2\pi im/L$, $L=\log2$,
+  and $D(\sigma)=\sum_{m\ge1}(-1)^{s_2(m)}m^{-\sigma}$ the
+  \emph{Thue--Morse Dirichlet series} ($s_2$ the binary digit-sum).
+  Since $D(1+2\pi i/L)=-2.320-0.313\,i\ne0$ (numerically), the
+  first-order perturbation oscillates, and $\Phi_p$ is non-constant
+  for $p$ slightly below $\tfrac12$.
 \end{remark}
 
 %% =====================================================================
@@ -637,29 +640,19 @@ the limit $A_\infty$ must be non-zero.
   $A_\infty\ne0$.
 \end{proposition}
 
-By linearity $A_\infty=A_\infty(b)+A_\infty(g)$, where $g:=x-b$
+By linearity $A_\infty(x)=A_\infty(b)+A_\infty(g)$, where $g:=x-b$
 satisfies $g\ge0$ (the optimum dominates strategy~\All) and solves the
-strategy-\All{} recursion for $n>M$. The non-negative solutions of
-that recursion form a convex cone $\mathcal S$, and --- $A_\infty$
-being linear --- $\mathcal C:=A_\infty(\mathcal S)\subset\mathbb C$ is
-a convex cone, with $b\in\mathcal S$.
+strategy-\All{} recursion for $n>M$.
 
 \gap{Gap D --- the non-degeneracy}{$A_\infty(x)\ne0$ is the genuine
-arithmetic heart of the proof. By the decomposition above it needs
-two things. \emph{(i)} Pure strategy~\All{} oscillates:
-$A_\infty(b)\ne0$, equivalently $\Phi_p$ is non-constant
-(Section~\ref{sec:nonconst}), equivalently
-$\mathcal M[\Xi](2\pi im/L)\ne0$ for some $m\ne0$. \emph{(ii)} The
-perturbation $g$ must not cancel it: $A_\infty(g)\ne-A_\infty(b)$.
-Positivity of $g$ alone does \emph{not} secure~(ii). The cone
-$\mathcal C$ is \emph{not} pointed: its generators $A_\infty(e^{(r)})$
---- the windowed limits of the basis solutions started from
-$\delta_r$ --- wind around the origin, the recursion being not
-scale-invariant (verified numerically,
-\texttt{simulation/d2\_cone.py}); so some non-negative solution
-\emph{does} satisfy $A_\infty(g)=-A_\infty(b)$. Excluding this for the
-\emph{optimal} $x=w$ must use the optimality of $w$, not merely
-$w\ge b$. Work continues here.}
+arithmetic heart of the proof. It needs two things: that pure
+strategy~\All{} oscillates --- $A_\infty(b)\ne0$, the non-constancy of
+$\Phi_p$ (Section~\ref{sec:nonconst}) --- and that the perturbation
+$g$ does not cancel that oscillation, $A_\infty(g)\ne-A_\infty(b)$.
+The first is settled near $p=\tfrac12$ (Section~\ref{sec:nonconst})
+and expected throughout $(0,\tfrac12)$; the second is not secured by
+$g\ge0$ alone, and must draw on the optimality of $w$. Work continues
+here.}
 
 \begin{proof}[Proof of Theorem~\ref{thm:main}]
   Fix $p\in(0,\tfrac12)$. By Lemma~\ref{lem:reduction} it suffices to
@@ -703,11 +696,10 @@ to a non-zero limit $A_\infty$ for every tested $p\in\{0.35,0.40,
 0.42,0.45\}$, and $n\,|\kappa(n)-1|$ converges to the constant
 $\tfrac{p}{2q}|\omega^2+i\omega|$ of Lemma~\ref{lem:kappa} --- a
 direct quantitative confirmation of Proposition~\ref{prop:prop}.
-A further computation (\texttt{simulation/d2\_cone.py}) shows the cone
-$\mathcal C$ of Section~\ref{sec:base} is \emph{not} pointed: the
-windowed limits $A_\infty(e^{(r)})$ of the basis solutions wind around
-the origin (angular span $>\pi$). This rules out a positivity-only
-proof of Gap~D.
+The non-constancy of $\Phi_p$ near $p=\tfrac12$ is confirmed
+separately (\texttt{simulation/d1\_perturbation.py},
+\texttt{d1\_thue\_morse.py}): the first-order perturbation
+oscillates, and the Thue--Morse value $D(1+2\pi i/L)$ is non-zero.
 
 %% =====================================================================
 \section{Status and open problems}\label{sec:status}
@@ -747,11 +739,10 @@ contour shift): the same route makes it unnecessary. Gap~C (the
 propagation remainder): closed by the transposed kernel
 (Lemma~\ref{lem:transposed}) via the exact identity
 $\sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)=1/q$. The sole remaining problem
-is the non-degeneracy $A_\infty(x)\ne0$ (Gap~D), the arithmetic heart.
-A positivity-only reduction (the cone $\mathcal C$ pointed) is ruled
-out --- $\mathcal C$ is not pointed (\texttt{simulation/d2\_cone.py})
---- so Gap~D must exploit the optimality of $w$; that is the current
-front of work.
+is the non-degeneracy $A_\infty(x)\ne0$ (Gap~D), the arithmetic
+heart: that strategy~\All{} oscillates --- settled near $p=\tfrac12$
+(Section~\ref{sec:nonconst}) --- and that the optimal perturbation
+does not cancel that oscillation. This is the current front of work.
 
 \begin{thebibliography}{9}
 \bibitem{Paper1}
