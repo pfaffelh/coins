@@ -43,6 +43,23 @@
   converge.
 \end{abstract}
 
+\medskip
+\noindent\fbox{\parbox{0.95\linewidth}{\small
+\textbf{Status note (2026-05).} Sections~\ref{sec:saddle}
+(saddle-point) and~\ref{sec:mellin} (Mellin view) below are
+\textbf{superseded} by \S3 of \texttt{manuscript.tex}, which derives
+the log-periodic asymptotics rigorously and in full by an exact
+product identity plus analytic de-Poissonisation. They are kept only
+as a record of the exploratory route, and \S\ref{sec:mellin} contains
+errors: the harmonic sum $\sum_{k\ge0}\log(1-e^{-pq^kz})$ diverges
+(the convergent sum runs over $q^{-j}$, not $q^{k}$); the fundamental
+strip of $\mathcal M[\log(1-e^{-pz})]$ is $\Re s>0$, not
+$-1<\Re s<0$; and $\log B(z)$ carries \emph{no} $\log z$ term, since
+$b_n\le1$ forces $B(r)\le e^{r}$. The corrected analysis is in the
+manuscript. The functional equation (\S\ref{sec:setup}) and the
+numerics (\S\ref{sec:numerics}) stand unchanged.}}
+\medskip
+
 \section{Setup and the functional equation}\label{sec:setup}
 
 Fix $p\in(0,1)$ and write $q := 1-p$. Let $b_n := b(p,n)$ denote the

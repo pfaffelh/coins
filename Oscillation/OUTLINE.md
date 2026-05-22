@@ -106,10 +106,10 @@ missing pieces, named precisely:
 
 | Gap | What | Where | Status | Closing it needs |
 |---|---|---|---|---|
-| **A** | Hayman-admissibility / sector control of `B(z)` | strategy-ALL asymptotics (§3) | open; the stated obstruction ("grows faster than `e^z`") dissolved after the `e^{z/p}→e^z` correction — `B` is entire of order 1, type 1. The real difficulty is the non-constant log-periodic factor. | a direct sector saddle-point estimate, or H-admissibility adapted to the oscillating factor. *Standard in spirit.* |
-| **B** | Mellin contour justification | strategy-ALL asymptotics (§3) | open | the strip of analyticity and the contour shift for the Mellin transform of `log B(z) - z`. *Standard in spirit (Flajolet–Sedgewick).* |
+| **A** | ~~Hayman-admissibility / sector control of `B(z)`~~ | strategy-ALL asymptotics (manuscript §3) | **CLOSED 2026-05** | the exact product identity `B(z) = e^z e^{-H̃(z/q)} ∑_M Ξ(q^M z)` plus analytic de-Poissonisation (Jacquet–Szpankowski). Sector control = elementary modulus bounds on the iterated product; no Hayman theory. |
+| **B** | ~~Mellin contour justification~~ | strategy-ALL asymptotics (manuscript §3) | **DISSOLVED 2026-05** | not needed: the product-identity + de-Poissonisation route yields the profile with no Mellin contour shift. |
 | **C** | ~~The remainder `r(t)` of the propagation estimate~~ | renormalisation route (§6) | **CLOSED 2026-05-22** | the transposed negative-binomial kernel: the exact identity `∑_{n≥j} P(Bin(n,q)=j) = 1/q` supplies the cancellation directly. No local CLT needed — the earlier density formulation was the artefact. |
-| **D** | The non-degeneracy `A_∞ ≠ 0` (the base case) | §6–§7, the crux | open | for the genuine `b`, `A_∞ = γ_1`; non-vanishing follows from `ζ(1+it) ≠ 0` **given** the Mellin framework (Gaps A,B). The §7 reduction recasts it as linear independence of the profiles `Ψ_r`. **The genuine open problem.** |
+| **D** | The non-degeneracy `A_∞ ≠ 0` (the base case) | §7, the crux | open | splits into **D1** (`A_∞(b) ≠ 0`, i.e. `Φ_p` non-constant, i.e. `M[Ξ](2πim/L) ≠ 0` for some `m`) and **D2** (the cone `C = A_∞(non-negative solutions)` is pointed). D1 ∧ D2 ⇒ D by a convex-cone argument. **The sole remaining open problem.** |
 
 **Done — not gaps** (the rigorous backbone of the paper):
 
@@ -132,20 +132,20 @@ Main conjecture
         = Proposition A  ✓             ⟸ transfer lemma  ✓
                                           + renormalisation route:
                                               Theorem (conditional)
-                                              needs  Gap C  ∧  Gap D
+                                              needs  Gap D  (A,B,C closed)
 ```
 
-`Gap D`, as currently understood, is reachable only through the Mellin
-picture, i.e. it presupposes `Gap A ∧ Gap B`. Hence:
+Gaps A, B, C are all closed (2026-05). Hence:
 
 > **A full proof of the main conjecture = Proposition A (done) +
-> Gap D, with Gaps A, B underpinning Gap D.**
-> Gap C (the propagation remainder) and the κ-estimate are done.
+> Gap D alone.**
+> Gap D splits into D1 (`A_∞(b) ≠ 0`) and D2 (the cone `C` pointed).
 
-The two routes are complementary: the **renormalisation route** is the
-elementary skeleton (replaces A, B by the single Gap C); the **Mellin
-route** identifies the limit and supplies the `ζ(1+it) ≠ 0` input for
-Gap D.
+The strategy-ALL asymptotics (former Gaps A, B) are now established
+elementarily — exact product identity + de-Poissonisation — and the
+propagation remainder (former Gap C) by the transposed
+negative-binomial kernel. The sole remaining gap is the arithmetic
+non-degeneracy, D1 ∧ D2.
 
 ## 7. What a referee gets either way
 
