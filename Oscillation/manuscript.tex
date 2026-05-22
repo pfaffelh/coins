@@ -644,17 +644,22 @@ that recursion form a convex cone $\mathcal S$, and --- $A_\infty$
 being linear --- $\mathcal C:=A_\infty(\mathcal S)\subset\mathbb C$ is
 a convex cone, with $b\in\mathcal S$.
 
-\gap{Gap D --- the non-degeneracy}{$A_\infty\ne0$ is the genuine
-arithmetic heart of the proof. It has two parts. \emph{(D1)}
-$A_\infty(b)\ne0$ for pure strategy~\All{} --- whence $b_{n,p}$ does
-not converge and $\Phi_p$ is non-constant (Section~\ref{sec:nonconst});
-equivalently $\mathcal M[\Xi](2\pi im/L)\ne0$ for some $m\ne0$.
-\emph{(D2)} the cone $\mathcal C$ is \emph{pointed}:
-$\mathcal C\cap(-\mathcal C)=\{0\}$. Granted both: were
-$A_\infty(x)=0$, then $A_\infty(g)=-A_\infty(b)$, so $\pm A_\infty(b)$
-both lie in $\mathcal C$, forcing $A_\infty(b)=0$ --- against D1.
-Hence $A_\infty(x)\ne0$, which is Proposition~\ref{prop:base}. Both
-D1 and D2 are open; work continues here.}
+\gap{Gap D --- the non-degeneracy}{$A_\infty(x)\ne0$ is the genuine
+arithmetic heart of the proof. By the decomposition above it needs
+two things. \emph{(i)} Pure strategy~\All{} oscillates:
+$A_\infty(b)\ne0$, equivalently $\Phi_p$ is non-constant
+(Section~\ref{sec:nonconst}), equivalently
+$\mathcal M[\Xi](2\pi im/L)\ne0$ for some $m\ne0$. \emph{(ii)} The
+perturbation $g$ must not cancel it: $A_\infty(g)\ne-A_\infty(b)$.
+Positivity of $g$ alone does \emph{not} secure~(ii). The cone
+$\mathcal C$ is \emph{not} pointed: its generators $A_\infty(e^{(r)})$
+--- the windowed limits of the basis solutions started from
+$\delta_r$ --- wind around the origin, the recursion being not
+scale-invariant (verified numerically,
+\texttt{simulation/d2\_cone.py}); so some non-negative solution
+\emph{does} satisfy $A_\infty(g)=-A_\infty(b)$. Excluding this for the
+\emph{optimal} $x=w$ must use the optimality of $w$, not merely
+$w\ge b$. Work continues here.}
 
 \begin{proof}[Proof of Theorem~\ref{thm:main}]
   Fix $p\in(0,\tfrac12)$. By Lemma~\ref{lem:reduction} it suffices to
@@ -698,6 +703,11 @@ to a non-zero limit $A_\infty$ for every tested $p\in\{0.35,0.40,
 0.42,0.45\}$, and $n\,|\kappa(n)-1|$ converges to the constant
 $\tfrac{p}{2q}|\omega^2+i\omega|$ of Lemma~\ref{lem:kappa} --- a
 direct quantitative confirmation of Proposition~\ref{prop:prop}.
+A further computation (\texttt{simulation/d2\_cone.py}) shows the cone
+$\mathcal C$ of Section~\ref{sec:base} is \emph{not} pointed: the
+windowed limits $A_\infty(e^{(r)})$ of the basis solutions wind around
+the origin (angular span $>\pi$). This rules out a positivity-only
+proof of Gap~D.
 
 %% =====================================================================
 \section{Status and open problems}\label{sec:status}
@@ -712,8 +722,8 @@ identity~\eqref{eq:Bidentity} and de-Poissonisation), the factor
 estimate (Lemma~\ref{lem:kappa}), the propagation estimate
 (Proposition~\ref{prop:prop}, via the transposed negative-binomial
 kernel), and the renormalisation theorem (Theorem~\ref{thm:renorm}).
-A single gap remains open, in two parts; both are flagged in the text
-and summarised here.
+A single gap remains open; it is flagged in the text and summarised
+here.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
@@ -721,9 +731,8 @@ and summarised here.
 \hline
 \textbf{Gap} & \textbf{What is missing} & \textbf{Where} \\
 \hline
-D1 & $A_\infty(b)\ne0$ (non-constancy of $\Phi_p$)
-   & \S\ref{sec:ALL},\,\S\ref{sec:base} \\
-D2 & the cone $\mathcal C$ is pointed & \S\ref{sec:base} \\
+D & the non-degeneracy $A_\infty(x)\ne0$ (transferred sequence)
+  & \S\ref{sec:base} \\
 \hline
 \end{tabular}
 \end{center}
@@ -738,8 +747,11 @@ contour shift): the same route makes it unnecessary. Gap~C (the
 propagation remainder): closed by the transposed kernel
 (Lemma~\ref{lem:transposed}) via the exact identity
 $\sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)=1/q$. The sole remaining problem
-is the non-degeneracy $A_\infty\ne0$ (Gap~D), the arithmetic heart;
-its two parts D1 and D2 are the current front of work.
+is the non-degeneracy $A_\infty(x)\ne0$ (Gap~D), the arithmetic heart.
+A positivity-only reduction (the cone $\mathcal C$ pointed) is ruled
+out --- $\mathcal C$ is not pointed (\texttt{simulation/d2\_cone.py})
+--- so Gap~D must exploit the optimality of $w$; that is the current
+front of work.
 
 \begin{thebibliography}{9}
 \bibitem{Paper1}

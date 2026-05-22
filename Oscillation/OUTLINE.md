@@ -109,7 +109,7 @@ missing pieces, named precisely:
 | **A** | ~~Hayman-admissibility / sector control of `B(z)`~~ | strategy-ALL asymptotics (manuscript §3) | **CLOSED 2026-05** | the exact product identity `B(z) = e^z e^{-H̃(z/q)} ∑_M Ξ(q^M z)` plus analytic de-Poissonisation (Jacquet–Szpankowski). Sector control = elementary modulus bounds on the iterated product; no Hayman theory. |
 | **B** | ~~Mellin contour justification~~ | strategy-ALL asymptotics (manuscript §3) | **DISSOLVED 2026-05** | not needed: the product-identity + de-Poissonisation route yields the profile with no Mellin contour shift. |
 | **C** | ~~The remainder `r(t)` of the propagation estimate~~ | renormalisation route (§6) | **CLOSED 2026-05-22** | the transposed negative-binomial kernel: the exact identity `∑_{n≥j} P(Bin(n,q)=j) = 1/q` supplies the cancellation directly. No local CLT needed — the earlier density formulation was the artefact. |
-| **D** | The non-degeneracy `A_∞ ≠ 0` (the base case) | §7, the crux | open | splits into **D1** (`A_∞(b) ≠ 0`, i.e. `Φ_p` non-constant, i.e. `M[Ξ](2πim/L) ≠ 0` for some `m`) and **D2** (the cone `C = A_∞(non-negative solutions)` is pointed). D1 ∧ D2 ⇒ D by a convex-cone argument. **The sole remaining open problem.** |
+| **D** | The non-degeneracy `A_∞(x) ≠ 0` for the transferred (optimal) sequence | §7, the crux | open | **The sole remaining open problem.** The convex-cone reduction (D1 `A_∞(b)≠0` ∧ D2 `cone C pointed` ⇒ D) is **dead**: D2 is **false** — `simulation/d2_cone.py` shows the generators `A_∞(e^(r))` wind around the origin (recursion not scale-invariant), so `C` is not pointed and `−A_∞(b) ∈ C`. Positivity `g = w−b ≥ 0` is too weak; Gap D must exploit the **optimality** of `w`. |
 
 **Done — not gaps** (the rigorous backbone of the paper):
 
@@ -138,14 +138,15 @@ Main conjecture
 Gaps A, B, C are all closed (2026-05). Hence:
 
 > **A full proof of the main conjecture = Proposition A (done) +
-> Gap D alone.**
-> Gap D splits into D1 (`A_∞(b) ≠ 0`) and D2 (the cone `C` pointed).
+> Gap D alone**: `A_∞(x) ≠ 0` for the transferred (optimal) sequence.
 
 The strategy-ALL asymptotics (former Gaps A, B) are now established
 elementarily — exact product identity + de-Poissonisation — and the
 propagation remainder (former Gap C) by the transposed
 negative-binomial kernel. The sole remaining gap is the arithmetic
-non-degeneracy, D1 ∧ D2.
+non-degeneracy, Gap D. The convex-cone reduction of D was abandoned
+(D2 is numerically false — see the Gap table); Gap D must use the
+optimality of `w`, not just `w ≥ b`.
 
 ## 7. What a referee gets either way
 
