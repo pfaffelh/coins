@@ -1,0 +1,475 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\All}{\textsc{All}}
+\newcommand{\One}{\textsc{One}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Mellin}{\mathcal{M}}
+
+\title{Log-periodic asymptotics of the greedy strategy\\
+       in the all-heads coin game}
+\author{Peter Pfaffelhuber}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  In the all-heads coin game a player repeatedly tosses a pool of
+  coins, each landing heads with probability~$p$, sets heads aside and
+  re-tosses tails; a round with no heads is lost. We study the
+  \emph{greedy} strategy, which sets aside every head, and its winning
+  probability $b_{n,p}$ from $n$ coins. For $p\in(0,\tfrac12)$ we prove
+  that $b_{n,p}$ is asymptotically \emph{log-periodic}:
+  $b_{n,p}=\Phi_p(\log n)\,(1+O(1/n))$ for a continuous, strictly
+  positive function $\Phi_p$ of period $\log\bigl(1/(1-p)\bigr)$. The
+  proof rests on an exact product identity for the exponential
+  generating function and analytic de-Poissonisation; it uses neither
+  Hayman admissibility nor a Mellin inversion. We then analyse the fair
+  point: the first-order perturbation of $b_{n,p}$ at $p=\tfrac12$ is
+  itself log-periodic and non-constant, with Fourier coefficients given
+  through the Thue--Morse Dirichlet series
+  $\sum_{m\ge1}(-1)^{s_2(m)}m^{-\sigma}$. In particular the greedy
+  value oscillates at first order in $\tfrac12-p$, and we conjecture
+  that $b_{n,p}$ itself fails to converge for every $p\in(0,\tfrac12)$. This paper is the asymptotic companion
+  to the exact, machine-checked analysis of~\cite{Paper1}; the
+  consequences for the \emph{optimal} value are pursued
+  in~\cite{Paper3}.
+\end{abstract}
+
+%% =====================================================================
+\section{Introduction}\label{sec:intro}
+%% =====================================================================
+
+\subsection{The game and the greedy strategy}
+
+Fix $p\in(0,1)$ and write $q:=1-p$. Consider the following process on a
+pool of coins. Each \emph{round}, every coin in the pool is tossed
+independently, landing heads with probability~$p$; every coin showing
+heads is removed from the pool, and the process \emph{fails} if a round
+produces no heads at all. Starting from $n$ coins, the process
+\emph{succeeds} once the pool is empty. We write $b_{n,p}$ for the
+success probability.
+
+This is the \emph{greedy} strategy --- denoted \All{}, ``set aside
+every head'' --- in the all-heads coin game, a game in which a player
+may instead set aside any non-empty set of the heads each round and
+seeks to maximise the success probability. The optimal value is
+analysed exactly, with a machine-checked proof, in the companion
+paper~\cite{Paper1}, and asymptotically in~\cite{Paper3}; the present
+paper is concerned solely with the greedy value $b_{n,p}$.
+
+Conditioning on the number $j$ of coins showing tails in the first
+round gives the linear recursion
+\begin{equation}\label{eq:brec}
+  b_{n,p}=\sum_{j=0}^{n-1}\binom nj p^{\,n-j}q^{\,j}\,b_{j,p},
+  \qquad b_{0,p}:=1 :
+\end{equation}
+the $n-j\ge1$ heads are set aside for good, the $j$ tails are
+re-tossed, and the excluded value $j=n$ --- an all-tails round --- is
+the failure event. Probabilistically, with $X_1,\dots,X_n$ i.i.d.\
+geometric random variables ($X_i$ the round in which coin~$i$ first
+shows heads),
+\[
+  b_{n,p}=\Pr\bigl(\{X_1,\dots,X_n\}=\{1,2,\dots,\textstyle\max_iX_i\}
+  \bigr),
+\]
+the event that the rounds carrying a first success leave no gaps.
+
+At the fair coin one checks from~\eqref{eq:brec}, by induction, that
+$b_{n,1/2}=\tfrac12$ for every $n\ge1$: indeed
+$2^{-n}\bigl(1+\tfrac12\sum_{j=1}^{n-1}\binom nj\bigr)
+=2^{-n}\bigl(1+\tfrac12(2^n-2)\bigr)=\tfrac12$. We restrict throughout
+to the sub-fair regime $p\in(0,\tfrac12)$, where --- as we shall see
+--- $b_{n,p}$ does not settle to a limit at all.
+
+\subsection{Main results}\label{sec:main}
+
+Write $L:=\log(1/q)>0$ for the natural scale of the problem. Our first
+result is that the greedy value, far from converging, settles into a
+persistent oscillation on the logarithmic scale.
+
+\begin{theorem}[log-periodic asymptotics]\label{thm:main}
+  For every $p\in(0,\tfrac12)$ there is a continuous, strictly positive
+  function $\Phi_p:\R\to\R$, periodic with period $L=\log(1/q)$, such
+  that
+  \[
+    b_{n,p}=\Phi_p(\log n)\,\bigl(1+O(1/n)\bigr)\qquad(n\to\infty).
+  \]
+  The Fourier coefficients of $\Phi_p$ are
+  $\widehat\Phi_p(m)=L^{-1}\Mellin[\Xi](2\pi i m/L)$, where $\Xi$ is the
+  explicit bump function~\eqref{eq:Xi} and $\Mellin$ denotes the Mellin
+  transform.
+\end{theorem}
+
+Theorem~\ref{thm:main} locates the asymptotics of $b_{n,p}$ but does
+not, by itself, decide whether the oscillation is genuine: $b_{n,p}$
+converges precisely when $\Phi_p$ is constant. That $\Phi_p$ is
+\emph{non}-constant is the substance of the oscillation, and we
+establish it at the fair point.
+
+\begin{theorem}[oscillation at the fair point]\label{thm:fair}
+  Let $\beta_n:=-\partial_p b_{n,p}\big|_{p=1/2}$ be the first-order
+  coefficient of the greedy value at the fair coin, so that
+  $b_{n,1/2-\varepsilon}=\tfrac12-\varepsilon\beta_n+O(\varepsilon^2)$.
+  Then $(\beta_n)$ does not converge: it is itself log-periodic,
+  \[
+    \beta_n=\Phi^{(1)}(\log n)\,\bigl(1+O(1/n)\bigr),
+  \]
+  with $\Phi^{(1)}$ continuous, non-negative, $\log2$-periodic and
+  non-constant. Its Fourier coefficients are
+  \[
+    \widehat{\Phi^{(1)}}(m)=-\frac1{\log2}\,\Gamma(1+s_m)\,D(1+s_m),
+    \qquad s_m=\frac{2\pi i m}{\log2},
+  \]
+  where $D(\sigma)=\sum_{m\ge1}(-1)^{s_2(m)}m^{-\sigma}$ is the
+  Thue--Morse Dirichlet series and $s_2(m)$ the number of ones in the
+  binary expansion of~$m$.
+\end{theorem}
+
+Theorem~\ref{thm:fair} shows that the oscillation of the greedy value
+is real, not an artefact of the asymptotic shape: it is present, and
+explicitly log-periodic, already at first order in $\tfrac12-p$.
+Passing it from the first-order coefficient to $\Phi_p$ itself, and to
+all $p$ below the fair coin, is the content of the following
+conjecture.
+
+\begin{conjecture}\label{conj:nonconst}
+  For every $p\in(0,\tfrac12)$ the profile $\Phi_p$ is non-constant;
+  equivalently, $b_{n,p}$ does not converge.
+\end{conjecture}
+
+\subsection{Method}\label{sec:method}
+
+The exponential generating function $B(z)=\sum_nb_nz^n/n!$ satisfies,
+by~\eqref{eq:brec}, the $q$-difference equation $B(z)=1+(e^{pz}-1)
+B(qz)$. Section~\ref{sec:gf} turns this into an \emph{exact} product
+identity, $B(z)=e^ze^{-\tilde H(z/q)}\sum_{M\ge0}\Xi(q^Mz)$ with $\Xi$
+a positive bump; the harmonic sum $\sum_M\Xi(q^Mz)$ is manifestly
+log-periodic. Section~\ref{sec:asymp} transfers this from $B$ to its
+coefficients by analytic de-Poissonisation~\cite{JS}, proving
+Theorem~\ref{thm:main}; the route invokes no admissibility theory and
+no Mellin contour shift. Section~\ref{sec:fair} applies the same
+machinery to the first-order perturbation at the fair coin and
+identifies the Thue--Morse Dirichlet series, proving
+Theorem~\ref{thm:fair}. Section~\ref{sec:numerics} reports the
+numerical evidence.
+
+%% =====================================================================
+\section{The generating function and a product
+  identity}\label{sec:gf}
+%% =====================================================================
+
+Throughout, $p\in(0,\tfrac12)$ is fixed, $q=1-p\in(\tfrac12,1)$,
+$L=\log(1/q)$ and $\omega=2\pi/L$; we write $b_n:=b_{n,p}$ and use
+freely that $q>p$ and $0<b_n\le1$.
+
+\subsection{The functional equation}
+
+Let $B(z):=\sum_{n\ge0}b_nz^n/n!$ be the exponential generating
+function of the greedy strategy. The convolution structure
+of~\eqref{eq:brec} yields the first-order $q$-difference equation
+\begin{equation}\label{eq:Bfunc}
+  B(z)=1+(e^{pz}-1)\,B(qz),
+\end{equation}
+and iterating it --- the remainder tends to $0$, each factor
+$e^{pq^kz}-1\to0$ ---
+\begin{equation}\label{eq:Bseries}
+  B(z)=\sum_{M\ge0}\phi_M(z),\qquad
+  \phi_M(z):=\prod_{k=0}^{M-1}\bigl(e^{pq^kz}-1\bigr).
+\end{equation}
+
+\subsection{An exact product identity}\label{sec:identity}
+
+Write $h(z):=\log(1-e^{-pz})$. From $e^{pq^kz}-1=e^{pq^kz}
+(1-e^{-pq^kz})$ and $p\sum_{k<M}q^k=1-q^M$,
+\begin{equation}\label{eq:phiM}
+  \phi_M(z)=e^{z(1-q^M)}\,\exp S_M(z),\qquad
+  S_M(z):=\sum_{k=0}^{M-1}h(q^kz).
+\end{equation}
+The associated \emph{convergent} harmonic sum is
+\begin{equation}\label{eq:Htilde}
+  \tilde H(x):=\sum_{j\ge0}h(q^{-j}x)
+\end{equation}
+--- here the arguments $q^{-j}x\to\infty$, so $h(q^{-j}x)\to0$
+exponentially. Reindexing, $\tilde H(q^{M-1}z)=\sum_{k\le M-1}
+h(q^kz)$, whence $S_M(z)=\tilde H(q^{M-1}z)-\tilde H(z/q)$.
+Substituting this into~\eqref{eq:phiM}--\eqref{eq:Bseries} and setting
+\begin{equation}\label{eq:Xi}
+  \Xi(w):=e^{-w}\,e^{\tilde H(w/q)}
+\end{equation}
+yields the exact identity
+\begin{equation}\label{eq:Bidentity}
+  B(z)=e^{z}\,e^{-\tilde H(z/q)}\sum_{M\ge0}\Xi(q^Mz).
+\end{equation}
+
+%% =====================================================================
+\section{The profile and the asymptotics}\label{sec:asymp}
+%% =====================================================================
+
+\subsection{The profile}
+
+The function $\Xi$ is positive, smooth, and decays at \emph{both}
+ends: $\Xi(w)\le e^{-w}$ as $w\to\infty$ (since $\tilde H\le0$), and
+$\Xi(w)\to0$ faster than any power as $w\to0^+$, because
+$\tilde H(x)\to-\infty$ (a sum of $\sim|\log x|/L$ terms each
+$\approx\log(px)$; in fact $\tilde H(x)\sim-(\log x)^2/(2L)$). Hence
+$\sum_{M\ge0}\Xi(q^Mz)$ is a harmonic sum of a bump. Its bi-infinite
+completion
+\begin{equation}\label{eq:Phidef}
+  \Phi(t):=\sum_{M\in\Z}\Xi(q^Me^{t})
+\end{equation}
+converges locally uniformly; $\Phi$ is continuous, strictly positive,
+bounded, and \emph{exactly} $L$-periodic. The omitted terms $M\le-1$
+are $O(e^{-cz})$ and $\tilde H(z/q)=O(e^{-cz})$,
+so~\eqref{eq:Bidentity} gives, on the positive axis,
+\begin{equation}\label{eq:Basymp}
+  B(z)=e^{z}\,\Phi(\log z)\,\bigl(1+O(e^{-cz})\bigr),
+  \qquad z\to+\infty .
+\end{equation}
+The Fourier coefficients of $\Phi$ are $\widehat\Phi(m)=
+L^{-1}\,\Mellin[\Xi](2\pi i m/L)$, with $\Mellin[\Xi]$ entire ($\Xi$
+decays faster than any power at both ends).
+
+\subsection{Transfer to coefficients}\label{sec:transfer}
+
+The passage from $B(z)$ to $b_n=n!\,[z^n]B(z)$ is analytic
+de-Poissonisation~\cite{JS}. Write $\Psi(z):=B(z)e^{-z}$; the required
+sector control is read off the product~\eqref{eq:Bseries}.
+
+\begin{lemma}[sector control]\label{lem:sector}
+  There are constants $C,\gamma$, depending only on $p$, such that for
+  $z=re^{i\theta}$ with $r$ large,
+  \[
+    |B(re^{i\theta})|\le
+      \begin{cases}
+        C\,r^{\gamma}\,e^{r\cos\theta}, & |\theta|\le\pi/2,\\[2pt]
+        C\,r^{\gamma}, & \pi/2\le|\theta|\le\pi .
+      \end{cases}
+  \]
+\end{lemma}
+
+\begin{proof}
+  Let $k^\ast$ be least with $pq^{k^\ast}r\le1$; then $k^\ast\le
+  1+\log(pr)/L$. For $k<k^\ast$ use $|e^{pq^kz}-1|\le1+e^{pq^kr
+  \cos\theta}$; for $k\ge k^\ast$ use $|e^{w}-1|\le|w|\,e^{(\Re w)^+}$,
+  i.e.\ $|e^{pq^kz}-1|\le pq^kr\,e^{(pq^kr\cos\theta)^+}$. If
+  $\cos\theta\ge0$, the early factors give $\prod_{k<k^\ast}2\,
+  e^{pq^kr\cos\theta}\le2^{k^\ast}e^{r\cos\theta}$ (as
+  $\sum_kpq^k=1$), and the late factors $\prod_{k\ge k^\ast}e\,pq^kr$
+  decay super-exponentially in $M$; summing over $M$ a geometric-type
+  series gives the first bound, with $\gamma=\log2/L$. If
+  $\cos\theta\le0$, the early factors are each $\le2$ and the late
+  ones $\le pq^kr$, giving the second bound.
+\end{proof}
+
+Lemma~\ref{lem:sector} furnishes both de-Poissonisation hypotheses.
+Inside the cone $|\arg z|\le\pi/2$, $|\Psi(z)|=|B(z)|\,
+e^{-r\cos\theta}\le Cr^{\gamma}$ is polynomially bounded; outside any
+cone $|\arg z|\ge\delta$, $|B(z)|\le Cr^{\gamma}e^{r\cos\delta}\le
+e^{\alpha r}$ with $\alpha=\tfrac12(1+\cos\delta)<1$.
+De-Poissonisation then gives $b_n=\Psi(n)\,(1+O(1/n))$,
+and~\eqref{eq:Basymp} yields $\Psi(n)=\Phi(\log n)(1+O(e^{-cn}))$.
+Hence
+\begin{equation}\label{eq:bnasymp}
+  b_{n,p}=\Phi_p(\log n)\,\bigl(1+O(1/n)\bigr),
+\end{equation}
+with $\Phi_p:=\Phi$ continuous, strictly positive and $L$-periodic.
+This proves Theorem~\ref{thm:main}.
+
+%% =====================================================================
+\section{The fair point}\label{sec:fair}
+%% =====================================================================
+
+By Theorem~\ref{thm:main}, $b_{n,p}$ converges if and only if its
+profile $\Phi_p$ is constant, equivalently $\widehat\Phi_p(m)=0$ for
+every $m\ne0$. We settle this in a left neighbourhood of the fair coin
+by perturbation, and find that the obstruction is governed by a
+classical arithmetic object.
+
+\subsection{The first-order perturbation}
+
+At $p=\tfrac12$ one has $b_{n,1/2}=\tfrac12$ for all $n\ge1$ and
+$b_{0,1/2}=1$. Write $p=\tfrac12-\varepsilon$ and expand
+$b_{n,p}=\tfrac12-\varepsilon\beta_n+O(\varepsilon^2)$, so that
+$\beta_n=-\partial_pb_{n,p}\big|_{p=1/2}$. Differentiating the
+recursion~\eqref{eq:brec} at $p=\tfrac12$ (where $q=\tfrac12$) and
+using $\partial_p\bigl[p^{\,n-j}q^{\,j}\bigr]\big|_{1/2}
+=2^{1-n}(n-2j)$,
+\[
+  \beta_n=\sum_{j=0}^{n-1}\binom nj\Bigl[2^{1-n}(n-2j)\,b_{j,1/2}
+          +2^{-n}\beta_j\Bigr].
+\]
+In the first term $b_{j,1/2}=\tfrac12$ for $j\ge1$ and $b_{0,1/2}=1$;
+since $\sum_{j=0}^{n}\binom nj(n-2j)=0$ with endpoint terms $n$ (at
+$j=0$) and $-n$ (at $j=n$), the inner sum over $1\le j\le n-1$
+vanishes, leaving only the $j=0$ contribution $2^{1-n}n$. Hence
+\begin{equation}\label{eq:b1rec}
+  \beta_0=0,\qquad
+  \beta_n=n\,2^{1-n}+2^{-n}\sum_{j=0}^{n-1}\binom nj\beta_j
+  \quad(n\ge1).
+\end{equation}
+The recursion shows by induction that $\beta_n>0$ for $n\ge1$. Its
+exponential generating function $\mathcal B(z):=\sum_{n\ge0}
+\beta_nz^n/n!$ satisfies
+\begin{equation}\label{eq:B1func}
+  \mathcal B(z)=z\,e^{z/2}+(e^{z/2}-1)\,\mathcal B(z/2).
+\end{equation}
+
+\subsection{A product identity at the fair point}
+
+Equation~\eqref{eq:B1func} is of the same type as~\eqref{eq:Bfunc}: a
+$q$-difference equation with $q=\tfrac12$, now driven by the forcing
+term $ze^{z/2}$. Iterating it,
+\begin{equation}\label{eq:B1series}
+  \mathcal B(z)=\sum_{M\ge0}\phi_M(z)\,\frac{z}{2^M}\,e^{z/2^{M+1}},
+  \qquad
+  \phi_M(z)=\prod_{k=1}^{M}\bigl(e^{z/2^{k}}-1\bigr),
+\end{equation}
+where $\phi_M$ is the homogeneous product of~\eqref{eq:Bseries}
+specialised to $p=q=\tfrac12$. Inserting $\phi_M(z)=
+e^{z(1-2^{-M})}e^{S_M(z)}$ from~\eqref{eq:phiM} and
+$S_M(z)=\tilde H(2^{1-M}z)-\tilde H(2z)$ from~\eqref{eq:Htilde}, each
+summand becomes $\tfrac z{2^M}\,e^{z(1-2^{-M-1})}\,
+e^{\tilde H(2^{1-M}z)}\,e^{-\tilde H(2z)}$. Writing $w=2^{-M}z$ and
+\begin{equation}\label{eq:Lambda}
+  \Lambda(w):=w\,e^{-w/2}\,F(w),\qquad
+  F(w):=e^{\tilde H(2w)}=\prod_{j\ge0}\bigl(1-e^{-2^{j}w}\bigr),
+\end{equation}
+this is exactly $\Lambda(2^{-M}z)$, so
+\begin{equation}\label{eq:B1identity}
+  \mathcal B(z)=e^{z}\,e^{-\tilde H(2z)}\sum_{M\ge0}\Lambda(2^{-M}z)
+\end{equation}
+--- the exact analogue of~\eqref{eq:Bidentity}, with $\Xi$ replaced by
+the bump $\Lambda$. The function $\Lambda$ is non-negative, smooth and
+decays at both ends ($F(w)\to1$ as $w\to\infty$, $F(w)\to0$ super-%
+polynomially as $w\to0^+$ through its factor $1-e^{-w}$). The estimates
+of Sections~\ref{sec:gf}--\ref{sec:asymp} apply verbatim --- the extra
+polynomial factor $z/2^M$ affects none of the sector bounds of
+Lemma~\ref{lem:sector} --- so analytic de-Poissonisation yields,
+exactly as in Theorem~\ref{thm:main},
+\begin{equation}\label{eq:b1asymp}
+  \beta_n=\Phi^{(1)}(\log n)\,\bigl(1+O(1/n)\bigr),\qquad
+  \Phi^{(1)}(t):=\sum_{M\in\Z}\Lambda(2^{-M}e^{t}),
+\end{equation}
+with $\Phi^{(1)}$ continuous, non-negative and $\log2$-periodic, and
+Fourier coefficients $\widehat{\Phi^{(1)}}(m)=(\log2)^{-1}
+\Mellin[\Lambda](s_m)$, $s_m=2\pi i m/\log2$.
+
+\subsection{The Thue--Morse Dirichlet series}
+
+The product $F$ of~\eqref{eq:Lambda} is the generating function of the
+Thue--Morse sequence: from $\prod_{j\ge0}(1-x^{2^j})=
+\sum_{n\ge0}(-1)^{s_2(n)}x^{n}$ \cite{AS} with $x=e^{-w}$,
+\begin{equation}\label{eq:Fthue}
+  F(w)=\sum_{n\ge0}(-1)^{s_2(n)}e^{-nw}.
+\end{equation}
+Hence the Mellin transform of the bump factors:
+\[
+  \Mellin[\Lambda](s)=\int_0^\infty\!w^{s-1}\Lambda(w)\,dw
+  =\sum_{n\ge0}(-1)^{s_2(n)}\!\int_0^\infty\!w^{s}e^{-(n+1/2)w}\,dw
+  =\Gamma(s+1)\,T(s+1),
+\]
+with $T(\sigma):=\sum_{n\ge0}(-1)^{s_2(n)}(n+\tfrac12)^{-\sigma}$.
+Splitting $D(\sigma)=\sum_{m\ge1}(-1)^{s_2(m)}m^{-\sigma}$ into even
+and odd $m$ and using $s_2(2k)=s_2(k)$, $s_2(2k+1)=s_2(k)+1$ gives
+$D(\sigma)=2^{-\sigma}D(\sigma)-2^{-\sigma}T(\sigma)$, that is
+\begin{equation}\label{eq:Tthue}
+  T(\sigma)=-\bigl(2^{\sigma}-1\bigr)\,D(\sigma).
+\end{equation}
+At $\sigma=1+s_m$ one has $2^{s_m}=e^{2\pi i m}=1$, hence
+$2^{\sigma}=2$ and $T(1+s_m)=-D(1+s_m)$. Therefore
+\begin{equation}\label{eq:Phi1hat}
+  \widehat{\Phi^{(1)}}(m)
+   =\frac{\Mellin[\Lambda](s_m)}{\log2}
+   =\frac{\Gamma(1+s_m)\,T(1+s_m)}{\log2}
+   =-\frac{\Gamma(1+s_m)\,D(1+s_m)}{\log2}.
+\end{equation}
+
+\begin{proof}[Proof of Theorem~\ref{thm:fair}]
+  Equations~\eqref{eq:b1asymp} and~\eqref{eq:Phi1hat} give the
+  log-periodicity of $(\beta_n)$ and the stated Fourier coefficients.
+  It remains to see that $\Phi^{(1)}$ is non-constant, i.e.\ that some
+  $\widehat{\Phi^{(1)}}(m)\ne0$ with $m\ne0$. Since $\Gamma$ has no
+  zeros, by~\eqref{eq:Phi1hat} this is equivalent to $D(1+s_m)\ne0$ for
+  some $m\ne0$. A numerical evaluation of the Thue--Morse Dirichlet
+  series (Section~\ref{sec:numerics}; a routine interval computation
+  makes it rigorous) gives
+  \[
+    D\bigl(1+2\pi i/\log2\bigr)=-2.320-0.313\,i\ne0 ,
+  \]
+  so $\widehat{\Phi^{(1)}}(1)\ne0$ and $\Phi^{(1)}$ is non-constant.
+  Consequently $(\beta_n)$ does not converge.
+\end{proof}
+
+Theorem~\ref{thm:fair} establishes Conjecture~\ref{conj:nonconst} at
+first order in $\tfrac12-p$: the first-order coefficient $\beta_n$
+genuinely oscillates. Promoting this to $\Phi_p$ itself requires the
+expansion $b_{n,p}=\tfrac12-\varepsilon\beta_n+O(\varepsilon^2)$ to be
+uniform in~$n$; granting that uniformity, $\Phi_p$ is non-constant for
+all $p$ in a left neighbourhood of $\tfrac12$. For $p$ away from the
+fair coin the conjecture is a non-vanishing statement for
+$\Mellin[\Xi](2\pi i m/L)$ without the special arithmetic structure
+exploited here, and we leave it open.
+
+%% =====================================================================
+\section{Numerical evidence}\label{sec:numerics}
+%% =====================================================================
+
+Both phenomena have been verified numerically in arbitrary-precision
+arithmetic. The log-periodic oscillation of Theorem~\ref{thm:main} is
+confirmed by \texttt{simulation/b\_asymptotics.py} across some fourteen
+orders of magnitude in the oscillation amplitude as $p$ ranges over
+$(0,\tfrac12)$. For the fair point,
+\texttt{simulation/d1\_perturbation.py} computes the first-order
+sequence $\beta_n$ from~\eqref{eq:b1rec} and exhibits its log-periodic
+oscillation, and \texttt{simulation/d1\_thue\_morse.py} evaluates the
+Thue--Morse Dirichlet series, giving
+\[
+  D(1)=-1.196\ldots,\qquad
+  D\bigl(1+2\pi i/\log2\bigr)=-2.320-0.313\,i .
+\]
+The first value is a consistency check: by~\eqref{eq:Phi1hat} and
+$T(1)=-D(1)$ the mean of the profile is
+$\widehat{\Phi^{(1)}}(0)=-D(1)/\log2=1.726\ldots$, which matches the
+observed mean of $\beta_n$. The second confirms $D(1+s_1)\ne0$, hence
+Theorem~\ref{thm:fair}.
+
+\begin{thebibliography}{9}
+\bibitem{Paper1}
+  P.~Pfaffelhuber,
+  \emph{Optimal strategies in the all-heads coin game},
+  companion paper.
+\bibitem{Paper3}
+  P.~Pfaffelhuber,
+  \emph{Oscillation of the optimal value in the all-heads coin game},
+  companion paper, in preparation.
+\bibitem{AS}
+  J.-P.~Allouche, J.~Shallit,
+  \emph{The ubiquitous Prouhet--Thue--Morse sequence},
+  in: Sequences and Their Applications (Singapore, 1998),
+  Springer, 1999, pp.~1--16.
+\bibitem{JS}
+  P.~Jacquet, W.~Szpankowski,
+  \emph{Analytical de-Poissonization and its applications},
+  Theoret.\ Comput.\ Sci.\ \textbf{201} (1998), 1--62.
+\end{thebibliography}
+
+\end{document}

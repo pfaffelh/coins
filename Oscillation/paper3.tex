@@ -10,6 +10,7 @@
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
@@ -23,10 +24,8 @@
 
 %% ---------------------------------------------------------------------
 %%  DRAFT MARKER.  \gap{label}{text} flags a step that is NOT yet
-%%  complete.  It renders as a conspicuous red box in the PDF.  Every
-%%  such box marks a place where work must continue; the manuscript is
-%%  written in finished form around them on purpose, so that the
-%%  narrative and the precise proof obligations are visible.
+%%  complete.  It renders as a conspicuous red box in the PDF.  This is
+%%  a working draft: the single open gap (Gap D) is marked this way.
 %% ---------------------------------------------------------------------
 \newcommand{\gap}[2]{%
   \par\smallskip\noindent
@@ -36,7 +35,8 @@
        Work continues here.}\\[2pt]#2}}%
   \par\smallskip}
 
-\title{Log-periodic oscillation in the all-heads coin game}
+\title{Oscillation of the optimal value\\
+       in the all-heads coin game}
 \author{Peter Pfaffelhuber}
 \date{\today}
 
@@ -44,22 +44,22 @@
 \maketitle
 
 \begin{abstract}
-  We study the large-$n$ behaviour of the all-heads coin game below
-  the fair coin. Two phenomena are established. First, for every
-  $p\in(0,\tfrac12)$ the value $b_{n,p}$ of the greedy strategy
-  \All{} is asymptotically \emph{log-periodic}: it is asymptotic to a
-  continuous, non-constant function of $\log n$ with period
-  $\log\bigl(1/(1-p)\bigr)$, and in particular does not converge.
-  Second --- and this is the main result --- the \emph{optimal}
-  winning probability $w_{n,p}$ inherits this oscillation: for every
-  $p\in(0,\tfrac12)$ the sequence $n\mapsto w_{n,p}$ is not eventually
-  monotone and has infinitely many strict local maxima and minima.
-  The proof reduces the statement to two one-sided assertions, treats
-  the increasing side by an elementary Bellman estimate, and the
-  decreasing side by an exact transfer to strategy~\All{} followed by
-  a renormalisation argument that propagates the oscillation across
-  geometric scales. This paper is the asymptotic companion to the
-  exact and perturbative analysis of~\cite{Paper1}.
+  In the all-heads coin game a player tosses a pool of $n$ coins, each
+  landing heads with probability~$p$, must set aside at least one head
+  each round, and loses on an all-tails round; $w_{n,p}$ denotes the
+  optimal winning probability. We show --- modulo one explicitly
+  identified gap --- that for every $p\in(0,\tfrac12)$ the sequence
+  $n\mapsto w_{n,p}$ is not eventually monotone, with infinitely many
+  strict local maxima and minima. The proof reduces the claim to two
+  one-sided statements: the increasing side is settled by an
+  elementary Bellman estimate; the decreasing side is reduced, by an
+  exact transfer to the greedy strategy and a renormalisation argument
+  across geometric scales, to a single non-degeneracy condition
+  (Gap~D). The log-periodic asymptotics of the greedy strategy that
+  drive the argument are established in the companion
+  paper~\cite{Paper2}; the exact and machine-checked analysis of the
+  game is~\cite{Paper1}. This is a working draft: Gap~D is the one
+  step that remains open.
 \end{abstract}
 
 \noindent\emph{\small Working draft. The one step still to be
@@ -85,31 +85,30 @@ Bellman equation
           \max_{j\le m\le n-1}w_{m,p},\qquad w_{0,p}:=1 .
 \end{equation}
 Two strategies are natural: \One{} sets aside a single head each round
-(value $a_{n,p}$), and \All{} sets aside \emph{every} head. The
-winning probability $b_{n,p}$ of strategy~\All{} is defined by the
-linear recursion
+(value $a_{n,p}$), and the greedy strategy \All{} sets aside
+\emph{every} head. The winning probability $b_{n,p}$ of strategy~\All{}
+is defined by the linear recursion
 \begin{equation}\label{eq:brec}
   b_{n,p}=\sum_{j=0}^{n-1}\binom{n}{j}p^{\,n-j}q^{\,j}\,b_{j,p},
   \qquad b_{0,p}:=1,
 \end{equation}
 obtained by conditioning on the number $j$ of coins showing tails in
 the first round: those $j$ coins are re-tossed, while the $n-j\ge1$
-heads are set aside for good (the term $j=0$ has weight $p^{n}$ and
-wins immediately). The companion paper~\cite{Paper1} determines
-$w_{n,p}$
-\emph{exactly} at $p=\tfrac12$, identifies the limit
-$W(p)=\lim_n w_{n,p}$ for $p>\tfrac12$, and gives a first-order
-perturbation expansion for $p<\tfrac12$ near $\tfrac12$. All of those
-results are machine-checked in Lean~4.
+heads are set aside for good. The companion paper~\cite{Paper1}
+determines $w_{n,p}$ \emph{exactly} at $p=\tfrac12$, identifies the
+limit $W(p)=\lim_n w_{n,p}$ for $p>\tfrac12$, and gives a first-order
+perturbation expansion for $p<\tfrac12$ near $\tfrac12$; all of those
+results are machine-checked in Lean~4. The asymptotics of the greedy
+strategy itself are the subject of the companion paper~\cite{Paper2}.
+A coin-flipping game with a related but distinct scoring rule is
+studied by van~Doorn~\cite{vanDoorn}.
 
 The present paper concerns the regime left open by a perturbative
-analysis: the genuine large-$n$ behaviour for $p<\tfrac12$, which
-turns out to be \emph{oscillatory} rather than convergent.
+analysis: the genuine large-$n$ behaviour of the \emph{optimal} value
+for $p<\tfrac12$, which turns out to be \emph{oscillatory} rather than
+convergent.
 
-\subsection{Main results}\label{sec:main}
-
-We state the two theorems at once; everything else in the paper is in
-their service.
+\subsection{Main result}\label{sec:main}
 
 \begin{theorem}[oscillation of the optimal value]\label{thm:main}
   For every $p\in(0,\tfrac12)$ the sequence $n\mapsto w_{n,p}$ is not
@@ -117,30 +116,22 @@ their service.
   infinitely many strict local minima.
 \end{theorem}
 
-\begin{theorem}[log-periodicity of strategy \All]\label{thm:ALL}
-  For every $p\in(0,\tfrac12)$ there is a continuous, strictly
-  positive, non-constant function $\Phi_p:\mathbb R\to\mathbb R$,
-  periodic with period $L:=\log(1/q)$, such that
-  \[
-    b_{n,p}=\Phi_p(\log n)\,\bigl(1+o(1)\bigr)\qquad(n\to\infty).
-  \]
-  In particular $b_{n,p}$ does not converge:
-  $\liminf_n b_{n,p}<\limsup_n b_{n,p}$.
-\end{theorem}
-
-Theorem~\ref{thm:main} sharpens, and corrects the natural first
-guess about, the first-order picture of~\cite{Paper1}: that analysis
-shows $w_{n,p}$ to be eventually increasing \emph{at first order in}
+Theorem~\ref{thm:main} sharpens, and corrects the natural first guess
+about, the first-order picture of~\cite{Paper1}: that analysis shows
+$w_{n,p}$ to be eventually increasing \emph{at first order in}
 $\tfrac12-p$, but the exact sequence is not eventually monotone at
 all. The oscillation is non-perturbative --- its amplitude is
 exponentially small in $1/(\tfrac12-p)$ --- which is why it is
 invisible to any finite-order expansion.
 
+The proof is complete except for one step, Gap~D
+(Section~\ref{sec:base}), flagged in the text by a boxed marker.
+
 \subsection{Strategy of proof}\label{sec:strategy}
 
 The proof of Theorem~\ref{thm:main} has a rigid skeleton, which we
-record now so that the role of each later section is clear. For a
-real sequence $(x_n)$ put $d_n:=x_{n+1}-x_n$.
+record now so that the role of each later section is clear. For a real
+sequence $(x_n)$ put $d_n:=x_{n+1}-x_n$.
 
 \begin{quote}
 \textbf{Step 0 (reduction).} A bounded sequence has infinitely many
@@ -165,13 +156,14 @@ an eventual decrease. Statement~(A) follows
 \textbf{Step B (the decreasing side).} On a stretch where $w$ is
 non-increasing, the suffix-maximum collapses to its \emph{left}
 endpoint, and $w$ becomes --- exactly --- a strategy-\All{} sequence
-(Lemma~\ref{lem:transfer}). Strategy~\All{} oscillates
-(Theorem~\ref{thm:ALL}); hence $w$ cannot have a non-increasing tail.
-The transfer of the oscillation from \All{} to $w$ is carried out by
-a renormalisation argument (Section~\ref{sec:renorm}): a windowed
-fundamental coefficient $A(t)$ is shown to satisfy a propagation
-identity across the geometric scale, from which non-convergence ---
-hence non-monotonicity --- follows.
+(Lemma~\ref{lem:transfer}). The greedy strategy oscillates: this is
+the log-periodic asymptotics of the companion paper~\cite{Paper2},
+recalled below as Theorem~\ref{thm:import}. Hence $w$ cannot have a
+non-increasing tail. The transfer of the oscillation from \All{} to
+$w$ is carried out by a renormalisation argument
+(Section~\ref{sec:renorm}): a windowed fundamental coefficient $A(t)$
+is shown to satisfy a propagation identity across the geometric scale,
+from which non-convergence --- hence non-monotonicity --- follows.
 \end{quote}
 
 The asymmetry between Steps~A and~B is structural: the increasing side
@@ -197,157 +189,28 @@ recursion
 \begin{equation}\label{eq:arec}
   a_{n,p}=p^{n}+(1-p^{n}-q^{n})\,a_{n-1,p},\qquad a_{0,p}:=1 .
 \end{equation}
-In both cases $w_{n,p}\ge\max(a_{n,p},b_{n,p})$, since
-the optimum dominates any fixed strategy. We use the binomial
-identities $\sum_{j=1}^{n-1}\binom nj p^{n-j}q^j=1-p^n-q^n$ and
+In both cases $w_{n,p}\ge\max(a_{n,p},b_{n,p})$, since the optimum
+dominates any fixed strategy. We use the binomial identities
+$\sum_{j=1}^{n-1}\binom nj p^{n-j}q^j=1-p^n-q^n$ and
 $\sum_{j=0}^{n-1}\binom nj p^{n-j}q^j=1-q^n$. Where the value of $p$
 is fixed we abbreviate $w_n:=w_{n,p}$, $b_n:=b_{n,p}$.
 
-%% =====================================================================
-\section{Strategy \All{}: log-periodic asymptotics}\label{sec:ALL}
-%% =====================================================================
+The large-$n$ behaviour of the greedy strategy, established in the
+companion paper~\cite{Paper2}, is the engine of Step~B; we record it
+here in the form used below.
 
-This section establishes Theorem~\ref{thm:ALL} --- the existence of
-the log-periodic profile $\Phi_p$ --- save for one point, the
-non-constancy of $\Phi_p$, which is Gap~D (Section~\ref{sec:base}).
-The route is elementary: an exact product identity for the generating
-function, followed by analytic de-Poissonisation. Neither Hayman
-admissibility theory nor a Mellin contour shift is needed.
+\begin{theorem}[greedy asymptotics, \cite{Paper2}]\label{thm:import}
+  For every $p\in(0,\tfrac12)$ there is a continuous, strictly
+  positive function $\Phi_p:\R\to\R$, periodic with period $L$, such
+  that $b_{n,p}=\Phi_p(\log n)(1+O(1/n))$. The first-order
+  perturbation of $b_{n,p}$ at $p=\tfrac12$ is non-constant, so that
+  the greedy value oscillates at first order in $\tfrac12-p$; it is
+  conjectured that $\Phi_p$ is non-constant --- equivalently, that
+  $b_{n,p}$ does not converge --- for every $p\in(0,\tfrac12)$.
+\end{theorem}
 
-\subsection{The functional equation}
-
-Let $B(z):=\sum_{n\ge0}b_n z^n/n!$ be the exponential generating
-function of strategy~\All. The convolution structure
-of~\eqref{eq:brec} yields the first-order $q$-difference equation
-\begin{equation}\label{eq:Bfunc}
-  B(z)=1+(e^{pz}-1)\,B(qz),
-\end{equation}
-and iterating it (the remainder tends to $0$ since each factor
-$e^{pq^kz}-1\to0$),
-\begin{equation}\label{eq:Bseries}
-  B(z)=\sum_{M\ge0}\phi_M(z),\qquad
-  \phi_M(z):=\prod_{k=0}^{M-1}\bigl(e^{pq^kz}-1\bigr).
-\end{equation}
-Probabilistically, with $X_1,\dots,X_n$ i.i.d.\ geometric,
-$b_{n,p}=\Pr(\{X_1,\dots,X_n\}=\{1,\dots,\max_iX_i\})$.
-
-\subsection{An exact product identity}\label{sec:identity}
-
-Write $h(z):=\log(1-e^{-pz})$. From $e^{pq^kz}-1=e^{pq^kz}
-(1-e^{-pq^kz})$ and $p\sum_{k<M}q^k=1-q^M$,
-\begin{equation}\label{eq:phiM}
-  \phi_M(z)=e^{z(1-q^M)}\,\exp S_M(z),\qquad
-  S_M(z):=\sum_{k=0}^{M-1}h(q^kz).
-\end{equation}
-The associated \emph{convergent} harmonic sum is
-\begin{equation}\label{eq:Htilde}
-  \tilde H(x):=\sum_{j\ge0}h(q^{-j}x)
-\end{equation}
---- here the arguments $q^{-j}x\to\infty$, so $h(q^{-j}x)\to0$
-exponentially. Reindexing, $\tilde H(q^{M-1}z)=\sum_{k\le M-1}
-h(q^kz)$, whence $S_M(z)=\tilde H(q^{M-1}z)-\tilde H(z/q)$.
-Substituting this into~\eqref{eq:phiM}--\eqref{eq:Bseries} and setting
-\begin{equation}\label{eq:Xi}
-  \Xi(w):=e^{-w}\,e^{\tilde H(w/q)}
-\end{equation}
-yields the exact identity
-\begin{equation}\label{eq:Bidentity}
-  B(z)=e^{z}\,e^{-\tilde H(z/q)}\sum_{M\ge0}\Xi(q^Mz).
-\end{equation}
-
-\subsection{The profile}\label{sec:profile}
-
-The function $\Xi$ is positive, smooth, and decays at \emph{both}
-ends: $\Xi(w)\le e^{-w}$ as $w\to\infty$ (since $\tilde H\le0$), and
-$\Xi(w)\to0$ faster than any power as $w\to0^+$, because
-$\tilde H(x)\to-\infty$ (a sum of $\sim|\log x|/L$ terms each
-$\approx\log(px)$; in fact $\tilde H(x)\sim-(\log x)^2/(2L)$). Hence
-$\sum_{M\ge0}\Xi(q^Mz)$ is a harmonic sum of a bump. Its bi-infinite
-completion
-\begin{equation}\label{eq:Phidef}
-  \Phi(t):=\sum_{M\in\mathbb Z}\Xi(q^Me^{t})
-\end{equation}
-converges locally uniformly; $\Phi$ is continuous, strictly positive,
-bounded, and \emph{exactly} $L$-periodic. The omitted terms $M\le-1$
-are $O(e^{-cz})$ and $\tilde H(z/q)=O(e^{-cz})$,
-so~\eqref{eq:Bidentity} gives, on the positive axis,
-\begin{equation}\label{eq:Basymp}
-  B(z)=e^{z}\,\Phi(\log z)\,\bigl(1+O(e^{-cz})\bigr),
-  \qquad z\to+\infty .
-\end{equation}
-The Fourier coefficients of $\Phi$ are $\widehat\Phi(m)=
-L^{-1}\,\mathcal M[\Xi](2\pi i m/L)$, with $\mathcal M[\Xi]$ entire
-($\Xi$ decays faster than any power at both ends).
-
-\subsection{Transfer to coefficients}\label{sec:transfer-coeff}
-
-The passage from $B(z)$ to $b_n=n!\,[z^n]B(z)$ is analytic
-de-Poissonisation~\cite{JS}. Write $\Psi(z):=B(z)e^{-z}$; the required
-sector control is read off the product~\eqref{eq:Bseries}.
-
-\begin{lemma}[sector control]\label{lem:sector}
-  There are constants $C,\gamma$, depending only on $p$, such that for
-  $z=re^{i\theta}$ with $r$ large,
-  \[
-    |B(re^{i\theta})|\le
-      \begin{cases}
-        C\,r^{\gamma}\,e^{r\cos\theta}, & |\theta|\le\pi/2,\\[2pt]
-        C\,r^{\gamma}, & \pi/2\le|\theta|\le\pi .
-      \end{cases}
-  \]
-\end{lemma}
-
-\begin{proof}
-  Let $k^\ast$ be least with $pq^{k^\ast}r\le1$; then $k^\ast\le
-  1+\log(pr)/L$. For $k<k^\ast$ use $|e^{pq^kz}-1|\le1+e^{pq^kr
-  \cos\theta}$; for $k\ge k^\ast$ use $|e^{w}-1|\le|w|\,e^{(\Re w)^+}$,
-  i.e.\ $|e^{pq^kz}-1|\le pq^kr\,e^{(pq^kr\cos\theta)^+}$. If
-  $\cos\theta\ge0$, the early factors give $\prod_{k<k^\ast}2\,
-  e^{pq^kr\cos\theta}\le2^{k^\ast}e^{r\cos\theta}$ (as
-  $\sum_kpq^k=1$), and the late factors $\prod_{k\ge k^\ast}e\,pq^kr$
-  decay super-exponentially in $M$; summing over $M$ a geometric-type
-  series gives the first bound, with $\gamma=\log2/L$. If
-  $\cos\theta\le0$, the early factors are each $\le2$ and the late
-  ones $\le pq^kr$, giving the second bound.
-\end{proof}
-
-Lemma~\ref{lem:sector} furnishes both de-Poissonisation hypotheses.
-Inside the cone $|\arg z|\le\pi/2$, $|\Psi(z)|=|B(z)|\,
-e^{-r\cos\theta}\le Cr^{\gamma}$ is polynomially bounded; outside any
-cone $|\arg z|\ge\delta$, $|B(z)|\le Cr^{\gamma}e^{r\cos\delta}\le
-e^{\alpha r}$ with $\alpha=\tfrac12(1+\cos\delta)<1$.
-De-Poissonisation then gives $b_n=\Psi(n)\,(1+O(1/n))$,
-and~\eqref{eq:Basymp} yields $\Psi(n)=\Phi(\log n)(1+O(e^{-cn}))$.
-Hence
-\begin{equation}\label{eq:bnasymp}
-  b_{n,p}=\Phi_p(\log n)\,\bigl(1+O(1/n)\bigr),
-\end{equation}
-with $\Phi_p:=\Phi$ continuous, strictly positive and $L$-periodic.
-This is Theorem~\ref{thm:ALL} apart from the non-constancy of
-$\Phi_p$.
-
-\subsection{Non-constancy}\label{sec:nonconst}
-
-By~\eqref{eq:bnasymp}, $b_{n,p}$ converges if and only if $\Phi_p$ is
-constant, equivalently $\mathcal M[\Xi](2\pi im/L)=0$ for every
-$m\ne0$. At $p=\tfrac12$ one has $b_n\equiv\tfrac12$ and
-$\Phi_p\equiv\tfrac12$. For $p<\tfrac12$ the non-constancy of $\Phi_p$
---- that $b_{n,p}$ genuinely oscillates --- is the arithmetic heart of
-the paper; it is Gap~D (Section~\ref{sec:base}).
-
-\begin{remark}[the fair point]
-  Near $p=\tfrac12$ the non-constancy is explicit. With
-  $p=\tfrac12-\varepsilon$ and $b_{n,p}=\tfrac12-\varepsilon\beta_n
-  +O(\varepsilon^2)$, the first-order perturbation has generating
-  function $\mathcal B(z)=z\,e^{z/2}+(e^{z/2}-1)\,\mathcal B(z/2)$;
-  the same product identity gives its profile Fourier coefficients
-  $-L^{-1}\Gamma(1+s_m)\,D(1+s_m)$, with $s_m=2\pi im/L$, $L=\log2$,
-  and $D(\sigma)=\sum_{m\ge1}(-1)^{s_2(m)}m^{-\sigma}$ the
-  \emph{Thue--Morse Dirichlet series} ($s_2$ the binary digit-sum).
-  Since $D(1+2\pi i/L)=-2.320-0.313\,i\ne0$ (numerically), the
-  first-order perturbation oscillates, and $\Phi_p$ is non-constant
-  for $p$ slightly below $\tfrac12$.
-\end{remark}
+Non-constancy of $\Phi_p$ is exactly what Gap~D
+(Section~\ref{sec:base}) requires.
 
 %% =====================================================================
 \section{Step A: \texorpdfstring{$w_{n,p}$}{w(n,p)} is not eventually
@@ -363,10 +226,10 @@ the paper; it is Gap~D (Section~\ref{sec:base}).
   Suppose $w_n\ge w_{n-1}$ for all $n>M$, i.e.\ $w$ is non-decreasing
   on $\{M,M+1,\dots\}$. Fix $n>M+1$ and split the Bellman
   sum~\eqref{eq:bellman} at $j=M$, writing $S_{j,n}:=\max_{j\le m\le
-  n-1}w_m$. For $j\ge M$ the index window lies in the
-  non-decreasing range, so $S_{j,n}=w_{n-1}$; for every $j$ one has
-  $w_{n-1}\le S_{j,n}\le1$. With $U_n:=\sum_{j=1}^{M-1}\binom nj
-  p^{n-j}q^j$ and $T_n:=\sum_{j=1}^{M-1}\binom nj p^{n-j}q^j S_{j,n}$,
+  n-1}w_m$. For $j\ge M$ the index window lies in the non-decreasing
+  range, so $S_{j,n}=w_{n-1}$; for every $j$ one has $w_{n-1}\le
+  S_{j,n}\le1$. With $U_n:=\sum_{j=1}^{M-1}\binom nj p^{n-j}q^j$ and
+  $T_n:=\sum_{j=1}^{M-1}\binom nj p^{n-j}q^j S_{j,n}$,
   \[
     w_n=p^n+T_n+(1-p^n-q^n-U_n)\,w_{n-1},
   \]
@@ -385,8 +248,8 @@ the paper; it is Gap~D (Section~\ref{sec:base}).
   $w_n\ge w_{n-1}$.
 \end{proof}
 
-Proposition~\ref{prop:A} is statement~(A) of Section~\ref{sec:strategy}
-and is fully rigorous.
+Proposition~\ref{prop:A} is statement~(A) of
+Section~\ref{sec:strategy} and is fully rigorous.
 
 %% =====================================================================
 \section{Step B, part 1: reduction and the transfer
@@ -433,7 +296,7 @@ Lemma~\ref{lem:transfer} is the crux of Step~B: it says that a
 non-increasing tail of $w$ is, exactly, a strategy-\All{} sequence
 with finitely many initial values modified. The remaining task is to
 show such a sequence cannot exist, by transferring the oscillation of
-Theorem~\ref{thm:ALL}.
+Theorem~\ref{thm:import}.
 
 %% =====================================================================
 \section{Step B, part 2: the renormalisation argument}\label{sec:renorm}
@@ -594,7 +457,7 @@ combinatorial structure; no local limit theorem enters.
   and with it Proposition~\ref{prop:prop}.
 \end{proof}
 
-\noindent In its earlier form the remainder bound was a separate gap
+\noindent In an earlier form the remainder bound was a separate gap
 --- a local central limit theorem, with one Edgeworth correction, for
 the binomial log-deviation density. The transposed picture closes it:
 the cancellation is supplied by the \emph{exact} negative-binomial
@@ -645,14 +508,14 @@ satisfies $g\ge0$ (the optimum dominates strategy~\All) and solves the
 strategy-\All{} recursion for $n>M$.
 
 \gap{Gap D --- the non-degeneracy}{$A_\infty(x)\ne0$ is the genuine
-arithmetic heart of the proof. It needs two things: that pure
-strategy~\All{} oscillates --- $A_\infty(b)\ne0$, the non-constancy of
-$\Phi_p$ (Section~\ref{sec:nonconst}) --- and that the perturbation
-$g$ does not cancel that oscillation, $A_\infty(g)\ne-A_\infty(b)$.
-The first is settled near $p=\tfrac12$ (Section~\ref{sec:nonconst})
-and expected throughout $(0,\tfrac12)$; the second is not secured by
-$g\ge0$ alone, and must draw on the optimality of $w$. Work continues
-here.}
+arithmetic heart of the proof. It needs two things: that pure greedy
+play oscillates --- $A_\infty(b)\ne0$, the non-constancy of $\Phi_p$
+--- and that the perturbation $g$ does not cancel that oscillation,
+$A_\infty(g)\ne-A_\infty(b)$. The first holds at first order near
+$p=\tfrac12$ and is conjectured throughout $(0,\tfrac12)$
+(Theorem~\ref{thm:import}, from~\cite{Paper2}); the second is not
+secured by $g\ge0$ alone, and must draw on the optimality of $w$.
+Work continues here.}
 
 \begin{proof}[Proof of Theorem~\ref{thm:main}]
   Fix $p\in(0,\tfrac12)$. By Lemma~\ref{lem:reduction} it suffices to
@@ -686,36 +549,32 @@ here.}
 \section{Numerical evidence}\label{sec:numerics}
 %% =====================================================================
 
-The two predictions have been checked numerically in
-arbitrary-precision arithmetic (\texttt{simulation/b\_asymptotics.py},
-\texttt{simulation/renorm\_validation.py}). For strategy~\All{} the
-log-periodic oscillation of Theorem~\ref{thm:ALL} is confirmed across
-fourteen orders of magnitude in its amplitude. For the renormalisation
-argument: the windowed coefficient $A(t_0+kL)$ is observed to converge
-to a non-zero limit $A_\infty$ for every tested $p\in\{0.35,0.40,
-0.42,0.45\}$, and $n\,|\kappa(n)-1|$ converges to the constant
-$\tfrac{p}{2q}|\omega^2+i\omega|$ of Lemma~\ref{lem:kappa} --- a
-direct quantitative confirmation of Proposition~\ref{prop:prop}.
-The non-constancy of $\Phi_p$ near $p=\tfrac12$ is confirmed
-separately (\texttt{simulation/d1\_perturbation.py},
-\texttt{d1\_thue\_morse.py}): the first-order perturbation
-oscillates, and the Thue--Morse value $D(1+2\pi i/L)$ is non-zero.
+The renormalisation argument has been checked numerically in
+arbitrary-precision arithmetic
+(\texttt{simulation/renorm\_validation.py}): the windowed coefficient
+$A(t_0+kL)$ is observed to converge to a non-zero limit $A_\infty$ for
+every tested $p\in\{0.35,0.40,0.42,0.45\}$, and $n\,|\kappa(n)-1|$
+converges to the constant $\tfrac{p}{2q}|\omega^2+i\omega|$ of
+Lemma~\ref{lem:kappa} --- a direct quantitative confirmation of
+Proposition~\ref{prop:prop}. The log-periodic asymptotics of the
+greedy strategy that feed the argument are verified separately
+in~\cite{Paper2}.
 
 %% =====================================================================
 \section{Status and open problems}\label{sec:status}
 %% =====================================================================
 
-The skeleton of the proof is complete and the rigorous backbone is now
-substantial: the reduction (Lemma~\ref{lem:reduction}), the elementary
+The proof skeleton is complete and the rigorous backbone is
+substantial. The reduction (Lemma~\ref{lem:reduction}), the elementary
 Step~A (Proposition~\ref{prop:A}), the exact transfer lemma
-(Lemma~\ref{lem:transfer}), the log-periodic asymptotics of
-strategy~\All{} (Section~\ref{sec:ALL}: the product
-identity~\eqref{eq:Bidentity} and de-Poissonisation), the factor
-estimate (Lemma~\ref{lem:kappa}), the propagation estimate
+(Lemma~\ref{lem:transfer}), the factor estimate
+(Lemma~\ref{lem:kappa}), the propagation estimate
 (Proposition~\ref{prop:prop}, via the transposed negative-binomial
-kernel), and the renormalisation theorem (Theorem~\ref{thm:renorm}).
-A single gap remains open; it is flagged in the text and summarised
-here.
+kernel and the exact identity $\sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)
+=1/q$), and the renormalisation theorem (Theorem~\ref{thm:renorm})
+are all rigorous; the log-periodic asymptotics of the greedy strategy
+are supplied by the companion paper~\cite{Paper2}. A single gap
+remains open; it is flagged in the text and summarised here.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
@@ -729,38 +588,34 @@ D & the non-degeneracy $A_\infty(x)\ne0$ (transferred sequence)
 \end{tabular}
 \end{center}
 
-\noindent A complete proof of Theorem~\ref{thm:main} now consists of
-Proposition~\ref{prop:A} (done) together with Gap~D alone. Three gaps
-of earlier drafts have closed. Gap~A (a Hayman-type coefficient
-transfer): the strategy-\All{} asymptotics are established in
-Section~\ref{sec:ALL} by the exact product identity and analytic
-de-Poissonisation, with no admissibility theory. Gap~B (a Mellin
-contour shift): the same route makes it unnecessary. Gap~C (the
-propagation remainder): closed by the transposed kernel
-(Lemma~\ref{lem:transposed}) via the exact identity
-$\sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)=1/q$. The sole remaining problem
-is the non-degeneracy $A_\infty(x)\ne0$ (Gap~D), the arithmetic
-heart: that strategy~\All{} oscillates --- settled near $p=\tfrac12$
-(Section~\ref{sec:nonconst}) --- and that the optimal perturbation
-does not cancel that oscillation. This is the current front of work.
+\noindent A complete proof of Theorem~\ref{thm:main} consists of
+Proposition~\ref{prop:A} (done) together with Gap~D alone. Gap~D, the
+non-degeneracy $A_\infty(x)\ne0$, has two parts. \emph{(i)} The greedy
+strategy oscillates: $A_\infty(b)\ne0$, the non-constancy of $\Phi_p$.
+By~\cite{Paper2} this is settled at first order near $p=\tfrac12$ and
+conjectured throughout $(0,\tfrac12)$. \emph{(ii)} The optimal
+perturbation $g=w-b\ge0$ does not cancel that oscillation. Positivity
+of $g$ alone does not secure~(ii): one checks that the limits
+$A_\infty$ of non-negative strategy-\All{} solutions wind around the
+origin, so some non-negative $g$ \emph{does} cancel. Excluding this
+for the \emph{optimal} sequence must use the optimality of $w$ --- it
+is a supersolution of the strategy-\All{} recursion --- not merely
+$w\ge b$. That is the current front of work.
 
 \begin{thebibliography}{9}
 \bibitem{Paper1}
   P.~Pfaffelhuber,
   \emph{Optimal strategies in the all-heads coin game},
   companion paper.
+\bibitem{Paper2}
+  P.~Pfaffelhuber,
+  \emph{Log-periodic asymptotics of the greedy strategy in the
+  all-heads coin game},
+  companion paper.
 \bibitem{vanDoorn}
   E.~A.~van~Doorn,
   \emph{Optimal play of a coin-flipping game},
   preprint, arXiv:2406.14700, 2024.
-\bibitem{FS}
-  P.~Flajolet, R.~Sedgewick,
-  \emph{Analytic Combinatorics},
-  Cambridge University Press, 2009.
-\bibitem{JS}
-  P.~Jacquet, W.~Szpankowski,
-  \emph{Analytical de-Poissonization and its applications},
-  Theoret.\ Comput.\ Sci.\ \textbf{201} (1998), 1--62.
 \end{thebibliography}
 
 \end{document}
