@@ -70,17 +70,18 @@ verification; Lean~4.
 \section{Introduction}\label{sec:intro}
 %% ====================================================================
 
-\paragraph{A note on authorship.}
+\paragraph{A note on authorship, and disclosure of generative AI use.}
 All material accompanying this paper is collected in the public
 repository \emph{coins} at \url{https://github.com/pfaffelh/coins};
 the file and directory names used below
 (\texttt{simulation/}, \texttt{CoinsLean/}, and so on) refer to that
 repository.
-The mathematical text, the numerical code
-(\texttt{simulation/}), and the complete Lean~4/Mathlib
-formalization in this paper were produced by Anthropic's Claude
-(versions Opus~4.6 and Opus~4.7), interactively, in conversations
-with the author.  To be precise about attribution: the underlying
+In accordance with Taylor \& Francis policy, the author discloses that
+a generative AI tool---Anthropic's Claude (versions Opus~4.6,
+Opus~4.7, and Opus~4.8)---was used, interactively and in conversations
+with the author, to produce the mathematical text, the numerical code
+(\texttt{simulation/}), and the complete Lean~4/Mathlib formalization
+presented here.  To be precise about attribution: the underlying
 mathematical ideas, the selection of the research question
 (alternative objective $w_{n,p}$ vs.\ $v_{n,p}$), the decision to
 carry out a first-order perturbation in $\delta=\tfrac12-p$, the
@@ -92,9 +93,19 @@ selecting Mathlib lemmas, spotting where a generic approach had to
 be replaced by a case-by-case one (for instance the cubic-bound
 inequality in \S\ref{sec:joint}, or the Tannery-style dominated
 convergence argument in the proof of Theorem~\ref{thm:limit}), and
-producing the numerical scripts.  Individual decisions in both
-categories were settled through back-and-forth dialogue; the
-author reviewed every edit.
+producing the numerical scripts.  The reason for using the tool was
+thus to accelerate drafting, formalization, and numerical exploration
+under the author's direction; individual decisions in both categories
+were settled through back-and-forth dialogue, and the author reviewed
+every edit.  The generative AI tool is not, and cannot be, listed as
+an author, since it cannot take responsibility for the work or manage
+copyright and licensing; the author takes full responsibility for the
+content, including any remaining errors.  This responsibility is
+backed by an unusually strong safeguard: the correctness of every
+numbered result is independently machine-checked by the
+Lean~4/Mathlib formalization, which uses no \texttt{sorry} and only
+the three standard foundational axioms \texttt{propext},
+\texttt{Classical.choice}, and \texttt{Quot.sound}.
 
 %This attribution is necessarily imperfect --- many intermediate
 %choices (the precise form of an auxiliary lemma, the wording of a
@@ -1094,11 +1105,13 @@ No potential conflict of interest was reported by the author.
 \section*{Data availability statement}
 %% ====================================================================
 
-% TODO: if an archival snapshot with a DOI is minted (e.g.\ on Zenodo),
-% cite that DOI here in addition to the repository URL.
 The Lean~4/Mathlib formalization and the numerical code that support
 the findings of this study are openly available in the repository
-\emph{coins} at \url{https://github.com/pfaffelh/coins}.
+\emph{coins} at \url{https://github.com/pfaffelh/coins}, and are
+archived at Zenodo,
+\url{https://doi.org/10.5281/zenodo.20489409} (concept DOI; the
+version archived for this paper is
+\href{https://doi.org/10.5281/zenodo.20489410}{10.5281/zenodo.20489410}).
 
 
 %% Reference list in Taylor & Francis MAA style: ordered alphabetically
