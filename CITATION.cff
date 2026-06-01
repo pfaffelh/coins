@@ -15,6 +15,10 @@ authors:
     email: p.p@stochastik.uni-freiburg.de
 license: Apache-2.0
 repository-code: "https://github.com/pfaffelh/coins"
+identifiers:
+  - type: url
+    value: "https://arxiv.org/abs/2604.22991"
+    description: "Preprint of the accompanying paper"
 version: 1.0.0
 date-released: 2026-06-01
 keywords:
