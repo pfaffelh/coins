@@ -1,15 +1,9 @@
-# Cover letter — submission to *Experimental Mathematics*
-
-*Draft. Fill in the date and, optionally, suggested reviewers before
-submitting through ScholarOne. The text below can be pasted into the
-ScholarOne cover-letter field.*
-
----
-
-[Date]
+1 June 2026
 
 To the Editor-in-Chief
+
 *Experimental Mathematics*
+
 
 Dear Editor,
 
@@ -36,6 +30,14 @@ Although EM has several experts in Lean/Mathlib on its editorial
 board, the formalization is structured so that it can be assessed by
 a referee who is *not* a Lean expert (as we hope; see Appendix A).
 
+**Code and data availability.**
+The Lean 4 / Mathlib formalization and the numerical code supporting
+the paper are openly available in the public repository *coins*
+(https://github.com/pfaffelh/coins) and are permanently archived on
+Zenodo with DOI
+[10.5281/zenodo.20489409](https://doi.org/10.5281/zenodo.20489409),
+as stated in the manuscript's data availability statement.
+
 **Disclosure on the use of AI tools.**
 In the interest of full transparency, the manuscript states openly
 (in the note on authorship in Section 1 and the development history
@@ -50,6 +52,9 @@ from you.
 Sincerely,
 
 Peter Pfaffelhuber
+
 Albert-Ludwigs-Universität Freiburg, Freiburg, Germany
+
 Email: p.p@stochastik.uni-freiburg.de
+
 ORCID: 0000-0002-6421-5460
