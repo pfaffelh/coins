@@ -1,0 +1,23 @@
+{
+  "title": "coins: Optimal strategies in the all-heads coin game",
+  "description": "Lean 4 / Mathlib formalization verifying every numbered result, numerical experiments (Python computing the optimal winning probability via the exact Bellman recursion), and LaTeX source accompanying the paper \"Optimal strategies in the all-heads coin game\" by Peter Pfaffelhuber. The source code (CoinsLean/, simulation/, top-level build files) is licensed under Apache-2.0; the manuscript and figures (Manuscript/) are distributed under the arXiv.org perpetual, non-exclusive license. See NOTICE for the full split.",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Pfaffelhuber, Peter",
+      "orcid": "0000-0002-6421-5460",
+      "affiliation": "Albert-Ludwigs-Universität Freiburg, Germany"
+    }
+  ],
+  "license": "Apache-2.0",
+  "access_right": "open",
+  "keywords": [
+    "coin game",
+    "Bellman recursion",
+    "optimal strategy",
+    "Lean 4",
+    "Mathlib",
+    "formal verification",
+    "perturbation theory"
+  ]
+}

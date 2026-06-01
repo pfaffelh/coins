@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "coins: Optimal strategies in the all-heads coin game"
+abstract: >-
+  Lean 4 / Mathlib formalization verifying every numbered result,
+  numerical experiments (Python), and LaTeX source accompanying the
+  paper "Optimal strategies in the all-heads coin game" by Peter
+  Pfaffelhuber.
+type: software
+authors:
+  - family-names: Pfaffelhuber
+    given-names: Peter
+    orcid: "https://orcid.org/0000-0002-6421-5460"
+    affiliation: "Albert-Ludwigs-Universität Freiburg, Germany"
+    email: p.p@stochastik.uni-freiburg.de
+license: Apache-2.0
+repository-code: "https://github.com/pfaffelh/coins"
+version: 1.0.0
+date-released: 2026-06-01
+keywords:
+  - coin game
+  - Bellman recursion
+  - optimal strategy
+  - Lean 4
+  - Mathlib
+  - formal verification
+  - perturbation theory
