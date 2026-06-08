@@ -3124,3 +3124,49 @@ lake env comparator config.json
   author; the harness compiles and the `Const`-mismatch root
   cause has been fixed by the def hoist.
 
+## 2026-06-08 — After the EM rejection: journal hunt and the Applied Probability submission
+
+*Experimental Mathematics* rejected the paper. This session was about
+finding the next home and preparing the materials, not about the
+mathematics, which is unchanged.
+
+### Candidate journals weighed
+
+- **Frontiers of Mathematics** (Springer, journal 11464). Checked the
+  Springer Nature AI policy (LLMs cannot be authors; substantive AI use
+  must be disclosed; copy-editing exempt) — our existing authorship
+  note already satisfies it. Verified it is *not* predatory: real
+  Springer/Higher Education Press journal, Scopus-indexed, genuine
+  metrics. Verdict: legitimate but low-prestige; a fallback, not a
+  first choice.
+- **PLOS**: no dedicated maths journal; only PLOS ONE (megajournal,
+  APC, non-specialist review). Poor fit — declined.
+- **Applied Probability** (JAP / AAP, Applied Probability Trust /
+  Cambridge). Best topical fit: the paper is a finite-horizon MDP with
+  a Bellman recursion, which is squarely their core. One submission is
+  routed to JAP or AAP at the Editors' discretion. Chosen target.
+- **ECP** (Electronic Communications in Probability). Short-paper venue
+  (< 12 pp.). Compiled the manuscript in the real IMS `imsart` class to
+  measure: **19 pp.**, essentially unchanged from the article version
+  (10 pt offset by the wide IMS text block). The Lean appendix + refs
+  are only the last ~3 pages, so even cutting them lands at ~16 pp. —
+  still over. ECP would require gutting the formalization showcase;
+  declined in favour of its full-length sibling EJP if that family is
+  wanted later.
+
+### `Manuscript/AP/` prepared
+
+Mirrors the existing per-journal subdirectory pattern (`EM/`, `ALEA/`).
+Based on the EM version (already carries keywords, MSC2020, the
+generative-AI disclosure, and the disclosure / data-availability
+statements). Journal-specific edits: the AI-disclosure clause now cites
+"the Applied Probability Trust and Cambridge University Press" instead
+of Taylor & Francis; reference-style comment notes that `apt.bst`
+(Harvard) is only needed at the production stage, not for the
+single-PDF ScholarOne submission. Plain `\documentclass[12pt]{article}`
+is retained — the AP class is optional for initial submission. A new
+cover letter (frames the work as MDP/stochastic-control rather than
+"experimental mathematics") sits alongside as `cover_letter.md/.pdf`.
+The author trimmed the abstract to a shorter, still formula-bearing
+form. PDFs rebuilt cleanly (19 pp.).
+
