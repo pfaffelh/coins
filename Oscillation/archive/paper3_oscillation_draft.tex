@@ -1,0 +1,621 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\One}{\textsc{One}}
+\newcommand{\All}{\textsc{All}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+
+%% ---------------------------------------------------------------------
+%%  DRAFT MARKER.  \gap{label}{text} flags a step that is NOT yet
+%%  complete.  It renders as a conspicuous red box in the PDF.  This is
+%%  a working draft: the single open gap (Gap D) is marked this way.
+%% ---------------------------------------------------------------------
+\newcommand{\gap}[2]{%
+  \par\smallskip\noindent
+  \fcolorbox{red!70!black}{red!7}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{%
+      {\bfseries\color{red!70!black}$\blacktriangleright$~OPEN GAP --- #1.
+       Work continues here.}\\[2pt]#2}}%
+  \par\smallskip}
+
+\title{Oscillation of the optimal value\\
+       in the all-heads coin game}
+\author{Peter Pfaffelhuber}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  In the all-heads coin game a player tosses a pool of $n$ coins, each
+  landing heads with probability~$p$, must set aside at least one head
+  each round, and loses on an all-tails round; $w_{n,p}$ denotes the
+  optimal winning probability. We show --- modulo one explicitly
+  identified gap --- that for every $p\in(0,\tfrac12)$ the sequence
+  $n\mapsto w_{n,p}$ is not eventually monotone, with infinitely many
+  strict local maxima and minima. The proof reduces the claim to two
+  one-sided statements: the increasing side is settled by an
+  elementary Bellman estimate; the decreasing side is reduced, by an
+  exact transfer to the greedy strategy and a renormalisation argument
+  across geometric scales, to a single non-degeneracy condition
+  (Gap~D). The log-periodic asymptotics of the greedy strategy that
+  drive the argument are established in the companion
+  paper~\cite{Paper2}; the exact and machine-checked analysis of the
+  game is~\cite{Paper1}. This is a working draft: Gap~D is the one
+  step that remains open.
+\end{abstract}
+
+\noindent\emph{\small Working draft. The one step still to be
+completed is flagged in the text by a boxed}
+{\small\bfseries\color{red!70!black}OPEN GAP} \emph{\small marker
+(Gap~D); Section~\ref{sec:status} consolidates its status.}
+
+%% =====================================================================
+\section{Introduction}\label{sec:intro}
+%% =====================================================================
+
+\subsection{The game}
+
+Fix $p\in(0,1)$ and write $q:=1-p$. A player holds $n$ coins, each of
+which lands heads independently with probability~$p$. In each round
+all remaining coins are tossed; the player must set aside at least one
+coin showing heads, and loses if no coin shows heads. The game is won
+once every coin has been set aside. Writing $w_{n,p}$ for the optimal
+winning probability, the dynamic-programming principle gives the
+Bellman equation
+\begin{equation}\label{eq:bellman}
+  w_{n,p}=p^{n}+\sum_{j=1}^{n-1}\binom{n}{j}p^{\,n-j}q^{\,j}
+          \max_{j\le m\le n-1}w_{m,p},\qquad w_{0,p}:=1 .
+\end{equation}
+Two strategies are natural: \One{} sets aside a single head each round
+(value $a_{n,p}$), and the greedy strategy \All{} sets aside
+\emph{every} head. The winning probability $b_{n,p}$ of strategy~\All{}
+is defined by the linear recursion
+\begin{equation}\label{eq:brec}
+  b_{n,p}=\sum_{j=0}^{n-1}\binom{n}{j}p^{\,n-j}q^{\,j}\,b_{j,p},
+  \qquad b_{0,p}:=1,
+\end{equation}
+obtained by conditioning on the number $j$ of coins showing tails in
+the first round: those $j$ coins are re-tossed, while the $n-j\ge1$
+heads are set aside for good. The companion paper~\cite{Paper1}
+determines $w_{n,p}$ \emph{exactly} at $p=\tfrac12$, identifies the
+limit $W(p)=\lim_n w_{n,p}$ for $p>\tfrac12$, and gives a first-order
+perturbation expansion for $p<\tfrac12$ near $\tfrac12$; all of those
+results are machine-checked in Lean~4. The asymptotics of the greedy
+strategy itself are the subject of the companion paper~\cite{Paper2}.
+A coin-flipping game with a related but distinct scoring rule is
+studied by van~Doorn~\cite{vanDoorn}.
+
+The present paper concerns the regime left open by a perturbative
+analysis: the genuine large-$n$ behaviour of the \emph{optimal} value
+for $p<\tfrac12$, which turns out to be \emph{oscillatory} rather than
+convergent.
+
+\subsection{Main result}\label{sec:main}
+
+\begin{theorem}[oscillation of the optimal value]\label{thm:main}
+  For every $p\in(0,\tfrac12)$ the sequence $n\mapsto w_{n,p}$ is not
+  eventually monotone. It has infinitely many strict local maxima and
+  infinitely many strict local minima.
+\end{theorem}
+
+Theorem~\ref{thm:main} sharpens, and corrects the natural first guess
+about, the first-order picture of~\cite{Paper1}: that analysis shows
+$w_{n,p}$ to be eventually increasing \emph{at first order in}
+$\tfrac12-p$, but the exact sequence is not eventually monotone at
+all. The oscillation is non-perturbative --- its amplitude is
+exponentially small in $1/(\tfrac12-p)$ --- which is why it is
+invisible to any finite-order expansion.
+
+The proof is complete except for one step, Gap~D
+(Section~\ref{sec:base}), flagged in the text by a boxed marker.
+
+\subsection{Strategy of proof}\label{sec:strategy}
+
+The proof of Theorem~\ref{thm:main} has a rigid skeleton, which we
+record now so that the role of each later section is clear. For a real
+sequence $(x_n)$ put $d_n:=x_{n+1}-x_n$.
+
+\begin{quote}
+\textbf{Step 0 (reduction).} A bounded sequence has infinitely many
+strict local maxima and minima as soon as it is \emph{not eventually
+monotone}, i.e.\ as soon as $d_n>0$ infinitely often \emph{and}
+$d_n<0$ infinitely often (Lemma~\ref{lem:reduction}). Thus
+Theorem~\ref{thm:main} splits into
+\[
+  \text{(A) }(w_{n,p})\text{ is not eventually non-decreasing,}
+  \qquad
+  \text{(B) }(w_{n,p})\text{ is not eventually non-increasing.}
+\]
+
+\textbf{Step A (the increasing side).} On a stretch where $w$ is
+non-decreasing, the suffix-maximum in~\eqref{eq:bellman} collapses to
+its right endpoint and the Bellman equation becomes the linear
+strategy-\One{} recursion, whose one-step increment has the
+sign-definite dominant term $-q^{n}w_{n-1}$. Since $q>p$, this forces
+an eventual decrease. Statement~(A) follows
+(Proposition~\ref{prop:A}); the argument is elementary and complete.
+
+\textbf{Step B (the decreasing side).} On a stretch where $w$ is
+non-increasing, the suffix-maximum collapses to its \emph{left}
+endpoint, and $w$ becomes --- exactly --- a strategy-\All{} sequence
+(Lemma~\ref{lem:transfer}). The greedy strategy oscillates: this is
+the log-periodic asymptotics of the companion paper~\cite{Paper2},
+recalled below as Theorem~\ref{thm:import}. Hence $w$ cannot have a
+non-increasing tail. The transfer of the oscillation from \All{} to
+$w$ is carried out by a renormalisation argument
+(Section~\ref{sec:renorm}): a windowed fundamental coefficient $A(t)$
+is shown to satisfy a propagation identity across the geometric scale,
+from which non-convergence --- hence non-monotonicity --- follows.
+\end{quote}
+
+The asymmetry between Steps~A and~B is structural: the increasing side
+reduces to a contractive linear recursion with a sign-definite drift,
+the decreasing side to a scale-invariant recursion whose solutions
+oscillate. Step~A is elementary; Step~B carries the analytic weight of
+the paper.
+
+%% =====================================================================
+\section{Setup and notation}\label{sec:setup}
+%% =====================================================================
+
+Throughout, $p\in(0,\tfrac12)$ is fixed, $q=1-p\in(\tfrac12,1)$, and
+we use freely that $q>p$, $p/q<1$ and $2p<1$. We write
+$L:=\log(1/q)>0$ and $\omega:=2\pi/L$.
+
+The value $w_{n,p}$ satisfies~\eqref{eq:bellman}; it is a probability,
+so $0<w_{n,p}\le1$, and in fact $w_{n,p}<1$ for $n\ge1$. The two
+reference strategies are dominated by the optimum. Strategy~\All{} has
+winning probability $b_{n,p}$, defined by the
+recursion~\eqref{eq:brec}; strategy~\One{} satisfies the linear
+recursion
+\begin{equation}\label{eq:arec}
+  a_{n,p}=p^{n}+(1-p^{n}-q^{n})\,a_{n-1,p},\qquad a_{0,p}:=1 .
+\end{equation}
+In both cases $w_{n,p}\ge\max(a_{n,p},b_{n,p})$, since the optimum
+dominates any fixed strategy. We use the binomial identities
+$\sum_{j=1}^{n-1}\binom nj p^{n-j}q^j=1-p^n-q^n$ and
+$\sum_{j=0}^{n-1}\binom nj p^{n-j}q^j=1-q^n$. Where the value of $p$
+is fixed we abbreviate $w_n:=w_{n,p}$, $b_n:=b_{n,p}$.
+
+The large-$n$ behaviour of the greedy strategy, established in the
+companion paper~\cite{Paper2}, is the engine of Step~B; we record it
+here in the form used below.
+
+\begin{theorem}[greedy asymptotics, \cite{Paper2}]\label{thm:import}
+  For every $p\in(0,\tfrac12)$ there is a continuous, strictly
+  positive function $\Phi_p:\R\to\R$, periodic with period $L$, such
+  that $b_{n,p}=\Phi_p(\log n)(1+O(1/n))$. The first-order
+  perturbation of $b_{n,p}$ at $p=\tfrac12$ is non-constant, so that
+  the greedy value oscillates at first order in $\tfrac12-p$; it is
+  conjectured that $\Phi_p$ is non-constant --- equivalently, that
+  $b_{n,p}$ does not converge --- for every $p\in(0,\tfrac12)$.
+\end{theorem}
+
+Non-constancy of $\Phi_p$ is exactly what Gap~D
+(Section~\ref{sec:base}) requires.
+
+%% =====================================================================
+\section{Step A: \texorpdfstring{$w_{n,p}$}{w(n,p)} is not eventually
+  increasing}\label{sec:A}
+%% =====================================================================
+
+\begin{proposition}\label{prop:A}
+  For $p\in(0,\tfrac12)$ there is no $M$ with $w_n\ge w_{n-1}$ for all
+  $n>M$. That is, $w_n<w_{n-1}$ for infinitely many~$n$.
+\end{proposition}
+
+\begin{proof}
+  Suppose $w_n\ge w_{n-1}$ for all $n>M$, i.e.\ $w$ is non-decreasing
+  on $\{M,M+1,\dots\}$. Fix $n>M+1$ and split the Bellman
+  sum~\eqref{eq:bellman} at $j=M$, writing $S_{j,n}:=\max_{j\le m\le
+  n-1}w_m$. For $j\ge M$ the index window lies in the non-decreasing
+  range, so $S_{j,n}=w_{n-1}$; for every $j$ one has $w_{n-1}\le
+  S_{j,n}\le1$. With $U_n:=\sum_{j=1}^{M-1}\binom nj p^{n-j}q^j$ and
+  $T_n:=\sum_{j=1}^{M-1}\binom nj p^{n-j}q^j S_{j,n}$,
+  \[
+    w_n=p^n+T_n+(1-p^n-q^n-U_n)\,w_{n-1},
+  \]
+  hence
+  \[
+    w_n-w_{n-1}=p^n(1-w_{n-1})-q^n w_{n-1}+(T_n-U_n w_{n-1}).
+  \]
+  Since $w_{n-1}\le S_{j,n}\le1$ one has $0\le T_n-U_nw_{n-1}\le U_n$,
+  and $U_n\le(M-1)\,n^{M-1}p^{\,n-M+1}=C_1\,n^{M-1}p^n$ with
+  $C_1=(M-1)p^{1-M}$. With $c:=w_M>0$ and $w_{n-1}\ge c$,
+  \[
+    w_n-w_{n-1}\le\bigl(1+C_1n^{M-1}\bigr)p^n-c\,q^n .
+  \]
+  As $p/q<1$, the ratio $(1+C_1n^{M-1})(p/q)^n\to0$, so the
+  right-hand side is negative for all large~$n$ --- contradicting
+  $w_n\ge w_{n-1}$.
+\end{proof}
+
+Proposition~\ref{prop:A} is statement~(A) of
+Section~\ref{sec:strategy} and is fully rigorous.
+
+%% =====================================================================
+\section{Step B, part 1: reduction and the transfer
+  lemma}\label{sec:transfer}
+%% =====================================================================
+
+\begin{lemma}[reduction]\label{lem:reduction}
+  A bounded real sequence $(x_n)$ that is neither eventually
+  non-decreasing nor eventually non-increasing has infinitely many
+  strict local maxima and infinitely many strict local minima,
+  provided $x_n\ne x_{n+1}$ for all large~$n$.
+\end{lemma}
+
+\begin{proof}
+  Not eventually non-decreasing means $d_n:=x_{n+1}-x_n<0$ infinitely
+  often; not eventually non-increasing means $d_n>0$ infinitely
+  often. Between a sign change of $d$ from $-$ to $+$ lies a local
+  minimum, between $+$ and $-$ a local maximum; infinitely many sign
+  changes yield infinitely many of each, strict under $x_n\ne x_{n+1}$.
+\end{proof}
+
+\begin{lemma}[transfer to strategy \All]\label{lem:transfer}
+  Suppose $w_n\ge w_{n+1}$ for all $n\ge M$. Define $x_0:=1$,
+  $x_j:=\max_{j\le m\le M}w_m$ for $1\le j\le M-1$, and $x_j:=w_j$ for
+  $j\ge M$. Then $x_n=w_n$ for $n\ge M$, and $(x_n)$ satisfies the
+  exact strategy-\All{} recursion
+  \[
+    x_n=\sum_{j=0}^{n-1}\binom nj p^{\,n-j}q^{\,j}\,x_j
+    \qquad\text{for every }n>M .
+  \]
+\end{lemma}
+
+\begin{proof}
+  Fix $n>M$. In the Bellman equation~\eqref{eq:bellman} the
+  suffix-maximum $S_{j,n}=\max_{j\le m\le n-1}w_m$ collapses to the
+  \emph{left} endpoint on the non-increasing range: for $M\le j\le
+  n-1$, $S_{j,n}=w_j=x_j$; for $1\le j\le M-1$,
+  $S_{j,n}=\max(\max_{j\le m\le M-1}w_m,\,w_M)=\max_{j\le m\le
+  M}w_m=x_j$, independent of $n$. Writing the $p^n$ term as
+  $\binom n0p^nq^0x_0$ gives the displayed recursion.
+\end{proof}
+
+Lemma~\ref{lem:transfer} is the crux of Step~B: it says that a
+non-increasing tail of $w$ is, exactly, a strategy-\All{} sequence
+with finitely many initial values modified. The remaining task is to
+show such a sequence cannot exist, by transferring the oscillation of
+Theorem~\ref{thm:import}.
+
+%% =====================================================================
+\section{Step B, part 2: the renormalisation argument}\label{sec:renorm}
+%% =====================================================================
+
+Throughout this section $(x_n)$ is a bounded solution of the
+strategy-\All{} recursion for $n>M$ --- either $b$ itself, or a
+transferred sequence of Lemma~\ref{lem:transfer}.
+
+\subsection{The recursion as a smoothing in log-scale}
+
+With $J_n\sim\mathrm{Bin}(n,q)$ the recursion reads
+$x_n=E[x_{J_n}]/(1+q^n)$. Read on the log-scale $t:=\log n$, and using
+$\log(qn)=\log n-L$, one application of the recursion shifts the scale
+down by exactly one period~$L$ and smooths by a kernel of width
+$\sigma(t)\sim\sqrt{p/q}\;e^{-t/2}\to0$.
+
+\subsection{The local fundamental coefficient}
+
+Fix a window $\chi\in C_c^\infty(\R)$ with $\int\chi=1$ and
+$\hat\chi(2\pi)=0$, and set
+\begin{equation}\label{eq:Adef}
+  A(t):=\frac1L\sum_{n>M}x_n\,e^{-i\omega\log n}\,
+        \chi\!\Bigl(\tfrac{\log n-t}{L}\Bigr)\,\frac1n .
+\end{equation}
+This is a windowed Fourier sum at frequency $\omega$ on the
+multiplicative grid, the weight $1/n$ being the log-scale element
+$d(\log n)$. The condition $\hat\chi(2\pi)=0$ makes $A$ annihilate the
+constant (mean-level) component, so $A$ extracts the fundamental
+oscillation. If $x_n$ converges then $A(t)\to0$.
+
+\subsection{The propagation estimate}
+
+\begin{proposition}[propagation]\label{prop:prop}
+  There are $\kappa(t)\in\mathbb C$ and a remainder $r(t)$ with
+  \[
+    A(t+L)=\kappa(t)\,A(t)+r(t),\qquad
+    |\kappa(t)-1|=O(e^{-t}),\qquad |r(t)|=O(e^{-t}).
+  \]
+\end{proposition}
+
+The factor $\kappa$ is fully under control.
+
+\begin{lemma}[the factor $\kappa$]\label{lem:kappa}
+  For $J_n\sim\mathrm{Bin}(n,q)$,
+  $\kappa(n)=E[(J_n/(qn))^{i\omega}\mathbf 1_{J_n\ge1}]
+  =1-\tfrac{p}{2qn}(\omega^2+i\omega)+O(n^{-3/2})$. In particular
+  $|\kappa-1|=O(1/n)=O(e^{-t})$.
+\end{lemma}
+
+\begin{proof}[Proof (sketch)]
+  Put $V_n=J_n/(qn)-1$; the binomial central moments give
+  $E[V_n^2]=p/(qn)$ and $E[|V_n|^3]=O(n^{-3/2})$. Expanding
+  $(1+V_n)^{i\omega}$ to second order on $\{|V_n|\le\tfrac12\}$ and
+  bounding the tail by Hoeffding yields the claim.
+\end{proof}
+
+For the remainder we pass to the \emph{transposed} kernel. This makes
+the negative-binomial structure of the recursion explicit and, as it
+turns out, removes the need for any limit theorem. Write
+$a_n(t):=n^{-1}e^{-i\omega\log n}\chi\bigl(\tfrac{\log n-t}L\bigr)$, so
+that $A(t)=\frac1L\sum_{n>M}x_n\,a_n(t)$.
+
+\begin{lemma}[transposed kernel and the negative binomial]%
+\label{lem:transposed}
+  Substituting the recursion
+  $x_n=(1+q^n)^{-1}\sum_{j=0}^{n}P(\mathrm{Bin}(n,q)=j)\,x_j$
+  into $A(t+L)$ and exchanging the (finite) order of summation,
+  \[
+    A(t+L)=\frac1L\sum_{j}x_j\,W(j,t),\qquad
+    W(j,t)=\sum_{n\ge j}\frac{P(\mathrm{Bin}(n,q)=j)}{1+q^n}\,
+           a_n(t+L).
+  \]
+  The transposed weight has \emph{exact} total mass
+  \[
+    \sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)
+      =q^{j}\sum_{k\ge0}\binom{j+k}{j}p^{k}
+      =q^{j}(1-p)^{-(j+1)}=\frac1q ,
+  \]
+  and $q\,P(\mathrm{Bin}(n,q)=j)$ is the law of
+  $N_j:=j+\mathrm{NB}(j+1,q)$, with
+  \[
+    E[N_j]=\bar n_j:=\frac{j+p}{q},\qquad
+    \mathrm{Var}(N_j)=\frac{(j+1)p}{q^{2}} .
+  \]
+  Consequently
+  $W(j,t)=\tfrac1q\,E\bigl[(1+q^{N_j})^{-1}a_{N_j}(t+L)\bigr]$.
+\end{lemma}
+
+\begin{proof}
+  The substitution is valid because the window lies far above $M$;
+  the swap is exact since $\chi$ has compact support, so every sum is
+  finite. The indices $j\le M$ contribute super-exponentially little
+  ($P(\mathrm{Bin}(n,q)=j)$ is super-exponentially small for fixed $j$
+  and $n$ in the window) and are absorbed silently. The mass identity
+  is the negative-binomial series
+  $\sum_{k\ge0}\binom{j+k}{k}p^{k}=(1-p)^{-(j+1)}$; hence
+  $q^{j+1}\binom{j+k}{k}p^{k}$, $k\ge0$, is the law of
+  $\mathrm{NB}(j+1,q)$ in $k=n-j$, and its mean and variance, shifted
+  by $j$, are those stated.
+\end{proof}
+
+The exact identity is the crux. The transposed weight carries mass
+\emph{exactly} $1/q$ and is a genuine probability law --- being a
+shifted sum of i.i.d.\ geometrics, an exceptionally well-behaved one.
+The oscillatory cancellation is delivered by the recursion's own
+combinatorial structure; no local limit theorem enters.
+
+\begin{proof}[Proof of Proposition~\ref{prop:prop}]
+  The transposed picture settles $\kappa$ and $r$ together: we show
+  $A(t+L)=A(t)+O(e^{-t})$, and then
+  $r(t)=A(t+L)-\kappa(t)A(t)=(1-\kappa(t))A(t)+O(e^{-t})=O(e^{-t})$,
+  using $|\kappa-1|=O(e^{-t})$ (Lemma~\ref{lem:kappa}) and the
+  boundedness of $A$.
+
+  For real $n>0$ the map $n\mapsto a_n(t+L)$ is smooth, supported in
+  the geometric window $\log n\in t+L+L\operatorname{supp}\chi$, and
+  every derivative obeys $|a_n^{(k)}(t+L)|\le C_k\,n^{-k-1}$: each
+  $n$-derivative produces one factor $n^{-1}$ and bounded constants
+  ($\omega$, $L^{-1}$, $\|\chi^{(k)}\|_\infty$). The factor
+  $(1+q^n)^{-1}=1+O(q^n)$ perturbs this super-exponentially little.
+
+  Fix $j$ with $\bar n_j$ within $O(1)$ of the window, so $j$ is of
+  order $e^{t}$. A second-order Taylor expansion of $a_n(t+L)$ about
+  $n=\bar n_j$, taken under $E[\,\cdot\,]$, loses its first-order term
+  because $E[N_j-\bar n_j]=0$:
+  \[
+    E\bigl[a_{N_j}(t+L)\bigr]=a_{\bar n_j}(t+L)
+      +\tfrac12\,E\bigl[a''_{\xi_j}(t+L)\,(N_j-\bar n_j)^2\bigr],
+  \]
+  with $\xi_j$ between $N_j$ and $\bar n_j$, hence $\xi_j\ge j$ (both
+  $N_j\ge j$ and $\bar n_j>j$). Thus $|a''_{\xi_j}|\le C_2\,j^{-3}$
+  and, since $\mathrm{Var}(N_j)=O(j)$,
+  \[
+    \bigl|E[a_{N_j}(t+L)]-a_{\bar n_j}(t+L)\bigr|
+      \le\tfrac12 C_2\,j^{-3}\,\mathrm{Var}(N_j)=O(j^{-2}).
+  \]
+  With the super-exponentially small $(1+q^{N_j})^{-1}$ correction,
+  $W(j,t)=\tfrac1q\,a_{\bar n_j}(t+L)+O(j^{-2})$.
+
+  It remains to undo the period shift. From $\bar n_j=(j+p)/q$,
+  \[
+    \log\bar n_j=\log j+L+\log(1+p/j),\qquad e^{-i\omega L}=1 ,
+  \]
+  and $\log(1+p/j)=O(j^{-1})$; expanding the three factors of
+  $a_{\bar n_j}(t+L)$ gives
+  $\tfrac1q\,a_{\bar n_j}(t+L)=a_j(t)\,(1+O(j^{-1}))=a_j(t)+O(j^{-2})$,
+  the last step because $a_j(t)=O(j^{-1})$. Hence
+  $W(j,t)=a_j(t)+O(j^{-2})$ uniformly in $j$, and
+  \[
+    A(t+L)-A(t)=\frac1L\sum_j x_j\bigl[W(j,t)-a_j(t)\bigr],
+    \qquad
+    |A(t+L)-A(t)|\le\frac{\|x\|_\infty}{L}\sum_j O(j^{-2}).
+  \]
+  The window confines $j$ to $[e^{t-cL},e^{t+cL}]$ with $c$ fixed by
+  $\operatorname{supp}\chi$; all these indices exceed $e^{t-cL}$, so
+  $\sum_j O(j^{-2})=O(e^{-t})$. This proves $A(t+L)=A(t)+O(e^{-t})$,
+  and with it Proposition~\ref{prop:prop}.
+\end{proof}
+
+\noindent In an earlier form the remainder bound was a separate gap
+--- a local central limit theorem, with one Edgeworth correction, for
+the binomial log-deviation density. The transposed picture closes it:
+the cancellation is supplied by the \emph{exact} negative-binomial
+identity of Lemma~\ref{lem:transposed}, and the windowed coefficient
+obeys the elementary propagation law $A(t+L)=A(t)+O(e^{-t})$.
+
+\subsection{From propagation to non-convergence}
+
+\begin{theorem}[renormalisation]\label{thm:renorm}
+  Let $(x_n)$ be a bounded solution of the strategy-\All{} recursion
+  for $n>M$. Then for each $t_0$ the sequence $A(t_0+kL)$ converges,
+  as $k\to\infty$, to a limit $A_\infty$. Moreover: if $x_n$
+  converges then $A_\infty=0$; and if $A_\infty\ne0$ then $(x_n)$ is
+  not eventually monotone.
+\end{theorem}
+
+\begin{proof}
+  Write $A_k=A(t_0+kL)$, $\kappa_k=\kappa(t_0+kL)$,
+  $r_k=r(t_0+kL)$. By Proposition~\ref{prop:prop},
+  $\sum_k|\kappa_k-1|<\infty$ and $\sum_k|r_k|<\infty$ (geometric
+  series in $e^{-L}<1$). Solving $A_{k+1}=\kappa_kA_k+r_k$,
+  \[
+    A_k=\Bigl(\prod_{j<k}\kappa_j\Bigr)A_0
+        +\sum_{j<k}\Bigl(\prod_{j<i<k}\kappa_i\Bigr)r_j
+        \;\longrightarrow\;A_\infty ,
+  \]
+  the products and series converging absolutely. If $x_n$ converges
+  then $A(t)\to0$, so $A_\infty=0$. If $A_\infty\ne0$ then
+  $A_k\not\to0$, so $x_n$ does not converge; a bounded non-convergent
+  sequence is not eventually monotone.
+\end{proof}
+
+%% =====================================================================
+\section{The base case and the proof of
+  Theorem~\ref{thm:main}}\label{sec:base}
+%% =====================================================================
+
+Theorem~\ref{thm:renorm} reduces Step~B to a single non-degeneracy:
+the limit $A_\infty$ must be non-zero.
+
+\begin{proposition}[base case]\label{prop:base}
+  For every transferred sequence $(x_n)$ of Lemma~\ref{lem:transfer},
+  $A_\infty\ne0$.
+\end{proposition}
+
+By linearity $A_\infty(x)=A_\infty(b)+A_\infty(g)$, where $g:=x-b$
+satisfies $g\ge0$ (the optimum dominates strategy~\All) and solves the
+strategy-\All{} recursion for $n>M$.
+
+\gap{Gap D --- the non-degeneracy}{$A_\infty(x)\ne0$ is the genuine
+arithmetic heart of the proof. It needs two things: that pure greedy
+play oscillates --- $A_\infty(b)\ne0$, the non-constancy of $\Phi_p$
+--- and that the perturbation $g$ does not cancel that oscillation,
+$A_\infty(g)\ne-A_\infty(b)$. The first holds at first order near
+$p=\tfrac12$ and is conjectured throughout $(0,\tfrac12)$
+(Theorem~\ref{thm:import}, from~\cite{Paper2}); the second is not
+secured by $g\ge0$ alone, and must draw on the optimality of $w$.
+Work continues here.}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+  Fix $p\in(0,\tfrac12)$. By Lemma~\ref{lem:reduction} it suffices to
+  show that $(w_{n,p})$ is neither eventually non-decreasing nor
+  eventually non-increasing.
+
+  \emph{Not eventually non-decreasing} is Proposition~\ref{prop:A}.
+
+  \emph{Not eventually non-increasing.} Suppose, for contradiction,
+  $w_n\ge w_{n+1}$ for all $n\ge M$. By Lemma~\ref{lem:transfer} the
+  transferred sequence $(x_n)$ satisfies $x_n=w_n$ for $n\ge M$ and
+  solves the strategy-\All{} recursion for $n>M$; being a tail of a
+  monotone bounded sequence, $x_n$ converges. By
+  Theorem~\ref{thm:renorm} then $A_\infty=0$, contradicting
+  Proposition~\ref{prop:base}. Hence no non-increasing tail exists.
+
+  Both one-sided statements hold, so $(w_{n,p})$ is not eventually
+  monotone; Lemma~\ref{lem:reduction} gives infinitely many strict
+  local maxima and minima.
+\end{proof}
+
+\begin{remark}[strictness]
+  Lemma~\ref{lem:reduction} delivers \emph{strict} extrema once
+  $w_{n,p}\ne w_{n+1,p}$ for all large~$n$, which holds in all
+  computed data and is expected for every $p\in(0,\tfrac12)$; absent
+  it, Theorem~\ref{thm:main} holds with the non-strict notion of
+  local extremum.
+\end{remark}
+
+%% =====================================================================
+\section{Numerical evidence}\label{sec:numerics}
+%% =====================================================================
+
+The renormalisation argument has been checked numerically in
+arbitrary-precision arithmetic
+(\texttt{simulation/renorm\_validation.py}): the windowed coefficient
+$A(t_0+kL)$ is observed to converge to a non-zero limit $A_\infty$ for
+every tested $p\in\{0.35,0.40,0.42,0.45\}$, and $n\,|\kappa(n)-1|$
+converges to the constant $\tfrac{p}{2q}|\omega^2+i\omega|$ of
+Lemma~\ref{lem:kappa} --- a direct quantitative confirmation of
+Proposition~\ref{prop:prop}. The log-periodic asymptotics of the
+greedy strategy that feed the argument are verified separately
+in~\cite{Paper2}.
+
+%% =====================================================================
+\section{Status and open problems}\label{sec:status}
+%% =====================================================================
+
+The proof skeleton is complete and the rigorous backbone is
+substantial. The reduction (Lemma~\ref{lem:reduction}), the elementary
+Step~A (Proposition~\ref{prop:A}), the exact transfer lemma
+(Lemma~\ref{lem:transfer}), the factor estimate
+(Lemma~\ref{lem:kappa}), the propagation estimate
+(Proposition~\ref{prop:prop}, via the transposed negative-binomial
+kernel and the exact identity $\sum_{n\ge j}P(\mathrm{Bin}(n,q)=j)
+=1/q$), and the renormalisation theorem (Theorem~\ref{thm:renorm})
+are all rigorous; the log-periodic asymptotics of the greedy strategy
+are supplied by the companion paper~\cite{Paper2}. A single gap
+remains open; it is flagged in the text and summarised here.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cll@{}}
+\hline
+\textbf{Gap} & \textbf{What is missing} & \textbf{Where} \\
+\hline
+D & the non-degeneracy $A_\infty(x)\ne0$ (transferred sequence)
+  & \S\ref{sec:base} \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent A complete proof of Theorem~\ref{thm:main} consists of
+Proposition~\ref{prop:A} (done) together with Gap~D alone. Gap~D, the
+non-degeneracy $A_\infty(x)\ne0$, has two parts. \emph{(i)} The greedy
+strategy oscillates: $A_\infty(b)\ne0$, the non-constancy of $\Phi_p$.
+By~\cite{Paper2} this is settled at first order near $p=\tfrac12$ and
+conjectured throughout $(0,\tfrac12)$. \emph{(ii)} The optimal
+perturbation $g=w-b\ge0$ does not cancel that oscillation. Positivity
+of $g$ alone does not secure~(ii): one checks that the limits
+$A_\infty$ of non-negative strategy-\All{} solutions wind around the
+origin, so some non-negative $g$ \emph{does} cancel. Excluding this
+for the \emph{optimal} sequence must use the optimality of $w$ --- it
+is a supersolution of the strategy-\All{} recursion --- not merely
+$w\ge b$. That is the current front of work.
+
+\begin{thebibliography}{9}
+\bibitem{Paper1}
+  P.~Pfaffelhuber,
+  \emph{Optimal strategies in the all-heads coin game},
+  companion paper.
+\bibitem{Paper2}
+  P.~Pfaffelhuber,
+  \emph{Log-periodic asymptotics of the greedy strategy in the
+  all-heads coin game},
+  companion paper.
+\bibitem{vanDoorn}
+  E.~A.~van~Doorn,
+  \emph{Optimal play of a coin-flipping game},
+  preprint, arXiv:2406.14700, 2024.
+\end{thebibliography}
+
+\end{document}

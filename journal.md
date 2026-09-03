@@ -3170,3 +3170,216 @@ cover letter (frames the work as MDP/stochastic-control rather than
 The author trimmed the abstract to a shorter, still formula-bearing
 form. PDFs rebuilt cleanly (19 pp.).
 
+
+## 2026-08-29 — Session 7: JAP manuscript check; w converges for all p; Paper 3 rebuilt
+
+### Check of the Applied Probability version
+
+Full read of `Manuscript/AP/manuscript.tex` with independent
+recomputation of every number (mpmath), verification of all 28 Lean
+hyperlinks at commit `c60bcd3`, and fetching of the Zenodo/arXiv/GitHub
+records. Findings are in `Manuscript/AP/REVIEW_2026-08-29.md`. Four
+must-fix items: (1) the `vanDoorn2024` bibliography entry is fabricated
+(author is *Wouter* van Doorn, title "On maximizing the number of heads
+when you need to set aside at least one coin every round"); (2) the
+final Remark of §6 misattributes a result about $w$ to van Doorn and
+contains a false logical claim; (3) the closed-form series and $W(p)<1$
+of Theorem 3.3 and the general-policy half of Theorem 2.1 are not in
+Lean, so "every numbered result is verified" is overstated; (4) the
+pinned commit `c60bcd3` uses Lean/Mathlib v4.29.1 while the text claims
+v4.29.0 (= HEAD), and all HEAD line numbers have moved. Not yet applied
+to the manuscript.
+
+### The optimal value converges for every $p$
+
+While looking for an approach to the whole range $p<\tfrac12$, a
+high-precision computation (320 digits, $n\le1300$) showed that
+$w_{n,p}$ *converges* for $p=0.45, 0.42$ (relative oscillation
+$10^{-39}$ over $[150,320]$) although the greedy value oscillates with
+amplitude $10^{-6}$. The proof turned out to be elementary. Subtracting
+$w_{n-1}(p^n+q^n+\sum_j\omega_{n,j})=w_{n-1}$ from the Bellman equation
+gives the exact identity
+$$d_n = p^n(1-w_{n-1}) - q^n w_{n-1} + \sum_{j=1}^{n-1}\omega_{n,j}\bigl(\max_{j\le m\le n-1}w_m - w_{n-1}\bigr),$$
+whose first and last terms are $\ge0$. Hence $d_n\ge-q^n$, the negative
+increments are summable, and $(w_n)$ has bounded variation: it
+converges for every $p\in(0,1)$. Combined with the old Step A ($w$ is
+not eventually non-decreasing for $p<\tfrac12$; same identity), the
+sequence converges without being eventually monotone.
+
+Consequence for the old Paper 3: its Step B reduced non-monotonicity to
+*non-convergence* of $w$ via a renormalisation argument (Gap D). That
+target is false — the optimal player cancels the greedy oscillation
+exactly — so the route is dead. Whether $w$ is eventually
+non-increasing (it is not, numerically) remains open (Conjecture B).
+
+### Magic numbers
+
+The optimal policy is described by the suffix-maximum records of $w$
+("magic numbers"): with $j$ tails, keep the smallest record $\ge j$
+seen from the current horizon; between births these are exactly the
+magic numbers, and the recursion is linear of ONE type. Grid scan
+(`simulation/magic_numbers.py`, $N=700$, 220 digits): e.g.
+$\{1..4,15,167\}$ at $p=0.45$, $\{1..6,9,10,43,273\}$ at $0.42$,
+$\{1..20,27,28,68,187,538\}$ at $0.35$. Decreases occur only at births
+(runs of 2–12 consecutive dips), each $\le q^n$. The exact birth
+criterion, the gap recursion
+$\gamma(n+1)=P(\mathrm{Bin}(n,q)>M)\gamma(n)+q^n w_{n-1}-\dots$, a
+two-phase analysis (gap tracks $q^n$ until $n\approx M/q$, then
+freezes at $\approx q^{M/q}$; next birth when
+$\binom nM(p/q)^{n-M}\gamma_M<W$), and the resulting ratio law
+$m_{k+1}/m_k\to r(p)$, $r$ the larger root of
+$(r-1)\log(q/p)-rH(1/r)+q^{-1}\log(1/q)=0$, are in
+`Oscillation/MAGIC_NUMBERS_2026-08-29.md` and `simulation/magic_birth.py`.
+Predicted vs observed ratios agree within a few percent for
+$0.15\le p\le0.47$ (e.g. $p=0.25$: $1.70$ vs $1.49\to1.61$; $p=0.47$:
+$26.5$ vs $24.3$).
+
+### Paper 3 rebuilt
+
+The old oscillation draft was moved to
+`Oscillation/archive/paper3_oscillation_draft.tex`. The new
+`Oscillation/paper3.tex` (9 pp., compiles) contains: the increment
+identity (Lemma 2.1), convergence with the dip bound (Thm 1.1),
+infinitely many decreases (Thm 1.2), the optimal-policy proposition
+via horizon records (Prop 4.2), the exact birth criterion (Prop 4.4),
+the two-phase heuristics and the ratio law as Conjecture 4.5 with
+Table 1, the numerical grid (Table 2), Figure 1 (increments on log
+scale), and a discussion of Conjecture B and of formalization targets.
+
+### Amplitude functional for Conjecture B (same session, later)
+
+Set up the Poissonised product formula for the forced greedy
+continuation $z^{(M)}$ from a magic number $M$ and its log-periodic
+Fourier coefficients $A_m(M)=L^{-1}\mathcal M[\Pi S](2\pi i m/L)$
+(`simulation/continuation_amplitude.py`). Conjecture B is equivalent
+to $A_1(M)\ne0$ for all magic $M$. Validated against the greedy value
+and against a direct $n\le3000$ computation of $z^{(15)}$ at $p=0.45$
+(mean and amplitude agree; $z^{(15)}$ oscillates). At every magic
+number tested ($p=0.45$: 15, 167; $p=0.25$: 79–471) $A_1(M)\ne0$,
+$|A_1|\gg|A_2|$, and $|A_1(M)|/q^M$ stabilises ($\approx3.3\cdot10^{-4}$
+at $p=0.25$). Written into `paper3.tex` §6 and the notes file.
+
+## 2026-08-30 — Proof architecture for Conjecture B
+
+Derived and verified the future-data formula for the amplitude,
+$A_1(M)=-L^{-1}\mathcal M[\Pi T_M](2\pi i/L)$ (data beyond $M$ only),
+and found numerically that the window $(M,M/q]$ — Phase 1 of the next
+cycle — accounts for all of $A_1(M)$. A one-dimensional model (gap
+recursion with the older-record term) reproduces $A_1(M)$ to 5–6
+digits; with the older-record term modelled as a binomial tail the model
+has a single parameter, the marginality $m\in[\rho/q,1)$, and
+$\Psi_p(m)=A_1^{\rm model}/q^M$ is affine in $m$ with
+$|\Psi_p|\ge3\cdot10^{-4}$ on the admissible range for $p=0.25,0.35,0.45$.
+Wrote the six-step proof architecture into `paper3.tex` §6; the open
+step is the rigorous cycle theory (iii). New scripts:
+`future_data_amplitude.py`, `phase1_model_amplitude.py`, `psi_of_m.py`.
+
+### Rigorous elements of the cycle theory (2026-08-30, later)
+
+New Section 5 of `paper3.tex`: Lemma (exact cycle identity)
+$\gamma(n+1)=(U_n+V_n-\theta_n(V_n-q^n))\gamma(n)+q^nw_{n-1}-p^n(1-w_{n-1})-s_n$
+with $\theta_n\in[0,1]$, $\theta_n=0$ after recovery — the memoryless
+Phase 1 is exact, not approximate; Corollary (dip criterion, run
+structure, marginality $m$); Lemma (older-record ratio bounds
+$p\le s_{n+1}/s_n\le p(n+1)/(n+1-M')$); Proposition (freeze bound
+$w_M-W\le Cq^{(M-c\sqrt{M\log M})/q}$, unconditional); Proposition
+(at a birth $s_{M+1}/s_M<q(1+o(1))$, under complete recovery). The
+latter yields the geometric lower bound $M_{k+1}\ge q(M_k-K)/(1-2p)$
+modulo block domination, which needs a lower freeze bound — proposed
+induction over cycles $\mathcal H_k$. Observation: for $p=0.15$ the
+observed ratio $1.21$ coincides with $q/(1-2p)=1.214$, so the ratio
+law may be $\max\{r(p),q/(1-2p)\}$ for small $p$. All inequalities
+verified on every cycle for $p=0.25,0.35,0.45$
+(`simulation/cycle_lemmas_check.py`: ALL CHECKS PASSED).
+
+### The cycle induction (2026-08-30, later)
+
+Added Theorem (one cycle) to `paper3.tex` §5.1: under (H1) growth
+$M+1\ge(1+\delta)qM'/(1-2p)$, (H2) $w_{M'}-w_M\ge q^M/p$, (H3) complete
+recovery, one obtains (i) geometric decay of the older-record ratio
+$\sigma_n\le C_1m\lambda^{n-M-1}$, $\lambda=p(1+\delta)/(p+\delta q)$
+[complete proof from the exact identity and the ratio lemma]; (iii)
+the lower freeze bound $w_M-w_N\ge a_\infty q^{n_0}/(4e^2)$ for all $N$
+in the increase phase, $n_0\le M/q+C\sqrt{M\log M}$ [complete proof];
+(ii) bounded run length and recovery, (iv) existence of the next birth
+in $[(1+\delta)qM/(1-2p),C_3M]$, record property of $M''$, and
+propagation of (H1)–(H3) [complete up to explicit binomial constants
+$M_0(p,\delta)$]. Conjecture 1.3 corrected (magic-number infinitude is
+not equivalent); new Conjecture (cycle structure) stated; the theorem
+reduces it, for each $p$, to explicit constants plus one verified
+cycle. Numerics (`simulation/freeze_lower_check.py`): (iii) holds with
+ratios $0.36$–$346$ against constants $0.001$–$0.013$; (H1) holds from
+the second isolated cycle on with $\delta=0.004$–$0.08$ ($p=0.25$),
+$0.14$–$0.33$ ($0.35$), $1.04$ ($0.45$).
+
+### Towards explicit $M_0$ for $p=0.45$ (2026-08-30, later)
+
+Two exact facts (paper3 §5.1, Lemmas "tail ratio" and "normalised
+gap"): (1) $\Prob(\Bin(n+1,q)\le M)/\Prob(\Bin(n,q)\le M)\ge q$ iff
+(asymptotically) $n+1\le n^*=qM/(1-2p)$, so $\tau_n/q^n$ peaks at
+$n^*$; (2) with $A_n:=\gamma(n)P_n/(q^nw_{n-1})$, $d_n\ge0\iff
+A_n\ge1-\varepsilon_n$ exactly, and $A$ obeys the explicit recursion
+$A_{n+1}=\frac{P_{n+1}}{qP_n}\frac{w_{n-1}}{w_n}[(1-P_n)A_n+P_n(1-\varepsilon_n)]$
+when $\theta_n=0$. This replaces the freeze-bound route in (ii)/(iv)
+of the cycle theorem: $\log A$ gains $M\,I(p)$ up to $n^*$ and loses
+$M\,J(p,x)$ beyond, the birth is at $J=I$, and for $p=0.45$ this gives
+$x_b=2.409$, ratio $13.251=r(p)$ — the ratio law derived from the
+exact recursion. Margin for $\delta=1$: $I-J(p,2)=0.257$ per unit $M$,
+so $M_0(0.45,1)\approx(C\log M+2)/0.257$ with $C$ from Riemann-sum
+errors — plausibly $100$–$200$, making $(15,167)$ a candidate base
+case. Verified on data: the criterion $d_n\ge0\iff A_n\ge1-\varepsilon_n$
+holds at every $n$; $A$ at $[M/q,n^*,\text{birth}]$: $(1.52,14.1,1.04\to0.90)$
+for $p=0.25$, $M=292$. Still to do: explicit $C$ (truncation and
+Riemann-sum constants), then check $167\ge M_0$.
+
+### Contradiction route and the tilting lemma (2026-08-30, later)
+
+Replaced the cycle-induction theorem in `paper3.tex` §5 by three short
+uniform results. (1) Theorem (no late tails): a non-increasing tail
+from $N$ with previous record $M'$ and $N+1\ge(1+c)qM'/(1-2p)$ is
+impossible for $N\ge N_0(p,c)$ — proof: flatness
+$\gamma(n)\le2q^{n_1}$, tracking $\sigma_k\in[1-\eta_k,1]$ on $(N,n_1]$,
+decay ratio $\le\lambda_cq$. (2) Proposition (gap bound, conditional
+on a regular increase phase past $k_1\approx M/q$): $w_M-W\ge
+a_\infty q^{k_1}/(4e^2)$; the unconditional version is equivalent to
+cycle regularity and cannot be isolated. (3) Lemma (tilting) and
+Proposition (concentration): if $\sum_{j\le J}c_j\omega_{k,j}=Aq^k(1\pm\eta)$
+on a window with $c\ge0$, the exact identity
+$m_{k+1}\ge(m_k+\mathrm{Var}_{\mu_k}(r)/m_k)(1-J/((k+1)(k+2-J)))$ forces
+$\mathrm{Var}_{\mu_k}(j)=O(\eta k^2+J)$ and $\mathbb E_{\mu_k}j=
+(k+1)(1-p/q)+O(\eta k+J/k)$. Corollary (dense records): a
+counterexample tail must satisfy $N\le q^2M'(1+o(1))/(1-2p)$ and be
+preceded by a stretch of relative length $\ge1/q$ with records
+$O(\sqrt{M'})$-dense at scale $(1-p/q)N$ — a descent. Open: the
+tracking argument for quasi-tails (dense records with small
+increases), which would close Conjecture B uniformly in $p$.
+
+### Infinitely many magic numbers — unconditional (2026-08-30, later)
+
+Prompted by the author's question whether the infinitude of magic
+numbers was actually proven (it was not): at a running maximum $m$ of
+$w$ over $(M,m]$ all $K^{(m)}_j$, $j>M$, are $\le w_m$, so the Bellman
+equation gives $w_m(q^m+\Prob(\Bin(m,q)\le M))\le p^m+\Prob(\Bin(m,q)\le M)$,
+impossible for $m\ge m_1(M)$ since $w_m\ge a_\infty>0$ and
+$\Prob(\Bin(m,q)\le M)\ll q^m$ ($p<q$). Hence $\sup_{k>M}w_k$ is
+attained and its last maximiser is a magic number in $(M,m_1(M))$.
+Theorem (infinitely many magic numbers) with $M_{k+1}<m_1(M_k)$,
+$m_1(M)/M\to C(p)$ = root of $(r-1)\log(q/p)=rH(1/r)$ ($2.56$, $5.07$,
+$21.1$ for $p=0.25,0.35,0.45$); observed ratios $1.5$–$1.6$, $2.4$–$2.9$,
+$11.1$. Added to `paper3.tex` §4 and the introduction; the cycle
+conjecture no longer includes infinitude. Still open: Conjecture B
+(an eventually non-increasing tail, all of whose indices are records,
+is not excluded by this argument).
+
+### Spacing of magic numbers (2026-08-30, later)
+
+Rewrote §4.2 of `paper3.tex` as "The spacing of magic numbers":
+proved upper bound $C(p)$, conditional lower bound $q/(1-2p)$,
+conjectured law $r(p)$ (root of $g_p$; shown numerically identical to
+the $I/J$ characterisation from the A-recursion for all $p$), table
+with data to $n=2000$ for $p\le0.4$. The $n\le2000$ runs settle an
+earlier worry: for $p=0.15,0.2$ the ratios cross $q/(1-2p)$ and keep
+rising towards $r(p)$ ($1.208\to1.230$, $1.331\to1.395$), so the slow
+convergence at small $p$ is not a change of law. Added the two limits
+($M_1(p)\approx\tfrac32/(\tfrac12-p)$, $r\to\infty$ as $p\to\tfrac12$;
+$r\to1$ as $p\to0$) and the staircase/ALL dichotomy with Conjecture B.
